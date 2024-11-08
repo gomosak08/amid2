@@ -1,0 +1,4 @@
+<!-- app/views/appointments/availability.turbo_stream.erb -->
+<%= turbo_stream.replace "available_times" do %>
+  <%= render 'booking_form', appointment: @appointment, available_times: @available_times, doctor_id: @doctor_id, selected_date: @selected_date %>
+<% end %>

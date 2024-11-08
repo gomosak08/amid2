@@ -1,0 +1,9 @@
+<!-- app/views/packages/show.html.erb -->
+<h1><%= @package.name %></h1>
+
+<% if @package.image.present? %>
+  <%= image_tag @package.image, alt: @package.name, class: 'package-image' %>
+<% end %>
+
+<p><%= @package.description %></p>
+<p>Price: <%= number_to_currency(@package.price) %></p>

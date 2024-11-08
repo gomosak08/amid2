@@ -1,0 +1,22 @@
+<!-- app/views/appointments/_available_form.html.erb -->
+<% if start_date.present? && @available_times.present? %>
+  <!-- Single form_with block -->
+  <%= form_with(model: @appointment, url: appointments_path, method: :post, local: true) do |form| %>
+    <!-- Hidden fields for package and doctor information -->
+    <%= form.hidden_field :package_id, value: @package&.id %>
+    <%= form.hidden_field :duration, value: @package&.duration %>
+    <%= form.hidden_field :doctor_id, value: @doctor_id %>
+
+    <!-- Available Time Selection -->
+    <div>
+      <%= form.label :start_date, "Select an Available Time" %>
+      <%= form.select :start_date, options_for_select(@available_times.map { |time| [time.strftime("%I:%M %p"), time] }), { prompt: "Choose a time" }, { id: "start_date_select" } %>
+    </div>
+
+    <!-- Render the booking form partial, passing in the form object -->
+    <%= render 'appointments/booking_form', form: form %>
+  <% end %>
+
+<% else %>
+  <p>Please select a doctor and date to view available times.</p>
+<% end %>

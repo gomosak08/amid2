@@ -1,0 +1,8 @@
+<!-- app/views/admin/packages/show.html.erb -->
+<h1><%= @package.name %></h1>
+<p><%= @package.description %></p>
+<p>Price: <%= number_to_currency(@package.price) %></p>
+<p>Duration: <%= @package.duration %> mins</p>
+
+<%= link_to 'Edit', edit_admin_package_path(@package) %> |
+<%= link_to 'Back to Packages', admin_packages_path %>

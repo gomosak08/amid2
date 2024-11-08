@@ -1,0 +1,10 @@
+<!-- app/views/appointments/show.html.erb -->
+<h1>Appointment Details</h1>
+
+<p><strong>Name:</strong> <%= @appointment.name %></p>
+<p><strong>Age:</strong> <%= @appointment.age %></p>
+<p><strong>Email:</strong> <%= @appointment.email %></p>
+<p><strong>Phone:</strong> <%= @appointment.phone %></p>
+<p><strong>Sex:</strong> <%= @appointment.sex %></p>
+<p><strong>Appointment Date:</strong> <%= @appointment.start_date %></p>
+<p><strong>Package:</strong> <%= @appointment.package.name if @appointment.package %></p>

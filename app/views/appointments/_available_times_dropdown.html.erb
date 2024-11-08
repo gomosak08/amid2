@@ -1,0 +1,7 @@
+<!-- app/views/appointments/_availability_form.html.erb -->
+<%= turbo_frame_tag "availability_frame" do %>
+  <%= form_with url: availability_path, method: :post, local: true, id: "availability_form" do |f| %>
+    <%= f.select :doctor_id, options_for_select(@doctors.collect { |d| [d.name, d.id] }, @doctor_id), {}, id: "doctor_select" %>
+    <%= f.date_field :date, id: "date_field", value: @selected_date %>
+  <% end %>
+<% end %>

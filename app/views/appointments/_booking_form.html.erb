@@ -1,0 +1,38 @@
+<!-- app/views/appointments/_booking_form.html.erb -->
+
+<%= form_with(model: @appointment, url: appointments_path, method: :post, local: true, id: "appointment_form") do |form| %>
+  <!-- Required fields -->
+  <div>
+    <%= form.label :name, "Your Name" %>
+    <%= form.text_field :name, required: true %>
+  </div>
+
+  <div>
+    <%= form.label :age, "Your Age" %>
+    <%= form.number_field :age, required: true %>
+  </div>
+
+  <div>
+    <%= form.label :email, "Your Email" %>
+    <%= form.email_field :email, id: "email_field" %>
+  </div>
+
+  <div>
+    <%= form.label :phone, "Phone Number" %>
+    <%= form.telephone_field :phone, id: "phone_field" %>
+  </div>
+
+  <div>
+    <%= form.label :sex, "Gender" %>
+    <%= form.select :sex, options_for_select(['Male', 'Female', 'Other']), { prompt: "Select Gender" }, required: true %>
+  </div>
+
+
+
+  <div class="recaptcha">
+    <%= recaptcha_tags %>
+  </div>
+
+  <!-- Submit button initially disabled -->
+  <%= form.submit "Book Appointment", disabled: true, id: "submit_button" %>
+<% end %>

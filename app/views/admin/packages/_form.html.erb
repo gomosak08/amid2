@@ -1,0 +1,42 @@
+<!-- app/views/admin/packages/_form.html.erb -->
+<%= form_with(model: [:admin, @package], local: true) do |form| %>
+  <% if @package.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@package.errors.count, "error") %> prohibited this package from being saved:</h2>
+      <ul>
+        <% @package.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :name %>
+    <%= form.text_field :name %>
+  </div>
+
+  <div>
+    <%= form.label :description %>
+    <%= form.text_area :description %>
+  </div>
+
+  <div>
+    <%= form.label :price %>
+    <%= form.number_field :price, step: 0.01 %>
+  </div>
+
+  <div>
+    <%= form.label :duration %>
+    <%= form.number_field :duration %>
+  </div>
+
+  <div>
+    <%= form.label :image %>
+    <%= form.text_field :image %> <!-- Adjust to a file upload if necessary -->
+  </div>
+
+  <div>
+    <%= form.submit %>
+  </div>
+<% end %>

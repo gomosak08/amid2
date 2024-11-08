@@ -1,0 +1,18 @@
+<!-- app/views/packages/index.html.erb -->
+<h1>Packages</h1>
+<% @packages.each do |package| %>
+  <div>
+    <h2><%= link_to package.name, package_path(package) %></h2>
+
+    <% if package.image.present? %>
+      <%= image_tag package.image, alt: package.name, class: 'package-image' %>
+    <% end %>
+
+    <p><%= package.description %></p>
+    <p>Price: <%= number_to_currency(package.price) %></p>
+
+    <!-- Button to make an appointment -->
+    <%= link_to "Make an Appointment",  new_appointment_path(package_id: package.id), data: { turbo: false } %>
+
+  </div>
+<% end %>

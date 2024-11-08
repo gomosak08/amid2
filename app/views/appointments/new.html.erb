@@ -1,0 +1,43 @@
+<!-- app/views/appointments/new.html.erb -->
+
+<%= form_with(url: new_appointment_path, method: :get, local: true, id: "availability_form", data: { turbo: false }) do |form| %>
+  <%= form.hidden_field :package_id, value: @package&.id %>
+  <%= form.hidden_field :duration, value: @package&.duration%>
+
+  <!-- Doctor Selection -->
+  <div>
+    <%= form.label :doctor_id, "Select a Doctor" %>
+    <% if @doctors.present? %>
+      <%= form.select :doctor_id, options_for_select(@doctors.map { |d| [d.name, d.id] }, @doctor_id.to_i), { prompt: "Choose a doctor" }, { id: "doctor_select" } %>
+    <% else %>
+      <p>No doctors available.</p>
+    <% end %>
+  </div>
+
+  <!-- Date Selection -->
+  <div>
+    <%= form.label :start_date, "Select a Date" %>
+    <%= form.date_field :start_date, value: params[:start_date] || Date.today, id: "date_field" %>
+  </div>
+<% end %>
+
+<!-- Container for Available Times Partial -->
+<div id="available_times_container">
+  <%= render 'availability_form', start_date: @start_date %>
+</div>
+
+<!-- Container for Booking Form Partial -->
+<div id="booking_appointment_container">
+  <!-- Booking form will be loaded here after selecting an available time -->
+</div>
+
+<% if flash[:alert] %>
+  <div class="alert alert-danger">
+    <%= flash[:alert] %>
+  </div>
+<% end %>
+
+<!-- app/views/appointments/new.html.erb -->
+<p>Doctor ID: <%= @doctor_id %></p>
+<p>Selected Date: <%= @start_date %></p>
+<p>Available Times: <%= @available_times.inspect %></p>

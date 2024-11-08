@@ -1,0 +1,31 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: MyString
+  age: 1
+  email: MyString
+  phone: MyString
+  sex: MyString
+  doctor_id: 1
+  package_id: 1
+  status: MyString
+  start_date: 2024-10-31 17:06:25
+  end_date: 2024-10-31 17:06:25
+  duration: 1
+  canceled_at: 2024-10-31 17:06:25
+  cancellation_reason: MyText
+
+two:
+  name: MyString
+  age: 1
+  email: MyString
+  phone: MyString
+  sex: MyString
+  doctor_id: 1
+  package_id: 1
+  status: MyString
+  start_date: 2024-10-31 17:06:25
+  end_date: 2024-10-31 17:06:25
+  duration: 1
+  canceled_at: 2024-10-31 17:06:25
+  cancellation_reason: MyText

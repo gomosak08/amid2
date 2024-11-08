@@ -1,0 +1,15 @@
+<p>Hello <%= @appointment.name %>,</p>
+
+<p>Your appointment has been confirmed with the following details:</p>
+
+<ul>
+  <li>Date: <%= @appointment.start_date.strftime("%B %d, %Y") %></li>
+  <li>Time: <%= @appointment.start_date.strftime("%I:%M %p") %></li>
+  <li>Doctor: <%= @appointment.doctor.name %></li>
+</ul>
+
+<p>Your unique code for managing this appointment is: <strong><%= @appointment.unique_code %></strong></p>
+
+<p>If you wish to cancel or edit your appointment, please use this code in our system.</p>
+
+<p>Thank you for booking with us!</p>

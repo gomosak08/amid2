@@ -1,0 +1,27 @@
+<!-- app/views/admin/doctors/index.html.erb -->
+<h1>Manage Doctors</h1>
+<%= link_to 'Add New Doctor', new_admin_doctor_path, class: 'btn btn-primary' %>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Specialty</th>
+      <th>Email</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @doctors.each do |doctor| %>
+      <tr>
+        <td><%= doctor.name %></td>
+        <td><%= doctor.specialty %></td>
+        <td><%= doctor.email %></td>
+        <td>
+          <%= link_to 'Edit', edit_admin_doctor_path(doctor) %> |
+          <%= link_to 'Delete', admin_doctor_path(doctor), method: :delete, data: { confirm: 'Are you sure?' } %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
