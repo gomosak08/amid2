@@ -1,10 +1,75 @@
 <!-- app/views/appointments/show.html.erb -->
-<h1>Appointment Details</h1>
+<%= turbo_frame_tag "appointment_form" do %>
+  <div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6 text-center">Detalles de la Cita</h1>
 
-<p><strong>Name:</strong> <%= @appointment.name %></p>
-<p><strong>Age:</strong> <%= @appointment.age %></p>
-<p><strong>Email:</strong> <%= @appointment.email %></p>
-<p><strong>Phone:</strong> <%= @appointment.phone %></p>
-<p><strong>Sex:</strong> <%= @appointment.sex %></p>
-<p><strong>Appointment Date:</strong> <%= @appointment.start_date %></p>
-<p><strong>Package:</strong> <%= @appointment.package.name if @appointment.package %></p>
+    <!-- Appointment Details Card -->
+    <div class="bg-white shadow-md rounded-lg p-6 space-y-6">
+      <!-- Name -->
+      <p class="text-lg">
+        <strong class="font-semibold text-gray-700">Nombre:</strong>
+        <span class="text-gray-800"><%= @appointment.name.presence || "N/A" %></span>
+      </p>
+
+      <!-- Age -->
+      <p class="text-lg">
+        <strong class="font-semibold text-gray-700">Edad:</strong>
+        <span class="text-gray-800"><%= @appointment.age.presence || "N/A" %></span>
+      </p>
+
+      <!-- Email -->
+      <p class="text-lg">
+        <strong class="font-semibold text-gray-700">Email:</strong>
+        <span class="text-gray-800"><%= @appointment.email.presence || "N/A" %></span>
+      </p>
+
+      <!-- Phone -->
+      <p class="text-lg">
+        <strong class="font-semibold text-gray-700">Número de Teléfono:</strong>
+        <span class="text-gray-800"><%= @appointment.phone.presence || "N/A" %></span>
+      </p>
+
+      <!-- Sex -->
+      <p class="text-lg">
+        <strong class="font-semibold text-gray-700">Sexo:</strong>
+        <span class="text-gray-800"><%= @appointment.sex.presence || "N/A" %></span>
+      </p>
+
+      <!-- Appointment Date -->
+      <p class="text-lg">
+        <strong class="font-semibold text-gray-700">Fecha de la Cita:</strong>
+        <span class="text-gray-800">
+          <%= @appointment.start_date.in_time_zone("America/Mexico_City").strftime("%d-%m-%Y %I:%M %p %Z") rescue "N/A" %>
+        </span>
+      </p>
+
+      <!-- Package -->
+      <% if @appointment.package.present? %>
+        <p class="text-lg">
+          <strong class="font-semibold text-gray-700">Paquete:</strong>
+          <span class="text-gray-800"><%= @appointment.package.name %></span>
+        </p>
+        <p class="text-lg">
+          <strong class="font-semibold text-gray-700">Precio:</strong>
+          <span class="text-gray-800">$<%= @appointment.package.price %></span>
+        </p>
+      <% else %>
+        <p class="text-lg text-red-500">
+          <strong class="font-semibold text-gray-700">Paquete:</strong>
+          No se encontró información del paquete.
+        </p>
+      <% end %>
+
+      <p class="text-sm italic text-gray-500">
+        * Esto solo incluye el precio de la consulta.
+      </p>
+
+      <!-- Continue Button -->
+      <div class="pt-6 text-center">
+        <%= link_to "Continuar", root_path, 
+                  class: "bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-200",
+                  data: { turbo: false } %>
+    </div>
+    </div>
+  </div>
+<% end %>

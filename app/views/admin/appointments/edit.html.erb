@@ -1,0 +1,44 @@
+<div class="container mx-auto px-4 py-8 max-w-3xl">
+  <h1 class="text-3xl font-bold mb-6 text-center">Editar Cita</h1>
+
+  <%= form_with(model: @appointment, url: admin_appointment_path(@appointment), method: :patch, local: true, class: "space-y-6") do |form| %>
+    <!-- Name Field -->
+    <div>
+      <%= form.label :name, "Nombre", class: "block text-lg font-medium mb-1" %>
+      <%= form.text_field :name, class: "w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+
+    <!-- Doctor Field -->
+    <div>
+      <%= form.label :doctor_id, "Doctor", class: "block text-lg font-medium mb-1" %>
+      <%= form.collection_select :doctor_id, Doctor.all, :id, :name, { prompt: "Selecciona un doctor" }, class: "w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+
+    <!-- Package Field -->
+    <div>
+      <%= form.label :package_id, "Paquete", class: "block text-lg font-medium mb-1" %>
+      <%= form.collection_select :package_id, Package.all, :id, :name, { prompt: "Selecciona un paquete" }, class: "w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+
+    <!-- Start Date Field -->
+    <div>
+      <%= form.label :start_date, "Fecha de Inicio", class: "block text-lg font-medium mb-1" %>
+      <%= form.datetime_select :start_date, class: "w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+
+    <!-- Status Field -->
+    <div>
+      <%= form.label :status, "Estado", class: "block text-lg font-medium mb-1" %>
+      <%= form.select :status, ["Scheduled", "Completed", "Canceled"], { prompt: "Selecciona un estado" }, class: "w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+
+    <!-- Submit Button -->
+    <div>
+      <%= form.submit "Guardar Cambios", class: "w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-200" %>
+    </div>
+  <% end %>
+
+  <div class="mt-6 text-center">
+    <%= link_to "Regresar a Citas", admin_appointments_path, class: "text-blue-600 hover:underline" %>
+  </div>
+</div>

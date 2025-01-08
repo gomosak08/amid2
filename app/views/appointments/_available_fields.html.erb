@@ -1,0 +1,53 @@
+<%= form_with model: @appointment, url: appointments_path, method: :post, class: "space-y-6" do |form| %>
+    <!-- Hidden Field for Package ID -->
+    <%= form.hidden_field :package_id, value: @package.id %>
+    <%= form.hidden_field :doctor_id, value: @doctor_id %>
+  
+    <!-- Time Selection -->
+    <div class="mb-4">
+      <%= form.label :start_date, "Select a Time", class: "block text-lg font-medium text-gray-700 mb-2" %>
+      <%= form.select :start_date, 
+            options_for_select(@available_times.map { |time| [time.strftime("%I:%M %p"), time] }), 
+            { prompt: "Choose a Time" }, 
+            class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+  
+    <!-- Name Field -->
+    <div>
+        <%= form.label :name, "Nombre", class: "block text-lg font-medium text-gray-700 mb-2" %>
+        <%= form.text_field :name, required: true, class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+
+    <!-- Age Field -->
+    <div>
+        <%= form.label :age, "Edad", class: "block text-lg font-medium text-gray-700 mb-2" %>
+        <%= form.number_field :age, required: true, class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+
+    <!-- Email Field -->
+    <div>
+        <%= form.label :email, "Email", class: "block text-lg font-medium text-gray-700 mb-2" %>
+        <%= form.email_field :email, required: true, class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+
+    <!-- Phone Field -->
+    <div>
+        <%= form.label :phone, "Número de Telefono", class: "block text-lg font-medium text-gray-700 mb-2" %>
+        <%= form.telephone_field :phone, class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+
+    <!-- Gender Field -->
+    <div>
+        <%= form.label :sex, "Genero", class: "block text-lg font-medium text-gray-700 mb-2" %>
+        <%= form.select :sex, options_for_select(['Masculino', 'Femenino']), { prompt: "Selecciona tu Genero" }, required: true, class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+
+    <!-- Captcha Field -->
+    <div class="recaptcha">
+        <%= recaptcha_tags %>
+    </div>
+
+    <!-- Submit Button -->
+    <%= form.submit "Book Appointment", class: "bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition-colors duration-200" %>
+  <% end %>
+  

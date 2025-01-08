@@ -1,0 +1,21 @@
+<!-- app/views/appointments/edit.html.erb -->
+
+<div class="container mx-auto px-4 py-8 max-w-lg">
+  <h2 class="text-2xl font-bold mb-6 text-center">Cancel Appointment</h2>
+
+  <!-- Appointment Details -->
+  <div class="bg-white p-6 rounded-lg shadow-md space-y-4">
+    <p><strong class="font-semibold text-gray-700">Name:</strong> <%= @appointment.name %></p>
+    <p><strong class="font-semibold text-gray-700">Age:</strong> <%= @appointment.age %></p>
+    <p><strong class="font-semibold text-gray-700">Email:</strong> <%= @appointment.email %></p>
+    <p><strong class="font-semibold text-gray-700">Phone:</strong> <%= @appointment.phone %></p>
+    <p><strong class="font-semibold text-gray-700">Sex:</strong> <%= @appointment.sex %></p>
+    <p><strong class="font-semibold text-gray-700">Appointment Date:</strong> <%= @appointment.start_date.in_time_zone("America/Mexico_City").strftime("%Y-%m-%d %I:%M %p %Z") %></p>
+    <p><strong class="font-semibold text-gray-700">Package:</strong> <%= @appointment.package.name if @appointment.package %></p>
+  </div>
+
+  <!-- Cancel Appointment Button -->
+  <div class="mt-6 text-center">
+    <%= link_to "Cancel Appointment", appointment_path(@appointment), method: :delete, data: { confirm: "Are you sure?" }, class: "bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition-colors duration-200" %>
+  </div>
+</div>

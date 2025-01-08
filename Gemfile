@@ -43,7 +43,8 @@ gem 'jsbundling-rails'
 
 gem 'recaptcha', require: 'recaptcha/rails'
 
-
+gem 'google-api-client' # or the latest version
+gem 'omniauth-google-oauth2'         # for OAuth2 authentication
 
 
 group :development, :test do
@@ -70,3 +71,5 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
 end
+
+gem "tailwindcss-rails", "~> 3.0"

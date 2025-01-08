@@ -13,7 +13,7 @@ class Appointment < ApplicationRecord
 
      # Ensure that appointment times do not overlap for the same doctor
     validate :no_double_booking
-
+    validates :google_calendar_id, uniqueness: true, allow_nil: true
     private
 
     def no_double_booking

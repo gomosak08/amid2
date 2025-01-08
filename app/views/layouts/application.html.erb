@@ -1,39 +1,61 @@
-
-
-
-
+<!-- app/views/layouts/application.html.erb -->
 <!DOCTYPE html>
 <html>
   <head>
     <title><%= content_for(:title) || "Amid2" %></title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <%= yield :head %>
-
-    <link rel="manifest" href="/manifest.json">
-    <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
+    <!-- Fonts and CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
 
-    <% if user_signed_in? %>
-      <% if current_user.admin? %>
-        <%= link_to 'Logout', destroy_user_session_path, method: :delete %>
-      <% end %>
-    <% end %>
 
-    <!-- Conditionally load the validation script only for appointments#new or appointments#create -->
-    <% if controller.controller_name == "appointments" && ["new", "create"].include?(controller.action_name) %>
-      <%= javascript_include_tag "application" %>
-    <% end %>
+    <!-- Javascript and Other Assets -->
+    <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true %>
 
+
+    <%= yield :head %>
   </head>
 
-  <body>
-    <%= yield %>
+  <body class="bg-gray-100 font-sans antialiased">
+    <!-- Top Navigation Bar -->
+    <header class="bg-blue-600 text-white p-4">
+      <div class="container mx-auto flex items-center justify-between">
+        <!-- Logo -->
+        <div class="text-2xl font-bold">
+          <%= link_to image_tag("LOGO.png", alt: "Logo", class: "h-10 inline-block"), root_path %>
+        </div>
+        <!-- Logout link if user is signed in -->
+        <% if user_signed_in? %>
+          <%= link_to 'Logout', destroy_user_session_path, method: :delete, class: "text-white hover:underline" %>
+        <% end %>
+      </div>
+    </header>
+
+    <div class="flex h-screen">
+      <!-- Sidebar for managing appointments (only on home page) -->
+      <% if current_page?(root_path) %>
+        <aside class="bg-gray-800 text-white w-64 p-6 space-y-4 hidden lg:block">
+          <h2 class="text-lg font-semibold mb-4">Manage Appointments</h2>
+          <%= link_to "Cancel Appointment", find_appointments_path, class: "block py-2 px-4 rounded hover:bg-gray-700" %>
+          <% if user_signed_in? %>
+          <%= link_to "Doctor Dash", admin_doctors_path, class: "block py-2 px-4 rounded hover:bg-gray-700" %>
+          <%= link_to "Packages Dash", admin_packages_path, class: "block py-2 px-4 rounded hover:bg-gray-700" %>
+          <%= link_to "Appoinments Dash", admin_appointments_path, class: "block py-2 px-4 rounded hover:bg-gray-700" %>
+
+
+          <% end %>
+          </aside>
+      <% end %>
+
+      <!-- Main Content Area -->
+      <main class="flex-1 p-6 overflow-y-auto">
+        <%= yield %> <!-- This will render the view content -->
+      </main>
+    </div>
   </body>
 </html>
-

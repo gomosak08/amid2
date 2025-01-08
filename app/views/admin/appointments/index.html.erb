@@ -1,0 +1,63 @@
+<!-- app/views/admin/appointments/index.html.erb -->
+
+<div class="container mx-auto px-4 py-8 max-w-3xl">
+  <h1 class="text-3xl font-bold mb-6 text-center">Administrador de Citas</h1>
+
+  <!-- Search by Date Form -->
+  <div class="mb-6">
+  <%= form_with url: admin_appointments_path, method: :get, local: true, class: "flex items-center space-x-4" do |form| %>
+    <!-- Date Filter -->
+    <%= form.label :date, "Buscar por Fecha:", class: "text-lg font-medium" %>
+    <%= form.date_field :date, value: params[:date], class: "p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
+
+    <!-- Doctor Filter -->
+    <%= form.label :doctor, "Doctor:", class: "text-lg font-medium" %>
+    <%= form.collection_select :doctor_id, Doctor.all, :id, :name, { include_blank: "Todos" }, class: "p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
+
+    <!-- Status Filter -->
+    <%= form.label :status, "Estado:", class: "text-lg font-medium" %>
+    <%= form.select :status, [["All", ""], ["Pending", "pending"], ["Confirmed", "confirmed"], ["Cancelled", "cancelled"]], { selected: params[:status] }, class: "p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
+
+    <!-- Submit Button -->
+    <%= form.submit "Buscar", class: "bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-200" %>
+  <% end %>
+  </div>
+
+  <!-- Appointments Table -->
+  <div class="overflow-x-auto">
+    <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+      <thead>
+        <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+          <th class="py-3 px-6 text-left">ID</th>
+          <th class="py-3 px-6 text-left">Name</th>
+          <th class="py-3 px-6 text-left">Date</th>
+          <th class="py-3 px-6 text-left">Doctor</th>
+          <th class="py-3 px-6 text-left">Estado</th>
+          <th class="py-3 px-6 text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="text-gray-700 text-sm font-light">
+        <% if @appointments.any? %>
+          <% @appointments.each do |appointment| %>
+            <tr class="border-b border-gray-200 hover:bg-gray-100">
+              <td class="py-3 px-6 text-left"><%= appointment.id %></td>
+              <td class="py-3 px-6 text-left"><%= appointment.name %></td>
+              <td class="py-3 px-6 text-left"><%= appointment.start_date.strftime("%Y-%m-%d %H:%M") if appointment.start_date %></td>
+              <td class="py-3 px-6 text-left"><%= appointment.doctor&.name %></td>
+              <td class="py-3 px-6 text-left"><%= appointment.status %></td>
+
+              <td class="py-3 px-9 text-center">
+                <%= link_to 'Editar', edit_admin_appointment_path(appointment), class: 'text-blue-600 hover:underline' %> |
+                <%= link_to 'Cancelar', admin_appointment_path(appointment), method: :update, data: { confirm: '¿Estas seguro?' }, class: 'text-red-600 hover:underline' %>
+              </td>
+            </tr>
+          <% end %>
+        <% else %>
+          <tr>
+            <td colspan="5" class="text-center py-4">No appointments found for the selected date.</td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

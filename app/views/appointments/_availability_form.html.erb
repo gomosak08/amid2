@@ -1,22 +1,36 @@
 <!-- app/views/appointments/_available_form.html.erb -->
-<% if start_date.present? && @available_times.present? %>
-  <!-- Single form_with block -->
-  <%= form_with(model: @appointment, url: appointments_path, method: :post, local: true) do |form| %>
-    <!-- Hidden fields for package and doctor information -->
-    <%= form.hidden_field :package_id, value: @package&.id %>
-    <%= form.hidden_field :duration, value: @package&.duration %>
-    <%= form.hidden_field :doctor_id, value: @doctor_id %>
 
-    <!-- Available Time Selection -->
-    <div>
-      <%= form.label :start_date, "Select an Available Time" %>
-      <%= form.select :start_date, options_for_select(@available_times.map { |time| [time.strftime("%I:%M %p"), time] }), { prompt: "Choose a time" }, { id: "start_date_select" } %>
-    </div>
+<%= form_with url: new_appointment_path, method: :get, local: true, id: "availability_form", class: "space-y-6" do |form| %>
+  <!-- Hidden Field for Package ID -->
+  <%= form.hidden_field :package_id, value: @package.id %>
 
-    <!-- Render the booking form partial, passing in the form object -->
-    <%= render 'appointments/booking_form', form: form %>
-  <% end %>
+  <!-- Doctor Selection -->
+  <div class="mb-4">
+    <%= form.label :doctor_id, "Selecciona un Doctor", class: "block text-lg font-medium text-gray-700 mb-2" %>
+    <% if @doctors.present? %>
+      <%= form.select :doctor_id, 
+            options_for_select(@doctors.map { |d| [d.name, d.id] }, params[:doctor_id] || @doctor_id), 
+            { prompt: "Elige un Doctor" }, 
+            class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
+    <% else %>
+      <p class="text-red-500">Sin Doctores Disponibles.</p>
+    <% end %>
+  </div>
 
-<% else %>
-  <p>Please select a doctor and date to view available times.</p>
+  <!-- Date Field -->
+  <%= form.date_field :appointment_date, 
+        value: params[:appointment_date] || Date.today, 
+        class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
+
+  <!-- Available Times -->
+  <div>
+    <%= form.label :start_date, "Selecciona una Hora", class: "block text-lg font-medium text-gray-700 mb-2" %>
+    <%= form.select :start_date, 
+          options_for_select(
+            @available_times.map { |time| [time.in_time_zone(@timezone).strftime("%I:%M %p %Z"), time] }, 
+            @appointment&.start_date
+          ), 
+          { prompt: "Elige una hora" }, 
+          class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
+  </div>
 <% end %>

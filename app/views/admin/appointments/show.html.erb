@@ -1,0 +1,13 @@
+<!-- app/views/admin/appointments/show.html.erb -->
+<h1>Detalles de Cita</h1>
+
+<p><strong>Name:</strong> <%= @appointment.name %></p>
+<p><strong>Doctor:</strong> <%= @appointment.doctor&.name || "N/A" %></p>
+<p><strong>Package:</strong> <%= @appointment.package&.name || "N/A" %></p>
+<p><strong>Date:</strong> <%= @appointment.start_date.strftime("%d %b %Y %H:%M") %></p>
+<p><strong>Status:</strong> <%= @appointment.status %></p>
+<p><strong>Email:</strong> <%= @appointment.email %></p>
+<p><strong>Phone:</strong> <%= @appointment.phone %></p>
+<p><strong>Notes:</strong> <%= @appointment.cancellation_reason %></p>
+
+<%= link_to "Back to Appointments", admin_appointments_path %>

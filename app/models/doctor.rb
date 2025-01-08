@@ -4,10 +4,13 @@ class Doctor < ApplicationRecord
     
     def available_hours
       JSON.parse(super || '{}')
+    rescue JSON::ParserError
+      {}
     end
   
+    # Ensure available_hours is converted to a JSON string before saving
     def available_hours=(value)
-      super(value.to_json)
+      super(value.is_a?(String) ? value : value.to_json)
     end
   end
   

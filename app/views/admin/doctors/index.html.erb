@@ -1,27 +1,37 @@
 <!-- app/views/admin/doctors/index.html.erb -->
-<h1>Manage Doctors</h1>
-<%= link_to 'Add New Doctor', new_admin_doctor_path, class: 'btn btn-primary' %>
 
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Specialty</th>
-      <th>Email</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @doctors.each do |doctor| %>
-      <tr>
-        <td><%= doctor.name %></td>
-        <td><%= doctor.specialty %></td>
-        <td><%= doctor.email %></td>
-        <td>
-          <%= link_to 'Edit', edit_admin_doctor_path(doctor) %> |
-          <%= link_to 'Delete', admin_doctor_path(doctor), method: :delete, data: { confirm: 'Are you sure?' } %>
-        </td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
+<div class="container mx-auto px-8 py-12 max-w-7xl">
+  <h1 class="text-4xl font-bold mb-10 text-center">Administrar Doctores</h1>
+
+  <!-- Add New Doctor Button -->
+  <div class="mb-6 text-right">
+    <%= link_to 'Add New Doctor', new_admin_doctor_path, class: 'bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-200 text-lg' %>
+  </div>
+
+  <!-- Doctors Table -->
+  <div class="overflow-x-auto">
+    <table class="min-w-full bg-white shadow-lg rounded-lg overflow-hidden">
+      <thead>
+        <tr class="bg-gray-300 text-gray-700 uppercase text-lg leading-normal">
+          <th class="py-4 px-8 text-left">Nombre</th>
+          <th class="py-4 px-8 text-left">Especialidad</th>
+          <th class="py-4 px-8 text-left">Email</th>
+          <th class="py-4 px-8 text-center">Actiones</th>
+        </tr>
+      </thead>
+      <tbody class="text-gray-800 text-lg font-normal">
+        <% @doctors.each do |doctor| %>
+          <tr class="border-b border-gray-300 hover:bg-gray-100">
+            <td class="py-4 px-8 text-left"><%= doctor.name %></td>
+            <td class="py-4 px-8 text-left"><%= doctor.specialty %></td>
+            <td class="py-4 px-8 text-left"><%= doctor.email %></td>
+            <td class="py-4 px-8 text-center">
+              <%= link_to 'Editar', edit_admin_doctor_path(doctor), class: 'text-blue-600 hover:underline' %> |
+              <%= link_to 'Eliminar', admin_doctor_path(doctor), method: :delete, data: { confirm: 'Are you sure?' }, class: 'text-red-600 hover:underline' %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

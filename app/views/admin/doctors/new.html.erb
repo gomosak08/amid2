@@ -1,4 +1,13 @@
 <!-- app/views/admin/doctors/new.html.erb -->
-<h1>Add New Doctor</h1>
-<%= render 'form' %>
-<%= link_to 'Back to Doctors', admin_doctors_path %>
+
+<div class="container mx-auto px-4 py-8 max-w-3xl">
+  <h1 class="text-3xl font-bold mb-6 text-center">Agregar Doctor</h1>
+
+  <!-- Render Form Partial -->
+  <%= render 'form' %>
+
+  <!-- Back to Doctors Link -->
+  <div class="mt-6 text-center">
+    <%= link_to 'Back to Doctors', admin_doctors_path, class: 'text-blue-600 hover:underline text-lg' %>
+  </div>
+</div>

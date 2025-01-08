@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_11_08_035452) do
+ActiveRecord::Schema[7.2].define(version: 2024_12_10_210409) do
   create_table "appointments", force: :cascade do |t|
     t.string "name"
     t.integer "age"
@@ -24,11 +24,12 @@ ActiveRecord::Schema[7.2].define(version: 2024_11_08_035452) do
     t.datetime "end_date"
     t.integer "duration"
     t.datetime "canceled_at"
-    t.text "cancellation_reason"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "appointment_date"
     t.string "unique_code"
+    t.string "google_calendar_id"
+    t.boolean "dummy"
   end
 
   create_table "doctors", force: :cascade do |t|
@@ -38,6 +39,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_11_08_035452) do
     t.text "available_hours"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "unavailable_dates"
   end
 
   create_table "packages", force: :cascade do |t|

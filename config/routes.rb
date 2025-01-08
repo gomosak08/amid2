@@ -1,14 +1,19 @@
 # config/routes.rb
+
 Rails.application.routes.draw do
+  # Public routes for appointments, including a custom route for booking_appointment
   resources :appointments, only: [:new, :create, :show] do
     collection do
-      get 'booking_appointment'  # Defines a route for booking_appointment within appointments
+      get 'booking_appointment'
+      get 'find', to: 'appointments#find' # GET route to display the form
+      post 'find', to: 'appointments#locate' 
+      get 'appointments/check_availability', to: 'appointments#check_availability', as: :check_availability
+  
+      #resources :appointments
     end
   end
-  
-  get "appointments/new"
-  get "appointments/create"
-  # Admin routes, restricted by before_action in controllers
+
+  # Admin routes, restricted by `before_action` in controllers
   namespace :admin do
     get "doctors/new"
     get "doctors/create"
@@ -19,16 +24,20 @@ Rails.application.routes.draw do
     resources :packages
     resources :appointments
     resources :doctors
-    resources :users, only: [:index, :edit, :update, :destroy]
-    
+    resources :doctors do
+      member do
+        post 'mark_unavailable_day'
+        delete 'clear_unavailable_day'
+      end
+    end
   end
 
-  # Public routes, no login required
-  resources :packages #, only: [:index, :show]
-  resources :appointments, only: [:new, :create, :show]
+  # Public routes for packages
+  resources :packages, only: [:index, :show]
+  resources :appointments, only: [:edit, :update, :destroy]
 
-  # Devise routes for admins only
-  devise_for :users
+  # Devise routes for user authentication, skipping the `registrations` routes
+  devise_for :users, skip: :registrations
 
   # Root path for public access
   root 'packages#index'

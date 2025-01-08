@@ -1,30 +1,40 @@
 <!-- app/views/admin/packages/index.html.erb -->
-<h1>Manage Packages</h1>
-<%= link_to 'New Package', new_admin_package_path, class: 'btn btn-primary' %>
 
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Description</th>
-      <th>Price</th>
-      <th>Duration</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @packages.each do |package| %>
-      <tr>
-        <td><%= package.name %></td>
-        <td><%= package.description %></td>
-        <td><%= number_to_currency(package.price) %></td>
-        <td><%= package.duration %> mins</td>
-        <td>
-          <%= link_to 'Show', admin_package_path(package) %> |
-          <%= link_to 'Edit', edit_admin_package_path(package) %> |
-          <%= link_to 'Delete', admin_package_path(package), method: :delete, data: { confirm: 'Are you sure?' } %>
-        </td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold mb-6 text-center">Administrador de Paqueres</h1>
+
+  <!-- New Package Button -->
+  <div class="mb-4 text-right">
+    <%= link_to 'New Package', new_admin_package_path, class: 'bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-200' %>
+  </div>
+
+  <!-- Packages Table -->
+  <div class="overflow-x-auto">
+    <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+      <thead>
+        <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+          <th class="py-3 px-6 text-left">Nombre</th>
+          <th class="py-3 px-6 text-left">Descripcion</th>
+          <th class="py-3 px-6 text-left">Precio</th>
+          <th class="py-3 px-6 text-left">Duracion</th>
+          <th class="py-3 px-6 text-center">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="text-gray-700 text-sm font-light">
+        <% @packages.each do |package| %>
+          <tr class="border-b border-gray-200 hover:bg-gray-100">
+            <td class="py-3 px-6 text-left"><%= package.name %></td>
+            <td class="py-3 px-6 text-left"><%= package.description %></td>
+            <td class="py-3 px-6 text-left"><%= number_to_currency(package.price) %></td>
+            <td class="py-3 px-6 text-left"><%= package.duration %> mins</td>
+            <td class="py-3 px-6 text-center">
+              <%= link_to 'Mostrar', admin_package_path(package), class: 'text-blue-600 hover:underline' %> |
+              <%= link_to 'Editar', edit_admin_package_path(package), class: 'text-blue-600 hover:underline' %> |
+              <%= link_to 'Borrar', admin_package_path(package), method: :delete, data: { confirm: 'Estas seguro' }, class: 'text-red-600 hover:underline' %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

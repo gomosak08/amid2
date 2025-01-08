@@ -1,0 +1,4 @@
+<!-- app/views/appointments/new.turbo_stream.erb -->
+<%= turbo_stream.replace "appointment_form" do %>
+  <%= render partial: "appointments/appointment_form", locals: { doctors: @doctors, doctor_id: @doctor_id, appointment_date: @appointment_date, available_times: @available_times } %>
+<% end %>

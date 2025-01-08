@@ -1,9 +1,10 @@
 <!-- app/views/admin/packages/_form.html.erb -->
-<%= form_with(model: [:admin, @package], local: true) do |form| %>
+
+<%= form_with(model: [:admin, @package], local: true, html: { multipart: true }, class: "space-y-6 bg-white p-8 rounded-lg shadow-md") do |form| %>
   <% if @package.errors.any? %>
-    <div id="error_explanation">
-      <h2><%= pluralize(@package.errors.count, "error") %> prohibited this package from being saved:</h2>
-      <ul>
+    <div id="error_explanation" class="bg-red-100 text-red-700 p-4 rounded-md mb-6">
+      <h2 class="font-semibold mb-2"><%= pluralize(@package.errors.count, "error") %> prohibited this package from being saved:</h2>
+      <ul class="list-disc pl-5">
         <% @package.errors.full_messages.each do |message| %>
           <li><%= message %></li>
         <% end %>
@@ -11,32 +12,38 @@
     </div>
   <% end %>
 
+  <!-- Name Field -->
   <div>
-    <%= form.label :name %>
-    <%= form.text_field :name %>
+    <%= form.label :name, class: "block text-lg font-medium text-gray-700 mb-2" %>
+    <%= form.text_field :name, class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
   </div>
 
+  <!-- Description Field -->
   <div>
-    <%= form.label :description %>
-    <%= form.text_area :description %>
+    <%= form.label :description, class: "block text-lg font-medium text-gray-700 mb-2" %>
+    <%= form.text_area :description, class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
   </div>
 
+  <!-- Price Field -->
   <div>
-    <%= form.label :price %>
-    <%= form.number_field :price, step: 0.01 %>
+    <%= form.label :price, class: "block text-lg font-medium text-gray-700 mb-2" %>
+    <%= form.number_field :price, step: 0.01, class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
   </div>
 
+  <!-- Duration Field -->
   <div>
-    <%= form.label :duration %>
-    <%= form.number_field :duration %>
+    <%= form.label :duration, class: "block text-lg font-medium text-gray-700 mb-2" %>
+    <%= form.number_field :duration, class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
   </div>
 
+  <!-- Image Upload Field -->
   <div>
-    <%= form.label :image %>
-    <%= form.text_field :image %> <!-- Adjust to a file upload if necessary -->
+    <%= form.label :image, "Upload Image", class: "block text-lg font-medium text-gray-700 mb-2" %>
+    <%= form.file_field :image, class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
   </div>
 
+  <!-- Submit Button -->
   <div>
-    <%= form.submit %>
+    <%= form.submit "Guardar Paquete", class: "w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-200" %>
   </div>
 <% end %>

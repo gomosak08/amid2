@@ -1,8 +1,25 @@
 <!-- app/views/admin/packages/show.html.erb -->
-<h1><%= @package.name %></h1>
-<p><%= @package.description %></p>
-<p>Price: <%= number_to_currency(@package.price) %></p>
-<p>Duration: <%= @package.duration %> mins</p>
 
-<%= link_to 'Edit', edit_admin_package_path(@package) %> |
-<%= link_to 'Back to Packages', admin_packages_path %>
+<div class="container mx-auto px-4 py-8 max-w-3xl">
+  <h1 class="text-3xl font-bold mb-4 text-center"><%= @package.name %></h1>
+
+  <!-- Package Image -->
+  <% if @package.image.present? %>
+    <div class="text-center mb-6">
+      <%= image_tag @package.image, alt: @package.name, class: "w-full h-64 object-cover rounded-md shadow-md" %>
+    </div>
+  <% end %>
+
+  <!-- Package Details -->
+  <div class="bg-white p-6 rounded-lg shadow-md space-y-4">
+    <p class="text-gray-700 text-lg"><%= @package.description %></p>
+    <p class="text-gray-900 text-lg font-semibold">Price: <%= number_to_currency(@package.price) %></p>
+    <p class="text-gray-900 text-lg font-semibold">Duration: <%= @package.duration %> mins</p>
+  </div>
+
+  <!-- Action Links -->
+  <div class="mt-6 text-center space-x-4">
+    <%= link_to 'Editar', edit_admin_package_path(@package), class: 'bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-200' %>
+    <%= link_to 'Regresar a Paquetes', admin_packages_path, class: 'bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-700 transition-colors duration-200' %>
+  </div>
+</div>

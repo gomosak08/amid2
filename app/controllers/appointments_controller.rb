@@ -1,57 +1,101 @@
 # app/controllers/appointments_controller.rb
-class AppointmentsController < ApplicationController
+require 'google/apis/calendar_v3'
 
+class AppointmentsController < ApplicationController
+  before_action :set_appointment, only: [:show, :destroy]
+
+  def locate
+    @appointment = Appointment.find_by(unique_code: params[:unique_code])
+    if @appointment
+      redirect_to edit_appointment_path(@appointment)
+    else
+      flash[:alert] = "Appointment not found. Please check your code."
+      render :find
+    end
+  end
+
+  def edit
+    @appointment = Appointment.find(params[:id])
+  end
+
+
+  def destroy
+    id = @appointment.google_calendar_id
+    eliminate_google_calendar_event(id)
+    @appointment.update(status: "canceled_by_client", canceled_at: Time.current)
+    flash[:notice] = "Appointment successfully canceled."
+    redirect_to root_path
+  end
+
+  def index
+    redirect_to new_appointment_path
+  end
 
   def new
-    #puts "Params: #{params.inspect}" # Check incoming params
-    #puts "esos eran los params"
-  
-    # Load package and doctor information based on passed parameters
-    @package = Package.find(params[:package_id])
-    @duration = @package.duration 
-    @doctors = Doctor.all
-    @doctor_id = params[:doctor_id]
-    @start_date = params[:start_date]
+    @appointment = Appointment.new # Initialize a new appointment
     
-    if @doctor_id && @start_date
-      @doctor = Doctor.find(@doctor_id)
-      @available_times = fetch_available_times(@doctor, @start_date)
-    else
-      @available_times = []
+    @doctors = Doctor.all # Fetch all doctors for selection
+    @doctor_id = params[:doctor_id]
+    @appointment_date = params[:appointment_date]
+    @available_times = []
+    @package = Package.find_by(id: params[:package_id])
+  
+    unless @package
+      flash[:alert] = "Invalid or missing package."
+      redirect_to root_path and return
     end
   
-    # Initialize new appointment instance for form binding
-    @appointment = Appointment.new
-
+    @duration = @package.duration 
+    # Fetch available times if doctor and date are provided
+    puts "this are the params #{params}"
+    if @doctor_id.present? && @appointment_date.present?
+      doctor = Doctor.find_by(id: @doctor_id)
+      if doctor
+        @available_times = fetch_available_times(doctor, @appointment_date, @duration)
+        puts @available_times
+      end
+    end
+  
+    respond_to do |format|
+      format.html # For the initial page load
+      format.turbo_stream # For dynamic Turbo Frame updates
+    end
   end
+  
+  
+  
     
-
-
 
   def create
-
-    
+    puts "Start creating #{params}"
     @doctors = Doctor.all
     @package = Package.find(params[:appointment][:package_id])
     start_date = Time.zone.parse(params[:appointment][:start_date])
-    duration_minutes = @package.duration
+    duration_minutes = @package.duration.to_i
+    #puts  "duration #{duration_minutes}"
+    #puts start_date
     end_date = start_date + duration_minutes.to_i.minutes
     doctor_id = appointment_params[:doctor_id]
-  
+    doctor = Doctor.find(doctor_id).name
+    
+    puts "start date: #{start_date} duration: #{duration_minutes}"
     # Verify reCAPTCHA before proceeding with the booking
     if verify_recaptcha(model: @appointment) # `verify_recaptcha` automatically validates the reCAPTCHA response
       if time_slot_available?(doctor_id, start_date)
         status = "Scheduled"
         @appointment = Appointment.new(appointment_params.merge(end_date: end_date, status: status))
-  
+        id_calendar = create_google_calendar_event(@appointment, @package, doctor)
+        @appointment.update(google_calendar_id: id_calendar)
+
         if @appointment.save
           if AppointmentMailer.appointment_confirmation(@appointment).deliver_later
             Rails.logger.info "Confirmation email enqueued for #{@appointment.email}"
             flash[:notice] = 'Email sent successfully.'
+
           else
             flash[:alert] = 'Failed to send email. Please try again.'
           end
-
+          puts "################################################################################"
           redirect_to @appointment, notice: 'Appointment was successfully created.'
         else
           render :new
@@ -59,21 +103,35 @@ class AppointmentsController < ApplicationController
       else
         # If the time slot is taken, re-render the `new` view with an error
         flash.now[:alert] = "The selected time is no longer available. Please choose a different time."
-        @available_times = fetch_available_times(Doctor.find(doctor_id), start_date.to_date)
+        @available_times = fetch_available_times(Doctor.find(doctor_id), start_date.to_date, duration_minutes)
         render :new
       end
     else
       # If reCAPTCHA validation fails, add a flash message to prompt the user
       flash.now[:alert] = "Please complete the CAPTCHA to confirm you are human."
       # Preserve available times and doctors list, and re-render the form with all filled data intact
-      @available_times = fetch_available_times(Doctor.find(doctor_id), start_date.to_date)
+      @available_times = fetch_available_times(Doctor.find(doctor_id), start_date.to_date, duration_minutes)
       render :new
     end
   end
 
   def show
     @appointment = Appointment.find(params[:id])
+    Rails.logger.debug "Appointment: #{@appointment.inspect}"
+    Rails.logger.debug "Package: #{@appointment.package.inspect}"
   end
+
+  def check_availability
+    @doctor = Doctor.find(params[:doctor_id])
+    @start_date_available = params[:start_date]
+    @available_times = fetch_available_times(@doctor, @start_date_available, @duration)
+  
+    respond_to do |format|
+      format.js { render partial: 'appointments/available_form', locals: { available_times: @available_times, timezone: "America/Mexico_City" } }
+    end
+  end
+
+  
 
   private
 
@@ -85,34 +143,145 @@ class AppointmentsController < ApplicationController
     Appointment.where(doctor_id: doctor_id, start_date: start_date).empty?
   end
 
-
-  def fetch_available_times(doctor, selected_date)
-    # Ensure `selected_date` is parsed as a Date object
-    selected_date = Date.parse(selected_date) if selected_date.is_a?(String)
-    
-    # Retrieve all available time slots for the doctor on the selected day
-    day_name = selected_date.strftime("%A") # e.g., "Monday"
-    available_times = []
-  
-    if doctor.available_hours && doctor.available_hours[day_name]
-      doctor.available_hours[day_name].each do |range|
-        start_time, end_time = range.split('-')
-        start_time = Time.zone.parse("#{selected_date} #{start_time}")
-        end_time = Time.zone.parse("#{selected_date} #{end_time}")
-  
-        # Generate 30-minute slots within the available range
-        while start_time < end_time
-          available_times << start_time
-          start_time += 30.minutes
-        end
-      end
-    end
-  
-    # Fetch booked appointment times for the doctor on the selected date
-    booked_times = Appointment.where(doctor_id: doctor.id, start_date: selected_date.all_day).pluck(:start_date)
-  
-    # Filter out any available times that overlap with booked appointments
-    available_times.reject { |time| booked_times.include?(time) }
+  def set_appointment
+    @appointment = Appointment.find(params[:id])
+  rescue ActiveRecord::RecordNotFound
+    redirect_to appointments_path, alert: "Appointment not found."
   end
 
+  def fetch_available_times(doctor, selected_date, duration)
+    selected_date = Date.parse(selected_date) if selected_date.is_a?(String)
+    Time.zone = "America/Mexico_City"
+    
+    Time.use_zone("America/Mexico_City") do
+      day_name = selected_date.strftime("%A")
+      available_times = []
+      current_time = Time.zone.now
+  
+      # Check for dummy appointments
+      dummy_appointments_count = Appointment.where(
+        doctor_id: doctor.id,
+        start_date: selected_date.all_day,
+        dummy: true
+      ).count
+      return [] if dummy_appointments_count > 0
+  
+      # Check doctor's available hours
+      data = doctor.available_hours[day_name]
+      times = data.first unless data.empty?
+      if times
+        start_time_str, end_time_str = times.split('-')
+        start_time = Time.zone.parse("#{selected_date} #{start_time_str}")
+        end_time = Time.zone.parse("#{selected_date} #{end_time_str}")
+  
+        # Fetch all existing appointments for the doctor on the selected date
+        existing_appointments = Appointment.where(
+          doctor_id: doctor.id,
+          start_date: selected_date.all_day
+        ).pluck(:start_date, :end_date)
+  
+        while start_time < end_time
+          if start_time >= current_time
+            # Check if the time slot overlaps with any existing appointment
+            overlapping = existing_appointments.any? do |appt_start, appt_end|
+              start_time < appt_end && (start_time + duration.minutes) > appt_start
+            end
+            
+            # Add the time slot if it doesn't overlap
+            available_times << start_time unless overlapping
+          end
+  
+          start_time += duration.minutes
+        end
+      end
+  
+      available_times
+    end
+  end
+  
+  
+  def create_google_calendar_event(appointment, package, doctor)
+    # Initialize Google Calendar API client
+    calendar = Google::Apis::CalendarV3::CalendarService.new
+    credentials = google_credentials # Ensure this returns the full client object
+  
+    # Set the full credentials object for authorization
+    calendar.authorization = credentials
+  
+
+    # Prepare event details
+    event = Google::Apis::CalendarV3::Event.new(
+      summary: "#{package.name} with #{doctor}",
+      description: package.description,
+      start: Google::Apis::CalendarV3::EventDateTime.new(
+        date_time: (appointment.start_date).iso8601,
+        time_zone: 'America/Mexico_City'
+      ),
+      end: Google::Apis::CalendarV3::EventDateTime.new(
+        date_time: appointment.end_date.iso8601,
+        time_zone: 'America/Mexico_City'
+      )
+    )
+  
+    # Attempt to insert the event
+    begin
+      created_event = calendar.insert_event('primary', event)
+      id = created_event.id
+      puts "Event created successfully! Link: #{created_event.html_link}"
+    rescue Google::Apis::AuthorizationError => e
+      puts "Authorization error: #{e.message}"
+    end
+    id
+  end
+  
+  def google_credentials
+
+    client_id = Rails.application.credentials.dig(:google, :client_id)
+    client_secret = Rails.application.credentials.dig(:google, :client_secret)
+    access_token = Rails.application.credentials.dig(:google, :access_token)
+    refresh_token = Rails.application.credentials.dig(:google, :refresh_token)
+
+
+    credentials = Signet::OAuth2::Client.new(
+      client_id: client_id,
+      client_secret: client_secret,
+      token_credential_uri: 'https://oauth2.googleapis.com/token',
+      refresh_token: refresh_token,
+      authorization_uri: 'https://accounts.google.com/o/oauth2/auth',
+      scope: 'https://www.googleapis.com/auth/calendar',
+      redirect_uri: 'http://localhost:3000' 
+    )
+
+     # Refresh the access token if expired
+    if credentials.expired? || credentials.access_token.nil?
+      credentials.refresh!
+      puts "Token refreshed successfully: #{credentials.access_token}"
+      # Optional: Save the new access token if you need to use it later
+      Rails.application.credentials.google[:access_token] = credentials.access_token
+    end
+
+    credentials
+  end
+
+  def eliminate_google_calendar_event(id)
+    # Initialize the Calendar service
+    calendar = Google::Apis::CalendarV3::CalendarService.new
+
+    # Set up OAuth2 credentials (use your method for obtaining credentials)
+    credentials = google_credentials # Replace this with your actual credentials method
+    calendar.authorization = credentials
+
+    # Event ID you want to delete
+    event_id = id
+
+    # Delete the event
+    begin
+      calendar.delete_event('primary', event_id)
+      puts "Event with ID #{event_id} was successfully deleted."
+    rescue Google::Apis::AuthorizationError => e
+      puts "Authorization error: #{e.message}"
+    rescue Google::Apis::ClientError => e
+      puts "Failed to delete event: #{e.message}"
+    end
+  end 
 end

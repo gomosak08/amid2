@@ -1,4 +1,38 @@
 <!-- app/views/admin/doctors/edit.html.erb -->
-<h1>Edit Doctor</h1>
-<%= render 'form' %>
-<%= link_to 'Back to Doctors', admin_doctors_path %>
+
+<div class="container mx-auto px-4 py-8 max-w-3xl">
+  <h1 class="text-3xl font-bold mb-6 text-center">Editar Doctor</h1>
+
+  <!-- Render Form Partial -->
+  <%= render 'form' %>
+
+  <!-- Back to Doctors Link -->
+  <div class="mt-6 text-center">
+    <%= link_to 'Back to Doctors', admin_doctors_path, class: 'text-blue-600 hover:underline text-lg' %>
+  </div>
+</div>
+
+<!-- Form to Mark a Day as Unavailable -->
+<h3 class="text-xl font-semibold mt-8">Marcar un dia Como no Disponible</h3>
+<%= form_with url: mark_unavailable_day_admin_doctor_path(@doctor), method: :post, local: true do |form| %>
+  <div class="mt-4">
+    <%= form.label :date, "Selecciona una Fecha", class: "block text-lg font-medium text-gray-700 mb-2" %>
+    <%= form.date_field :date, class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
+  </div>
+  <div class="mt-4">
+    <%= form.submit "Marcar no Disponible", class: "bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 transition-colors duration-200" %>
+  </div>
+<% end %>
+
+<h3 class="text-xl font-semibold mt-8">Quitar Día no disponible</h3>
+<%= form_with url: clear_unavailable_day_admin_doctor_path(@doctor), method: :delete, local: true do |form| %>
+  <div class="mt-4">
+    <%= form.label :date, "Seleccionar fecha para borrar", class: "block text-lg font-medium text-gray-700 mb-2" %>
+    <%= form.date_field :date, class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
+  </div>
+  <div class="mt-4">
+    <%= form.submit "Limpiar dia", class: "bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 transition-colors duration-200" %>
+  </div>
+<% end %>
+
+
