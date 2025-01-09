@@ -6,11 +6,11 @@
 
 # Ignore bundler config.
 /.bundle
-
 # Ignore all environment files (except templates).
 /.env*
 !/.env*.erb
-
+config/google_tokens.yaml
+config/database.yml
 # Ignore all logfiles and tempfiles.
 /log/*
 /tmp/*
@@ -33,7 +33,7 @@
 
 # Ignore master key for decrypting credentials and more.
 /config/master.key
-
+/config/credentials.yml.enc
 /public/packs
 /public/packs-test
 /node_modules
