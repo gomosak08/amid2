@@ -1,0 +1,18 @@
+current directory: /home/amid/amid2/vendor/bundle/ruby/3.2.0/gems/racc-1.8.1/ext/racc/cparse
+/home/amid/.rvm/rubies/ruby-3.2.2/bin/ruby extconf.rb
+creating Makefile
+
+current directory: /home/amid/amid2/vendor/bundle/ruby/3.2.0/gems/racc-1.8.1/ext/racc/cparse
+make DESTDIR\= sitearchdir\=./.gem.20250108-48653-vgspdo sitelibdir\=./.gem.20250108-48653-vgspdo clean
+
+current directory: /home/amid/amid2/vendor/bundle/ruby/3.2.0/gems/racc-1.8.1/ext/racc/cparse
+make DESTDIR\= sitearchdir\=./.gem.20250108-48653-vgspdo sitelibdir\=./.gem.20250108-48653-vgspdo
+compiling cparse.c
+linking shared-object racc/cparse.so
+
+current directory: /home/amid/amid2/vendor/bundle/ruby/3.2.0/gems/racc-1.8.1/ext/racc/cparse
+make DESTDIR\= sitearchdir\=./.gem.20250108-48653-vgspdo sitelibdir\=./.gem.20250108-48653-vgspdo install
+/usr/bin/install -c -m 0755 cparse.so ./.gem.20250108-48653-vgspdo/racc
+
+current directory: /home/amid/amid2/vendor/bundle/ruby/3.2.0/gems/racc-1.8.1/ext/racc/cparse
+make DESTDIR\= sitearchdir\=./.gem.20250108-48653-vgspdo sitelibdir\=./.gem.20250108-48653-vgspdo clean

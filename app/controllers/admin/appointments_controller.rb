@@ -33,12 +33,13 @@ class Admin::AppointmentsController < ApplicationController
     end
 
     def destroy
-        if @appointment.destroy
-          redirect_to admin_appointments_path, notice: "Appointment successfully deleted."
-        else
-          redirect_to admin_appointments_path, alert: "Failed to delete appointment."
-        end
+      @appointment = Appointment.find(params[:id])
+      if @appointment.destroy
+        redirect_to admin_appointments_path, notice: "Appointment successfully deleted."
+      else
+        redirect_to admin_appointments_path, alert: "Failed to delete appointment."
       end
+    end
 
 
     def update

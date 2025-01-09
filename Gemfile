@@ -44,8 +44,12 @@ gem 'jsbundling-rails'
 gem 'recaptcha', require: 'recaptcha/rails'
 
 gem 'google-api-client' # or the latest version
-gem 'omniauth-google-oauth2'         # for OAuth2 authentication
+#gem 'google-api-client'
+gem 'googleauth'
 
+gem 'omniauth-google-oauth2'         # for OAuth2 authentication
+gem 'dotenv-rails', groups: [:development, :test]
+gem 'dotenv'
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

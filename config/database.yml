@@ -29,4 +29,8 @@ test:
 # ensure the database is located in a persisted volume.
 production:
   <<: *default
+  database: amid_db
+  username: amid_user
+  password: amid_password
+  host: localhost
   # database: path/to/persistent/storage/production.sqlite3

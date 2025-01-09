@@ -15,17 +15,9 @@ module Admin
       @package = Package.new
     end
 
-     def create
-      @package = Package.new(package_params) # :image will not be in package_params
-
-      # Handle image upload separately
-      if params[:package][:image].present?
-        image_name = save_image(params[:package][:image])
-        @package.image = image_name # Manually assign the filename to @package.image
-        puts params
-        
-      end
-
+    def create
+      @package = Package.new(package_params) # Let ActiveStorage handle the image
+    
       if @package.save
         redirect_to admin_package_path(@package), notice: 'Package created successfully.'
       else
@@ -57,15 +49,21 @@ module Admin
     private
     
     def save_image(uploaded_file)
-      image_name = "#{Time.now.to_i}_#{uploaded_file.original_filename}"
-      image_path = Rails.root.join('app', 'assets', 'images', image_name)
-  
-      # Save the uploaded file to the specified path
-      File.open(image_path, 'wb') do |file|
+      # Set the directory where files will be saved
+      directory = Rails.root.join('public', 'uploads')
+      FileUtils.mkdir_p(directory) unless File.directory?(directory)
+    
+      # Generate a unique filename
+      filename = "#{SecureRandom.hex}_#{uploaded_file.original_filename}"
+    
+      # Save the file to the directory
+      filepath = directory.join(filename)
+      File.open(filepath, 'wb') do |file|
         file.write(uploaded_file.read)
       end
-  
-      image_name # Return the filename to be saved in the database
+    
+      # Return the filename for storage in the database
+      filename
     end
 
     def set_package
@@ -73,7 +71,7 @@ module Admin
     end
 
     def package_params
-      params.require(:package).permit(:name, :description, :image, :price, :duration)
+      params.require(:package).permit(:name, :description, :image, :price, :duration, :image)
     end
 
     def require_admin

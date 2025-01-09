@@ -2,6 +2,7 @@
 class ApplicationController < ActionController::Base
   #before_action :require_admin, only: [:destroy_user_session]
 
+  protect_from_forgery with: :exception
 
 
   

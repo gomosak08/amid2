@@ -20,11 +20,11 @@ class Appointment < ApplicationRecord
         # Check if any appointment exists for the doctor at the same date and time
         overlapping_appointment = Appointment
         .where(doctor_id: doctor_id)
-        .where("appointment_date = ?", appointment_date)
+        .where("start_date = ?", start_date)
         .where.not(id: id) # Exclude the current appointment in case of updates
 
         if overlapping_appointment.exists?
-        errors.add(:appointment_date, "is already booked for the selected time slot.")
+        errors.add(:start_date, "is already booked for the selected time slot.")
         end
     end
 

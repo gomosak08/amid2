@@ -1,0 +1,21 @@
+current directory: /home/amid/amid2/vendor/bundle/ruby/3.2.0/gems/json-2.7.5/ext/json/ext/parser
+/home/amid/.rvm/rubies/ruby-3.2.2/bin/ruby extconf.rb
+checking for rb_enc_raise() in ruby.h... yes
+checking for rb_enc_interned_str() in ruby.h... yes
+checking for whether -std=c99 is accepted as CFLAGS... yes
+creating Makefile
+
+current directory: /home/amid/amid2/vendor/bundle/ruby/3.2.0/gems/json-2.7.5/ext/json/ext/parser
+make DESTDIR\= sitearchdir\=./.gem.20250108-48653-vvh5k sitelibdir\=./.gem.20250108-48653-vvh5k clean
+
+current directory: /home/amid/amid2/vendor/bundle/ruby/3.2.0/gems/json-2.7.5/ext/json/ext/parser
+make DESTDIR\= sitearchdir\=./.gem.20250108-48653-vvh5k sitelibdir\=./.gem.20250108-48653-vvh5k
+compiling parser.c
+linking shared-object json/ext/parser.so
+
+current directory: /home/amid/amid2/vendor/bundle/ruby/3.2.0/gems/json-2.7.5/ext/json/ext/parser
+make DESTDIR\= sitearchdir\=./.gem.20250108-48653-vvh5k sitelibdir\=./.gem.20250108-48653-vvh5k install
+/usr/bin/install -c -m 0755 parser.so ./.gem.20250108-48653-vvh5k/json/ext
+
+current directory: /home/amid/amid2/vendor/bundle/ruby/3.2.0/gems/json-2.7.5/ext/json/ext/parser
+make DESTDIR\= sitearchdir\=./.gem.20250108-48653-vvh5k sitelibdir\=./.gem.20250108-48653-vvh5k clean

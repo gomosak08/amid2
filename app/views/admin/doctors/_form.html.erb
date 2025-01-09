@@ -1,7 +1,7 @@
 <%= form_with(model: [:admin, @doctor], local: true, class: "space-y-6 bg-white p-8 rounded-lg shadow-md") do |form| %>
   <% if @doctor.errors.any? %>
     <div id="error_explanation" class="bg-red-100 text-red-700 p-4 rounded-md mb-6">
-      <h2 class="font-semibold mb-2"><%= pluralize(@doctor.errors.count, "error") %> prohibited this doctor from being saved:</h2>
+      <h2 class="font-semibold mb-2"><%= pluralize(@doctor.errors.count, "error") %> impidieron que se guardara este doctor:</h2>
       <ul class="list-disc pl-5">
         <% @doctor.errors.full_messages.each do |message| %>
           <li><%= message %></li>
@@ -12,28 +12,28 @@
 
   <!-- Name Field -->
   <div>
-    <%= form.label :name, class: "block text-lg font-medium text-gray-700 mb-2" %>
+    <%= form.label :name, "Nombre", class: "block text-lg font-medium text-gray-700 mb-2" %>
     <%= form.text_field :name, class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
   </div>
 
   <!-- Specialty Field -->
   <div>
-    <%= form.label :specialty, class: "block text-lg font-medium text-gray-700 mb-2" %>
+    <%= form.label :specialty, "Especialidad", class: "block text-lg font-medium text-gray-700 mb-2" %>
     <%= form.text_field :specialty, class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
   </div>
 
   <!-- Email Field -->
   <div>
-    <%= form.label :email, class: "block text-lg font-medium text-gray-700 mb-2" %>
+    <%= form.label :email, "Correo Electrónico", class: "block text-lg font-medium text-gray-700 mb-2" %>
     <%= form.email_field :email, class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
   </div>
 
   <!-- Weekly Availability -->
   <div class="space-y-4">
-  <% %w[Monday Tuesday Wednesday Thursday Friday Saturday Sunday].each do |day| %>
+  <% %w[Lunes Martes Miércoles Jueves Viernes Sábado Domingo].zip(%w[Monday Tuesday Wednesday Thursday Friday Saturday Sunday]).each do |dia, day| %>
     <% times = (@doctor.available_hours || '{}')[day] || [] %>
     <div class="flex items-center space-x-4">
-      <label class="w-1/6 font-medium text-gray-700"><%= day %></label>
+      <label class="w-1/6 font-medium text-gray-700"><%= dia %></label>
       <input type="time" id="<%= day.downcase %>-start" 
              name="doctor[available_hours][<%= day %>][]" 
              value="<%= times.first&.split('-')&.first %>" 
@@ -47,11 +47,8 @@
   <% end %>
 </div>
 
-
-
-
   <!-- Submit Button -->
   <div class="mt-6">
-    <%= form.submit "Save Doctor", class: "w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-200" %>
+    <%= form.submit "Guardar Doctor", class: "w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-200" %>
   </div>
 <% end %>
