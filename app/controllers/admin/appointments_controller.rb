@@ -3,6 +3,21 @@ class Admin::AppointmentsController < ApplicationController
     before_action :require_admin        # Ensure only admins can access
     before_action :set_appointment, only: [:show, :edit, :update, :cancel]
 
+    def cancel
+      id = @appointment.google_calendar_id
+      # Attempt to eliminate the Google Calendar event
+      eliminate_google_calendar_event(id) if id.present?
+    
+      # Update the appointment status to "canceled_by_client" and set the canceled_at timestamp
+      if @appointment.update(status: "canceled_by_Admin", canceled_at: Time.current)
+        flash[:notice] = "Appointment successfully canceled."
+        redirect_to admin_appointments_path
+      else
+        flash[:alert] = "Failed to cancel the appointment. Please try again."
+        redirect_to admin_appointments_path
+      end
+    end
+
 
     def locate
         @appointment = Appointment.find_by(unique_code: params[:unique_code])
@@ -51,15 +66,17 @@ class Admin::AppointmentsController < ApplicationController
         end
     end
 
-    def set_appointment
-        @appointment = Appointment.find_by(id: params[:id])
-        unless @appointment
-          redirect_to admin_appointments_path, alert: "Appointment not found."
-        end
-    end
+
 
 
     private
+    def set_appointment
+      @appointment = Appointment.find_by(id: params[:id])
+      unless @appointment
+        redirect_to admin_appointments_path, alert: "Appointment not found."
+      end
+    end
+  
     def appointment_params
         params.require(:appointment).permit(:name, :age, :email, :phone, :sex, :doctor_id, :package_id, :status, :duration, :start_date)
     end
@@ -98,25 +115,47 @@ class Admin::AppointmentsController < ApplicationController
         credentials
       end
     
-      def eliminate_google_calendar_event(id)
-        # Initialize the Calendar service
-        calendar = Google::Apis::CalendarV3::CalendarService.new
-    
-        # Set up OAuth2 credentials (use your method for obtaining credentials)
-        credentials = google_credentials # Replace this with your actual credentials method
-        calendar.authorization = credentials
-    
-        # Event ID you want to delete
-        event_id = id
-    
-        # Delete the event
-        begin
-          calendar.delete_event('primary', event_id)
-          puts "Event with ID #{event_id} was successfully deleted."
-        rescue Google::Apis::AuthorizationError => e
-          puts "Authorization error: #{e.message}"
-        rescue Google::Apis::ClientError => e
-          puts "Failed to delete event: #{e.message}"
-        end
-      end 
+    def eliminate_google_calendar_event(id)
+      # Initialize the Calendar service
+      calendar = Google::Apis::CalendarV3::CalendarService.new
+  
+      # Set up OAuth2 credentials (use your method for obtaining credentials)
+      credentials = google_credentials # Replace this with your actual credentials method
+      calendar.authorization = credentials
+  
+      # Event ID you want to delete
+      event_id = id
+  
+      # Delete the event
+      begin
+        calendar.delete_event('primary', event_id)
+        puts "Event with ID #{event_id} was successfully deleted."
+      rescue Google::Apis::AuthorizationError => e
+        puts "Authorization error: #{e.message}"
+      rescue Google::Apis::ClientError => e
+        puts "Failed to delete event: #{e.message}"
+      end
+    end 
+
+    def eliminate_google_calendar_event(id)
+      # Initialize the Calendar service
+      calendar = Google::Apis::CalendarV3::CalendarService.new
+  
+      # Set up OAuth2 credentials (use your method for obtaining credentials)
+      credentials = google_credentials # Replace this with your actual credentials method
+      calendar.authorization = credentials
+  
+      # Event ID you want to delete
+      event_id = id
+  
+      # Delete the event
+      begin
+        calendar.delete_event('primary', event_id)
+        puts "Event with ID #{event_id} was successfully deleted."
+      rescue Google::Apis::AuthorizationError => e
+        puts "Authorization error: #{e.message}"
+      rescue Google::Apis::ClientError => e
+        puts "Failed to delete event: #{e.message}"
+      end
+    end
 end

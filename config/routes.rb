@@ -15,19 +15,16 @@ Rails.application.routes.draw do
 
   # Admin routes, restricted by `before_action` in controllers
   namespace :admin do
-    get "doctors/new"
-    get "doctors/create"
-    get "doctors/index"
-    get "doctors/edit"
-    get "doctors/update"
-    get "doctors/destroy"
-    resources :packages
-    resources :appointments
-    resources :doctors
     resources :doctors do
       member do
         post 'mark_unavailable_day'
         delete 'clear_unavailable_day'
+      end
+    end
+    resources :packages
+    resources :appointments do
+      member do
+        patch 'cancel' # Define the cancel route for appointments
       end
     end
   end
