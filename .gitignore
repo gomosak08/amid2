@@ -41,7 +41,6 @@ config/credentials.yml.enc
 /yarn-error.log
 yarn-debug.log*
 .yarn-integrity
-
 /app/assets/builds/*
 !/app/assets/builds/.keep
 
