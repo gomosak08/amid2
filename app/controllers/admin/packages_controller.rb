@@ -27,20 +27,22 @@ module Admin
 
     def update
       @package = Package.find(params[:id])
-
-      # Handle image upload separately in update as well
+    
+      # Attach a new image only if one is provided
       if params[:package][:image].present?
-        image_name = save_image(params[:package][:image])
-        params[:package][:image] = image_name # Manually assign the filename to @package.image
+        @package.image.attach(params[:package][:image])
       end
-
-      if @package.update(package_params) # :image will not be in package_params
+    
+      if @package.update(package_params)
         redirect_to admin_package_path(@package), notice: 'Package updated successfully.'
       else
+        flash[:alert] = 'Failed to update package. Please check the form for errors.'
         render :edit
       end
     end
-
+    
+    
+    
     def destroy
       @package.destroy
       redirect_to admin_packages_path, notice: 'Package deleted successfully.'
@@ -71,7 +73,7 @@ module Admin
     end
 
     def package_params
-      params.require(:package).permit(:name, :description, :image, :price, :duration, :image)
+      params.require(:package).permit(:name, :description, :image, :price, :duration, :image, :kind)
     end
 
     def require_admin

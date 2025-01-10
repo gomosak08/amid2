@@ -1,32 +1,78 @@
-<!-- app/views/packages/index.html.erb -->
 <div class="container mx-auto px-4 py-8">
   <!-- Title Row -->
   <div class="text-center mb-8">
     <h1 class="text-3xl font-bold">Paquetes</h1>
   </div>
 
-  <!-- Packages Grid: 3 columns on medium screens and above, with dynamic rows -->
-  <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-3">
-    <% @packages.each do |package| %>
-      <div class="bg-white shadow-md rounded-lg overflow-hidden p-6">
-        <h2 class="text-xl font-semibold mb-2">
-          <%= link_to package.name, package_path(package), class: "text-blue-600 hover:underline" %>
-        </h2>
+  <!-- Servicios Section -->
+  <div class="mb-12">
+    <h2 class="text-2xl font-semibold mb-4 text-blue-600">Servicios</h2>
+    <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-3">
+      <% @packages.where(kind: 'servicios').each do |package| %>
+        <div class="bg-white shadow-md rounded-lg overflow-hidden p-6">
+          <h3 class="text-xl font-semibold mb-2">
+            <%= link_to package.name, package_path(package), class: "text-blue-600 hover:underline" %>
+          </h3>
+          <% if package.image.present? %>
+            <div class="mb-4">
+              <%= image_tag package.image, alt: package.name, class: "w-full h-48 object-cover rounded-md" %>
+            </div>
+          <% end %>
+          <p class="text-gray-700 mb-4"><%= package.description %></p>
+          <p class="text-gray-900 font-bold mb-4">Price: <%= number_to_currency(package.price) %></p>
+          <%= link_to "Agendar Cita", new_appointment_path(package_id: package.id), 
+            class: "bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-200",
+            data: { turbo: false } %>
+        </div>
+      <% end %>
+    </div>
+  </div>
 
-        <% if package.image.present? %>
-          <div class="mb-4">
-            <%= image_tag package.image, alt: package.name, class: "w-full h-48 object-cover rounded-md" %>
-          </div>
-        <% end %>
+  <!-- Paquetes Section -->
+  <div class="mb-12">
+    <h2 class="text-2xl font-semibold mb-4 text-green-600">Paquetes</h2>
+    <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-3">
+      <% @packages.where(kind: 'paquete').each do |package| %>
+        <div class="bg-white shadow-md rounded-lg overflow-hidden p-6">
+          <h3 class="text-xl font-semibold mb-2">
+            <%= link_to package.name, package_path(package), class: "text-green-600 hover:underline" %>
+          </h3>
+          <% if package.image.present? %>
+            <div class="mb-4">
+              <%= image_tag package.image, alt: package.name, class: "w-full h-48 object-cover rounded-md" %>
+            </div>
+          <% end %>
+          <p class="text-gray-700 mb-4"><%= package.description %></p>
+          <p class="text-gray-900 font-bold mb-4">Price: <%= number_to_currency(package.price) %></p>
+          <%= link_to "Agendar Cita", new_appointment_path(package_id: package.id), 
+            class: "bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition-colors duration-200",
+            data: { turbo: false } %>
+        </div>
+      <% end %>
+    </div>
+  </div>
 
-        <p class="text-gray-700 mb-4"><%= package.description %></p>
-        <p class="text-gray-900 font-bold mb-4">Price: <%= number_to_currency(package.price) %></p>
-
-        <!-- Button to make an appointment -->
-        <%= link_to "Agendar Cita", new_appointment_path(package_id: package.id), 
-          class: "bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-200",
-          data: { turbo: false } %>
-      </div>
-    <% end %>
+  <!-- Cirugias Section -->
+  <div class="mb-12">
+    <h2 class="text-2xl font-semibold mb-4 text-red-600">Cirugías</h2>
+    <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-3">
+      <% @packages.where(kind: 'cirugia').each do |package| %>
+        <div class="bg-white shadow-md rounded-lg overflow-hidden p-6">
+          <h3 class="text-xl font-semibold mb-2">
+            <%= link_to package.name, package_path(package), class: "text-red-600 hover:underline" %>
+          </h3>
+          <% if package.image.present? %>
+            <div class="mb-4">
+              <%= image_tag package.image, alt: package.name, class: "w-full h-48 object-cover rounded-md" %>
+            </div>
+          <% end %>
+          <p class="text-gray-700 mb-4"><%= package.description %></p>
+          <p class="text-gray-900 font-bold mb-4">Price: <%= number_to_currency(package.price) %></p>
+          <%= link_to "Agendar Cita", new_appointment_path(package_id: package.id), 
+            class: "bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 transition-colors duration-200",
+            data: { turbo: false } %>
+        </div>
+      <% end %>
+    </div>
   </div>
 </div>

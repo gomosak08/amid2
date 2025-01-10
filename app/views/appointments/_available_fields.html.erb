@@ -43,9 +43,19 @@
     </div>
 
     <!-- Captcha Field -->
-    <div class="recaptcha">
-        <%= recaptcha_tags %>
-    </div>
+    <html>
+        <head>
+        <title>reCAPTCHA demo: Simple page</title>
+        <script src="https://www.google.com/recaptcha/enterprise.js" async defer></script>
+        </head>
+        <body>
+        <form action="" method="POST">
+            <div class="g-recaptcha" data-sitekey="6LeflXgqAAAAAFaH9o04_SnXADi5tIUMR6_46qax" data-action="LOGIN"></div>
+            <br/>
+            <input type="submit" value="Submit">
+        </form>
+        </body>
+    </html>
 
     <!-- Submit Button -->
     <%= form.submit "Book Appointment", class: "bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition-colors duration-200" %>
