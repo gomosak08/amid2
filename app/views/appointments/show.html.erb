@@ -1,6 +1,14 @@
 <!-- app/views/appointments/show.html.erb -->
 <%= turbo_frame_tag "appointment_form" do %>
   <div class="container mx-auto px-4 py-8">
+
+    <!-- Alert Message -->
+    <div class="bg-green-100 border border-green-500 text-green-700 px-4 py-3 rounded mb-6 shadow-md" role="alert">
+      <strong class="font-bold">¡Éxito!</strong>
+      <span class="block sm:inline">Cita creada.</span>
+    </div>
+    
+
     <h1 class="text-3xl font-bold mb-6 text-center">Detalles de la Cita</h1>
 
     <!-- Appointment Details Card -->
@@ -17,23 +25,13 @@
         <span class="text-gray-800"><%= @appointment.age.presence || "N/A" %></span>
       </p>
 
-      <!-- Email -->
-      <p class="text-lg">
-        <strong class="font-semibold text-gray-700">Email:</strong>
-        <span class="text-gray-800"><%= @appointment.email.presence || "N/A" %></span>
-      </p>
-
       <!-- Phone -->
       <p class="text-lg">
         <strong class="font-semibold text-gray-700">Número de Teléfono:</strong>
         <span class="text-gray-800"><%= @appointment.phone.presence || "N/A" %></span>
       </p>
 
-      <!-- Sex -->
-      <p class="text-lg">
-        <strong class="font-semibold text-gray-700">Sexo:</strong>
-        <span class="text-gray-800"><%= @appointment.sex.presence || "N/A" %></span>
-      </p>
+
 
       <!-- Appointment Date -->
       <p class="text-lg">
@@ -61,15 +59,15 @@
       <% end %>
 
       <p class="text-sm italic text-gray-500">
-        * Esto solo incluye el precio de la consulta.
+        <strong>El precio no incluye consultas subsecuentes.</strong>
       </p>
 
       <!-- Continue Button -->
       <div class="pt-6 text-center">
         <%= link_to "Continuar", root_path, 
-                  class: "bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-200",
-                  data: { turbo: false } %>
-    </div>
+                    class: "bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-200",
+                    data: { turbo: false } %>
+      </div>
     </div>
   </div>
 <% end %>

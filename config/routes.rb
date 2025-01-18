@@ -32,6 +32,7 @@ Rails.application.routes.draw do
   # Public routes for packages
   resources :packages, only: [:index, :show]
   resources :appointments, only: [:edit, :update, :destroy]
+  post 'check_availability', to: 'appointments#check_availability'
 
   # Devise routes for user authentication, skipping the `registrations` routes
   devise_for :users, skip: :registrations

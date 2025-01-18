@@ -40,6 +40,7 @@ gem 'devise'
 
 gem 'jsbundling-rails'
 
+gem 'flatpickr'
 
 gem 'recaptcha', require: 'recaptcha/rails'
 

@@ -121,6 +121,7 @@ GEM
       logger
     faraday-net_http (3.3.0)
       net-http
+    flatpickr (4.6.13.1)
     gems (1.2.0)
     globalid (1.2.1)
       activesupport (>= 6.1)
@@ -412,6 +413,7 @@ DEPENDENCIES
   dotenv
   dotenv-rails
   error_highlight (>= 0.4.0)
+  flatpickr
   google-api-client
   googleauth
   importmap-rails
