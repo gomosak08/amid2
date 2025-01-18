@@ -39,7 +39,7 @@ class AppointmentsController < ApplicationController
     @appointment_date = params[:appointment_date]
     @available_times = []
     @package = Package.find_by(id: params[:package_id])
-  
+    @duration = @package.duration.to_i
     unless @package
       flash[:alert] = "Invalid or missing package."
       redirect_to root_path and return
@@ -47,12 +47,15 @@ class AppointmentsController < ApplicationController
   
     @duration = @package.duration 
     # Fetch available times if doctor and date are provided
-    puts "this are the params #{params}"
+    #puts "this are the params #{params}"
     if @doctor_id.present? && @appointment_date.present?
       doctor = Doctor.find_by(id: @doctor_id)
       if doctor
         @available_times = fetch_available_times(doctor, @appointment_date, @duration)
-        puts @available_times
+        puts "this are the available times #{@available_times}"
+        if @available_times.empty?
+          flash.now[:alert] = "No available times for the selected date."
+        end
       end
     end
   
@@ -61,56 +64,51 @@ class AppointmentsController < ApplicationController
       format.turbo_stream # For dynamic Turbo Frame updates
     end
   end
-  
-  
-  
-    
 
   def create
     puts "Start creating #{params}"
     @doctors = Doctor.all
     @package = Package.find(params[:appointment][:package_id])
     start_date = Time.zone.parse(params[:appointment][:start_date])
-    duration_minutes = @package.duration.to_i
+    @duration = @package.duration.to_i
+    #duration_minutes = @package.duration.to_i
     #puts  "duration #{duration_minutes}"
     #puts start_date
-    end_date = start_date + duration_minutes.to_i.minutes
+    end_date = start_date + @duration.to_i.minutes
     doctor_id = appointment_params[:doctor_id]
     doctor = Doctor.find(doctor_id).name
     
-    puts "start date: #{start_date} duration: #{duration_minutes}"
+    puts "start date: #{start_date} duration: #{@duration}"
     # Verify reCAPTCHA before proceeding with the booking
     if verify_recaptcha(model: @appointment) # `verify_recaptcha` automatically validates the reCAPTCHA response
       if time_slot_available?(doctor_id, start_date)
         status = "Scheduled"
         @appointment = Appointment.new(appointment_params.merge(end_date: end_date, status: status))
-        id_calendar = create_google_calendar_event(@appointment, @package, doctor)
+        id_calendar = create_google_calendar_event(@appointment, @package, doctor,doctor_id)
+        puts params
         @appointment.update(google_calendar_id: id_calendar)
 
+        Rails.logger.debug "Start Date: #{start_date}"
         if @appointment.save
-          if AppointmentMailer.appointment_confirmation(@appointment).deliver_later
-            Rails.logger.info "Confirmation email enqueued for #{@appointment.email}"
-            flash[:notice] = 'Email sent successfully.'
-
-          else
-            flash[:alert] = 'Failed to send email. Please try again.'
-          end
-          puts "################################################################################"
           redirect_to @appointment, notice: 'Appointment was successfully created.'
         else
+          id = @appointment.google_calendar_id
+          eliminate_google_calendar_event(id)
+          puts "This is the id #{id}"
+          Rails.logger.debug @appointment.errors.full_messages.join(", ")
           render :new
         end
       else
         # If the time slot is taken, re-render the `new` view with an error
         flash.now[:alert] = "The selected time is no longer available. Please choose a different time."
-        @available_times = fetch_available_times(Doctor.find(doctor_id), start_date.to_date, duration_minutes)
+        @available_times = fetch_available_times(Doctor.find(doctor_id), start_date.to_date, @duration)
         render :new
       end
     else
       # If reCAPTCHA validation fails, add a flash message to prompt the user
       flash.now[:alert] = "Please complete the CAPTCHA to confirm you are human."
       # Preserve available times and doctors list, and re-render the form with all filled data intact
-      @available_times = fetch_available_times(Doctor.find(doctor_id), start_date.to_date, duration_minutes)
+      @available_times = fetch_available_times(Doctor.find(doctor_id), start_date.to_date, @duration)
       render :new
     end
   end
@@ -136,7 +134,8 @@ class AppointmentsController < ApplicationController
   private
 
   def appointment_params
-    params.require(:appointment).permit(:name, :age, :email, :phone, :sex, :doctor_id, :package_id, :status, :duration, :start_date)
+    params.require(:appointment).permit(:name, :age, :email, :phone, :sex, :doctor_id, :package_id, :status, :duration, :start_date, :google_calendar_id)
+    #permit(:package_id, :doctor_id, :duration, :start_date, :name, :age, :phone, :google_calendar_id)
   end
 
   def time_slot_available?(doctor_id, start_date)
@@ -200,7 +199,7 @@ class AppointmentsController < ApplicationController
   end
   
   
-  def create_google_calendar_event(appointment, package, doctor)
+  def create_google_calendar_event(appointment, package, doctor,doctor_id)
     # Initialize Google Calendar API client
     calendar = Google::Apis::CalendarV3::CalendarService.new
     credentials = google_credentials # Ensure this returns the full client object
@@ -211,8 +210,8 @@ class AppointmentsController < ApplicationController
 
     # Prepare event details
     event = Google::Apis::CalendarV3::Event.new(
-      summary: "#{package.name} with #{doctor}",
-      description: package.description,
+      summary: "#{package.name} con #{doctor}",
+      description: "Nombre: #{appointment.name} \n Telefono: #{appointment.phone}",
       start: Google::Apis::CalendarV3::EventDateTime.new(
         date_time: (appointment.start_date).iso8601,
         time_zone: 'America/Mexico_City'
@@ -220,7 +219,8 @@ class AppointmentsController < ApplicationController
       end: Google::Apis::CalendarV3::EventDateTime.new(
         date_time: appointment.end_date.iso8601,
         time_zone: 'America/Mexico_City'
-      )
+      ),
+      color_id: doctor_id
     )
   
     # Attempt to insert the event

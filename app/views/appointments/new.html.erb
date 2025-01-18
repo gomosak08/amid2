@@ -1,3 +1,15 @@
 <%= turbo_frame_tag "appointment_form" do %>
+  <% if flash[:alert] %>
+    <!-- Alert -->
+    <div class="mb-4 p-4 border border-red-400 rounded-md bg-red-50 text-red-700 shadow-sm">
+      <p class="text-lg font-medium">No citas disponibles para este dia y este doctor, seleccione una combinacion diferente.</p>
+    </div>
+  <% end %>
+  
   <%= render partial: "appointments/appointment_form", locals: { doctors: @doctors, doctor_id: @doctor_id, appointment_date: @appointment_date, available_times: @available_times, package_id: params[:package_id] } %>
 <% end %>
+
+<!-- Alert -->
+<div class="mb-4 p-4 border border-red-400 rounded-md bg-red-50 text-red-700 shadow-sm">
+  <p class="text-lg font-medium">No available times for the selected date.</p>
+</div>

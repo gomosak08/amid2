@@ -5,10 +5,10 @@ class Appointment < ApplicationRecord
     before_create :generate_unique_code
 
     # Ensure these fields are always present
-    validates :name, :age, :sex, presence: true
+    validates :name, :age, :phone, presence: true
 
     # Custom validation for either email or phone
-    validate :email_or_phone_present
+    #validate :email_or_phone_present
 
 
      # Ensure that appointment times do not overlap for the same doctor

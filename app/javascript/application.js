@@ -11,3 +11,12 @@ import "./controllers/appointment.js";
 Rails.start();
 Turbolinks.start()
 ActiveStorage.start()
+import flatpickr from "flatpickr";
+import { Spanish } from "flatpickr/dist/l10n/es.js";
+
+document.addEventListener("turbo:load", () => {
+  flatpickr(".datepicker", {
+    locale: Spanish,
+    dateFormat: "Y-m-d",
+  });
+});

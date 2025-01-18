@@ -1,0 +1,12 @@
+<turbo-stream target="availability_result">
+  <template>
+    <% if @available_times.present? %>
+      <%= render partial: "appointments/available_fields", locals: { available_times: @available_times, timezone: "America/Mexico_City" } %>
+    <% else %>
+      <!-- Alert Message -->
+      <div class="bg-red-100 border border-red-500 text-red-700 px-4 py-3 rounded mb-6 shadow-md" role="alert">
+        <strong class="font-bold">Doctor no disponible</strong>
+      </div>
+    <% end %>
+  </template>
+</turbo-stream>
