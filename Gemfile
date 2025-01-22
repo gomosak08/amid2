@@ -43,10 +43,12 @@ gem 'jsbundling-rails'
 gem 'flatpickr'
 
 gem 'recaptcha', require: 'recaptcha/rails'
+gem 'prawn'
 
 gem 'google-api-client' # or the latest version
 #gem 'google-api-client'
 gem 'googleauth'
+gem 'google-cloud-recaptcha_enterprise'
 
 gem 'omniauth-google-oauth2'         # for OAuth2 authentication
 gem 'dotenv-rails', groups: [:development, :test]

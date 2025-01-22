@@ -1,0 +1,39 @@
+es:
+  time:
+    formats:
+      default: "%H:%M"
+      custom: "%d %B %Y %I:%M %p" # Add the custom format here
+    am: "a. m." # Spanish representation for AM
+    pm: "p. m." # Spanish representation for PM
+  date:
+    formats:
+      default: "%d/%m/%Y"
+      custom: "%d %B %Y %I:%M %p" # Custom format for dates
+    month_names:
+      - ~
+      - enero
+      - febrero
+      - marzo
+      - abril
+      - mayo
+      - junio
+      - julio
+      - agosto
+      - septiembre
+      - octubre
+      - noviembre
+      - diciembre
+    abbr_month_names:
+      - ~
+      - ene
+      - feb
+      - mar
+      - abr
+      - may
+      - jun
+      - jul
+      - ago
+      - sep
+      - oct
+      - nov
+      - dic

@@ -1,13 +1,56 @@
 <!-- app/views/admin/appointments/show.html.erb -->
-<h1>Detalles de Cita</h1>
+<h1 class="text-3xl font-bold mb-6 text-center">Detalles de la Cita</h1>
 
-<p><strong>Name:</strong> <%= @appointment.name %></p>
-<p><strong>Doctor:</strong> <%= @appointment.doctor&.name || "N/A" %></p>
-<p><strong>Package:</strong> <%= @appointment.package&.name || "N/A" %></p>
-<p><strong>Date:</strong> <%= @appointment.start_date.strftime("%d %b %Y %H:%M") %></p>
-<p><strong>Status:</strong> <%= @appointment.status %></p>
-<p><strong>Email:</strong> <%= @appointment.email %></p>
-<p><strong>Phone:</strong> <%= @appointment.phone %></p>
-<p><strong>Notes:</strong> <%= @appointment.status %></p>
+<!-- Appointment Details Card -->
+<div class="bg-white shadow-md rounded-lg p-6 space-y-6">
+  <!-- Name -->
+  <p class="text-lg">
+    <strong class="font-semibold text-gray-700">Nombre:</strong>
+    <span class="text-gray-800"><%= @appointment.name.presence || "N/A" %></span>
+  </p>
 
-<%= link_to "Back to Appointments", admin_appointments_path %>
+  <!-- Doctor -->
+  <p class="text-lg">
+    <strong class="font-semibold text-gray-700">Doctor:</strong>
+    <span class="text-gray-800"><%= @appointment.doctor&.name || "N/A" %></span>
+  </p>
+
+  <!-- Package -->
+  <p class="text-lg">
+    <strong class="font-semibold text-gray-700">Paquete:</strong>
+    <span class="text-gray-800"><%= @appointment.package&.name || "N/A" %></span>
+  </p>
+
+  <!-- Appointment Date -->
+  <p class="text-lg">
+    <strong class="font-semibold text-gray-700">Fecha de la Cita:</strong>
+    <span class="text-gray-800">
+      <%= I18n.l(@appointment.start_date.in_time_zone("America/Mexico_City"), format: :custom, locale: :es) rescue "N/A" %>
+    </span>
+  </p>
+
+  <!-- Status -->
+  <p class="text-lg">
+    <strong class="font-semibold text-gray-700">Estado:</strong>
+    <span class="text-gray-800"><%= @appointment.status.presence || "N/A" %></span>
+  </p>
+
+  <!-- Code -->
+  <p class="text-lg">
+    <strong class="font-semibold text-gray-700">Codigo Unico:</strong>
+    <span class="text-gray-800"><%= @appointment.unique_code.presence || "N/A" %></span>
+  </p>
+
+  <!-- Phone -->
+  <p class="text-lg">
+    <strong class="font-semibold text-gray-700">Teléfono:</strong>
+    <span class="text-gray-800"><%= @appointment.phone.presence || "N/A" %></span>
+  </p>
+
+</div>
+
+<!-- Back Link -->
+<div class="mt-6 text-center">
+  <%= link_to "Regresar a las Citas", admin_appointments_path, class: "text-blue-500 hover:text-blue-700 font-medium" %>
+</div>
+

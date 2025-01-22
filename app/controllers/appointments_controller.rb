@@ -1,5 +1,6 @@
 # app/controllers/appointments_controller.rb
 require 'google/apis/calendar_v3'
+require 'prawn'
 
 class AppointmentsController < ApplicationController
   before_action :set_appointment, only: [:show, :destroy]
@@ -115,9 +116,19 @@ class AppointmentsController < ApplicationController
 
   def show
     @appointment = Appointment.find(params[:id])
-    Rails.logger.debug "Appointment: #{@appointment.inspect}"
-    Rails.logger.debug "Package: #{@appointment.package.inspect}"
+    
+    respond_to do |format|
+      format.html # Render the HTML view for `show`
+      format.pdf do
+        pdf = generate_pdf(@appointment)
+        send_data pdf,
+                  filename: "cita_#{@appointment.id}.pdf",
+                  type: 'application/pdf',
+                  disposition: 'attachment' # Change to 'inline' to view in-browser
+      end
+    end
   end
+  
 
   def check_availability
     @doctor = Doctor.find(params[:doctor_id])
@@ -177,7 +188,8 @@ class AppointmentsController < ApplicationController
         existing_appointments = Appointment.where(
           doctor_id: doctor.id,
           start_date: selected_date.all_day
-        ).pluck(:start_date, :end_date)
+        ).where.not(status: "Scheduled").pluck(:start_date, :end_date)
+        
   
         while start_time < end_time
           if start_time >= current_time
@@ -210,7 +222,7 @@ class AppointmentsController < ApplicationController
 
     # Prepare event details
     event = Google::Apis::CalendarV3::Event.new(
-      summary: "#{package.name} con #{doctor}",
+      summary: "🖥️ #{package.name} con #{doctor}",
       description: "Nombre: #{appointment.name} \n Telefono: #{appointment.phone}",
       start: Google::Apis::CalendarV3::EventDateTime.new(
         date_time: (appointment.start_date).iso8601,
@@ -284,4 +296,25 @@ class AppointmentsController < ApplicationController
       puts "Failed to delete event: #{e.message}"
     end
   end 
+  
+  def generate_pdf(appointment)
+    Prawn::Document.new do |pdf|
+      # Add title
+      pdf.text "Detalles de la Cita", size: 24, style: :bold, align: :center
+      pdf.move_down 20
+
+      # Add appointment details
+      pdf.text "Nombre: #{@appointment.name || 'N/A'}", size: 12
+      pdf.text "Doctor: #{@appointment.doctor&.name || 'N/A'}", size: 12
+      pdf.text "Paquete: #{@appointment.package&.name || 'N/A'}", size: 12
+      pdf.text "Fecha de la Cita: #{I18n.l(@appointment.start_date.in_time_zone('America/Mexico_City'), format: :custom, locale: :es) rescue 'N/A'}", size: 12
+      pdf.text "Estado: #{@appointment.status || 'N/A'}", size: 12
+      pdf.text "Teléfono: #{@appointment.phone || 'N/A'}", size: 12
+      pdf.text "Codigo Unico: #{@appointment.unique_code || 'N/A'}", size: 12
+      pdf.text "El codigo unico puede utilizarse para cancelar su cita, porfavor cancelar al menos 24 horas antes de su cita"
+
+      pdf.move_down 20
+      pdf.text "Generado el #{I18n.l(Time.zone.now, format: :custom, locale: :es)}", size: 10, align: :right
+    end.render
+  end
 end

@@ -42,9 +42,10 @@
             <tr class="border-b border-gray-200 hover:bg-gray-100">
               <td class="py-3 px-6 text-left"><%= appointment.id %></td>
               <td class="py-3 px-6 text-left"><%= appointment.name %></td>
-              <td class="py-3 px-6 text-left"><%= appointment.start_date.strftime("%Y-%m-%d %H:%M") if appointment.start_date %></td>
+              <td class="py-3 px-6 text-left"><%= I18n.l(appointment.start_date.in_time_zone("America/Mexico_City"), format: :custom, locale: :es) rescue "N/A" %></td>
               <td class="py-3 px-6 text-left"><%= appointment.doctor&.name %></td>
               <td class="py-3 px-6 text-left"><%= appointment.status %></td>
+              
 
               <td class="py-3 px-9 text-center">
                 <%= link_to 'Editar', edit_admin_appointment_path(appointment), class: 'text-blue-600 hover:underline' %> |
