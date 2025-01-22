@@ -33,12 +33,8 @@ config/database.yml
 
 # Ignore master key for decrypting credentials and more.
 /config/master.key
-<<<<<<< HEAD
-/config/credentials.yml.enc
-=======
 config/database.yml
 config/credentials.yml.enc
->>>>>>> 9c507ab1faddef905da866e22778fb0b99fbfebd
 /public/packs
 /public/packs-test
 /node_modules
@@ -47,5 +43,5 @@ yarn-debug.log*
 .yarn-integrity
 /app/assets/builds/*
 !/app/assets/builds/.keep
-
+config/credentials.yml.enc
 /config/credentials/production.key

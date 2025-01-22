@@ -67,36 +67,33 @@ class AppointmentsController < ApplicationController
   end
 
   def create
-    puts "Start creating #{params}"
     @doctors = Doctor.all
     @package = Package.find(params[:appointment][:package_id])
     start_date = Time.zone.parse(params[:appointment][:start_date])
+
+    if @package.nil?
+      flash[:alert] = "The selected package could not be found."
+      redirect_to root_path and return
+    end
+
     @duration = @package.duration.to_i
-    #duration_minutes = @package.duration.to_i
-    #puts  "duration #{duration_minutes}"
-    #puts start_date
+
     end_date = start_date + @duration.to_i.minutes
     doctor_id = appointment_params[:doctor_id]
     doctor = Doctor.find(doctor_id).name
     
-    puts "start date: #{start_date} duration: #{@duration}"
     # Verify reCAPTCHA before proceeding with the booking
     if verify_recaptcha(model: @appointment) # `verify_recaptcha` automatically validates the reCAPTCHA response
       if time_slot_available?(doctor_id, start_date)
         status = "Scheduled"
         @appointment = Appointment.new(appointment_params.merge(end_date: end_date, status: status))
         id_calendar = create_google_calendar_event(@appointment, @package, doctor,doctor_id)
-        puts params
         @appointment.update(google_calendar_id: id_calendar)
-
-        Rails.logger.debug "Start Date: #{start_date}"
         if @appointment.save
           redirect_to @appointment, notice: 'Appointment was successfully created.'
         else
           id = @appointment.google_calendar_id
           eliminate_google_calendar_event(id)
-          puts "This is the id #{id}"
-          Rails.logger.debug @appointment.errors.full_messages.join(", ")
           render :new
         end
       else
