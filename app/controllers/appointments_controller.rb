@@ -68,48 +68,94 @@ class AppointmentsController < ApplicationController
 
   def create
     @doctors = Doctor.all
-    @package = Package.find(params[:appointment][:package_id])
-    start_date = Time.zone.parse(params[:appointment][:start_date])
-
+    @package = Package.find_by(id: params[:appointment][:package_id])
+  
     if @package.nil?
       flash[:alert] = "The selected package could not be found."
       redirect_to root_path and return
     end
-
+  
+    start_date = Time.zone.parse(params[:appointment][:start_date])
     @duration = @package.duration.to_i
-
     end_date = start_date + @duration.to_i.minutes
+  
     doctor_id = appointment_params[:doctor_id]
-    doctor = Doctor.find(doctor_id).name
-    
-    # Verify reCAPTCHA before proceeding with the booking
-    if verify_recaptcha(model: @appointment) # `verify_recaptcha` automatically validates the reCAPTCHA response
-      if time_slot_available?(doctor_id, start_date)
-        status = "Scheduled"
-        @appointment = Appointment.new(appointment_params.merge(end_date: end_date, status: status))
-        id_calendar = create_google_calendar_event(@appointment, @package, doctor,doctor_id)
-        @appointment.update(google_calendar_id: id_calendar)
-        if @appointment.save
-          redirect_to @appointment, notice: 'Appointment was successfully created.'
-        else
-          id = @appointment.google_calendar_id
-          eliminate_google_calendar_event(id)
-          render :new
+    doctor = Doctor.find_by(id: doctor_id)
+  
+    unless doctor
+      flash[:alert] = "Selected doctor not found."
+      redirect_to root_path and return
+    end
+  
+    g_recaptcha_token = params[:appointment][:recaptcha_token]
+  
+    Rails.logger.info "==========================="
+    Rails.logger.info "Received reCAPTCHA Token: #{g_recaptcha_token.inspect}"
+    Rails.logger.info "==========================="
+  
+    unless verify_recaptcha(action: 'homepage', minimum_score: 0)
+      Rails.logger.info "==========================="
+      Rails.logger.info "nel perro"
+      Rails.logger.info "==========================="
+      flash[:alert] = "reCAPTCHA verification failed. Please try again."
+      redirect_to root_path and return
+    end
+  
+    unless time_slot_available?(doctor_id, start_date)
+      flash.now[:alert] = "The selected time is no longer available. Please choose a different time."
+      @available_times = fetch_available_times(doctor, start_date.to_date, @duration)
+  
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace(
+            "appointment_form",
+            partial: "appointments/form",
+            locals: { appointment: @appointment }
+          )
         end
-      else
-        # If the time slot is taken, re-render the `new` view with an error
-        flash.now[:alert] = "The selected time is no longer available. Please choose a different time."
-        @available_times = fetch_available_times(Doctor.find(doctor_id), start_date.to_date, @duration)
-        render :new
+        format.html { render :new, status: :unprocessable_entity }
+      end
+      return
+    end
+  
+    status = "Scheduled"
+    @appointment = Appointment.new(appointment_params.merge(end_date: end_date, status: status))
+  
+    id_calendar = create_google_calendar_event(@appointment, @package, doctor.name, doctor_id)
+    @appointment.google_calendar_id = id_calendar
+  
+    if @appointment.save
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace(
+            "appointment_form",
+            partial: "appointments/success",
+            locals: { appointment: @appointment }
+          )
+        end
+        format.html { redirect_to @appointment, notice: "Appointment was successfully created." }
       end
     else
-      # If reCAPTCHA validation fails, add a flash message to prompt the user
-      flash.now[:alert] = "Please complete the CAPTCHA to confirm you are human."
-      # Preserve available times and doctors list, and re-render the form with all filled data intact
-      @available_times = fetch_available_times(Doctor.find(doctor_id), start_date.to_date, @duration)
-      render :new
+      eliminate_google_calendar_event(id_calendar)
+  
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace(
+            "appointment_form",
+            partial: "appointments/form",
+            locals: { appointment: @appointment }
+          ), status: :unprocessable_entity
+        end
+        format.html do
+          flash.now[:alert] = "Error saving appointment. Please try again."
+          render :new, status: :unprocessable_entity
+        end
+      end
     end
   end
+  
+  
+  
 
   def show
     @appointment = Appointment.find(params[:id])
@@ -140,6 +186,7 @@ class AppointmentsController < ApplicationController
   
 
   private
+
 
   def appointment_params
     params.require(:appointment).permit(:name, :age, :email, :phone, :sex, :doctor_id, :package_id, :status, :duration, :start_date, :google_calendar_id)

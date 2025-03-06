@@ -1,22 +1,13 @@
+import { Turbo } from "@hotwired/turbo-rails";
+import { Application } from "@hotwired/stimulus";
+import RecaptchaController from "./controllers/recaptcha_controller";
+
 import Rails from "@rails/ujs";
+import * as ActiveStorage from "@rails/activestorage";
 
-import "@hotwired/turbo-rails";
-//import "./app/assets/stylesheets/application.tailwind.css";
-//import "../../js/appointments_controller";
-//import "../../js/validation";
-//import "./controllers/auto_submit";
-//import "./controllers/appointments";
-import "./controllers/appointment.js";
-//enableAutoSubmit("available_times_form", "auto-submit");
 Rails.start();
-Turbolinks.start()
-ActiveStorage.start()
-import flatpickr from "flatpickr";
-import { Spanish } from "flatpickr/dist/l10n/es.js";
+Turbo.start();
+ActiveStorage.start();
 
-document.addEventListener("turbo:load", () => {
-  flatpickr(".datepicker", {
-    locale: Spanish,
-    dateFormat: "Y-m-d",
-  });
-});
+const application = Application.start();
+application.register("recaptcha", RecaptchaController);
