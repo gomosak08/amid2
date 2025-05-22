@@ -8,8 +8,9 @@ import "@hotwired/turbo-rails";
 //import "./controllers/appointments";
 import "./controllers/appointment.js";
 //enableAutoSubmit("available_times_form", "auto-submit");
+import * as ActiveStorage from "@rails/activestorage"
 Rails.start();
-Turbolinks.start()
+//Turbolinks.start()
 ActiveStorage.start()
 import flatpickr from "flatpickr";
 import { Spanish } from "flatpickr/dist/l10n/es.js";
@@ -20,3 +21,12 @@ document.addEventListener("turbo:load", () => {
     dateFormat: "Y-m-d",
   });
 });
+
+
+// app/javascript/application.js
+import { Application } from "@hotwired/stimulus"
+import ToggleDescriptionController from "./controllers/toggle_description_controller"
+
+
+window.Stimulus = Application.start()
+Stimulus.register("toggle-description", ToggleDescriptionController)

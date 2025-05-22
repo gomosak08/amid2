@@ -1,61 +1,72 @@
-<!-- app/views/admin/appointments/index.html.erb -->
+<div class="container mx-auto px-4 py-10 max-w-5xl">
+  <h1 class="text-4xl font-bold text-center text-blue-700 mb-10">Administrador de Citas</h1>
 
-<div class="container mx-auto px-4 py-8 max-w-3xl">
-  <h1 class="text-3xl font-bold mb-6 text-center">Administrador de Citas</h1>
+  <!-- Search Filters -->
+  <div class="bg-white p-6 shadow rounded-lg mb-10">
+    <%= form_with url: admin_appointments_path, method: :get, local: true, class: "grid grid-cols-1 md:grid-cols-4 gap-4 items-end" do |form| %>
+      <!-- Date Filter -->
+      <div>
+        <%= form.label :date, "Fecha", class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= form.date_field :date, value: params[:date], class: "w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-700" %>
 
-  <!-- Search by Date Form -->
-  <div class="mb-6">
-  <%= form_with url: admin_appointments_path, method: :get, local: true, class: "flex items-center space-x-4" do |form| %>
-    <!-- Date Filter -->
-    <%= form.label :date, "Buscar por Fecha:", class: "text-lg font-medium" %>
-    <%= form.date_field :date, value: params[:date], class: "p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
+      </div>
 
-    <!-- Doctor Filter -->
-    <%= form.label :doctor, "Doctor:", class: "text-lg font-medium" %>
-    <%= form.collection_select :doctor_id, Doctor.all, :id, :name, { include_blank: "Todos" }, class: "p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
+      <!-- Doctor Filter -->
+      <div>
+        <%= form.label :doctor_id, "Doctor", class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= form.collection_select :doctor_id, Doctor.all, :id, :name, { include_blank: "Todos" }, class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
+      </div>
 
-    <!-- Status Filter -->
-    <%= form.label :status, "Estado:", class: "text-lg font-medium" %>
-    <%= form.select :status, [["All", ""], ["Pending", "pending"], ["Confirmed", "confirmed"], ["Cancelled", "cancelled"]], { selected: params[:status] }, class: "p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
+      <!-- Status Filter -->
+      <div>
+        <%= form.label :status, "Estado", class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= form.select :status, [["Todos", ""], ["Pendiente", "pending"], ["Confirmado", "confirmed"], ["Cancelado", "cancelled"]],
+            { selected: params[:status] }, class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
+      </div>
 
-    <!-- Submit Button -->
-    <%= form.submit "Buscar", class: "bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-200" %>
-  <% end %>
+      <!-- Submit Button -->
+      <div>
+        <%= form.submit "Buscar", class: "w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200" %>
+      </div>
+    <% end %>
   </div>
 
   <!-- Appointments Table -->
   <div class="overflow-x-auto">
-    <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-      <thead>
-        <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-          <th class="py-3 px-6 text-left">ID</th>
-          <th class="py-3 px-6 text-left">Name</th>
-          <th class="py-3 px-6 text-left">Date</th>
-          <th class="py-3 px-6 text-left">Doctor</th>
-          <th class="py-3 px-6 text-left">Estado</th>
-          <th class="py-3 px-6 text-center">Actions</th>
+    <table class="min-w-full text-sm text-left text-gray-700 bg-white shadow rounded-lg">
+      <thead class="text-xs text-gray-600 uppercase bg-gray-100 border-b">
+        <tr>
+          <th class="px-6 py-3">ID</th>
+          <th class="px-6 py-3">Paciente</th>
+          <th class="px-6 py-3">Fecha</th>
+          <th class="px-6 py-3">Doctor</th>
+          <th class="px-6 py-3">Estado</th>
+          <th class="px-6 py-3 text-center">Acciones</th>
         </tr>
       </thead>
-      <tbody class="text-gray-700 text-sm font-light">
+      <tbody class="divide-y divide-gray-200">
         <% if @appointments.any? %>
           <% @appointments.each do |appointment| %>
-            <tr class="border-b border-gray-200 hover:bg-gray-100">
-              <td class="py-3 px-6 text-left"><%= appointment.id %></td>
-              <td class="py-3 px-6 text-left"><%= appointment.name %></td>
-              <td class="py-3 px-6 text-left"><%= I18n.l(appointment.start_date.in_time_zone("America/Mexico_City"), format: :custom, locale: :es) rescue "N/A" %></td>
-              <td class="py-3 px-6 text-left"><%= appointment.doctor&.name %></td>
-              <td class="py-3 px-6 text-left"><%= appointment.status %></td>
-              
-
-              <td class="py-3 px-9 text-center">
-                <%= link_to 'Editar', edit_admin_appointment_path(appointment), class: 'text-blue-600 hover:underline' %> |
-                <%= link_to 'Cancelar', cancel_admin_appointment_path(appointment), method: :patch, data: { confirm: '¿Estas seguro?' }, class: 'text-red-600 hover:underline' %>
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4"><%= appointment.id %></td>
+              <td class="px-6 py-4"><%= appointment.name %></td>
+              <td class="px-6 py-4">
+                <%= I18n.l(appointment.start_date.in_time_zone("America/Mexico_City"), format: :custom, locale: :es) rescue "N/A" %>
+              </td>
+              <td class="px-6 py-4"><%= appointment.doctor&.name %></td>
+              <td class="px-6 py-4 capitalize"><%= appointment.status %></td>
+              <td class="px-6 py-4 text-center space-x-2">
+                <%= link_to 'Editar', edit_admin_appointment_path(appointment),
+                            class: 'text-blue-600 hover:text-blue-800 font-medium' %>
+                <%= link_to 'Cancelar', cancel_admin_appointment_path(appointment),
+                            method: :patch, data: { confirm: '¿Estás seguro de cancelar esta cita?' },
+                            class: 'text-red-600 hover:text-red-800 font-medium' %>
               </td>
             </tr>
           <% end %>
         <% else %>
           <tr>
-            <td colspan="5" class="text-center py-4">No appointments found for the selected date.</td>
+            <td colspan="6" class="text-center px-6 py-6 text-gray-500">No se encontraron citas para los filtros seleccionados.</td>
           </tr>
         <% end %>
       </tbody>

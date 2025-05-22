@@ -1,5 +1,4 @@
-# app/controllers/packages_controller.rb
-class PackagesController < ApplicationController
+class ServicesController < ApplicationController
   def index
     @packages = Package.all
   end

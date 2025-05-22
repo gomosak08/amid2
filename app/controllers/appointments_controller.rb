@@ -67,49 +67,67 @@ class AppointmentsController < ApplicationController
   end
 
   def create
-    @doctors = Doctor.all
-    @package = Package.find(params[:appointment][:package_id])
-    start_date = Time.zone.parse(params[:appointment][:start_date])
-
-    if @package.nil?
-      flash[:alert] = "The selected package could not be found."
-      redirect_to root_path and return
-    end
-
-    @duration = @package.duration.to_i
-
-    end_date = start_date + @duration.to_i.minutes
-    doctor_id = appointment_params[:doctor_id]
-    doctor = Doctor.find(doctor_id).name
-    
-    # Verify reCAPTCHA before proceeding with the booking
-    if verify_recaptcha(model: @appointment) # `verify_recaptcha` automatically validates the reCAPTCHA response
-      if time_slot_available?(doctor_id, start_date)
-        status = "Scheduled"
-        @appointment = Appointment.new(appointment_params.merge(end_date: end_date, status: status))
-        id_calendar = create_google_calendar_event(@appointment, @package, doctor,doctor_id)
-        @appointment.update(google_calendar_id: id_calendar)
-        if @appointment.save
-          redirect_to @appointment, notice: 'Appointment was successfully created.'
-        else
-          id = @appointment.google_calendar_id
-          eliminate_google_calendar_event(id)
-          render :new
-        end
-      else
-        # If the time slot is taken, re-render the `new` view with an error
+    begin
+      # Validate the presence of appointment and package details
+      if params[:appointment].nil? || params[:appointment][:package_id].nil?
+        flash[:alert] = "Appointment details are missing. Please ensure all required fields are filled in."
+        redirect_to root_path and return
+      end
+  
+      @package = Package.find(params[:appointment][:package_id])
+  
+      # Fetch doctor list for rendering in case of an error
+      @doctors = Doctor.all
+      start_date = Time.zone.parse(params[:appointment][:start_date])
+  
+      if @package.nil?
+        flash[:alert] = "The selected package could not be found."
+        redirect_to root_path and return
+      end
+  
+      @duration = @package.duration.to_i
+      end_date = start_date + @duration.to_i.minutes
+      doctor_id = appointment_params[:doctor_id]
+      doctor = Doctor.find(doctor_id)
+  
+      # Verify reCAPTCHA before proceeding
+      unless verify_recaptcha(model: @appointment)
+        flash.now[:alert] = "Please complete the CAPTCHA to confirm you are human."
+        @available_times = fetch_available_times(doctor, start_date.to_date, @duration)
+        render :new and return
+      end
+  
+      # Check if the time slot is available
+      unless time_slot_available?(doctor_id, start_date)
         flash.now[:alert] = "The selected time is no longer available. Please choose a different time."
-        @available_times = fetch_available_times(Doctor.find(doctor_id), start_date.to_date, @duration)
+        @available_times = fetch_available_times(doctor, start_date.to_date, @duration)
+        render :new and return
+      end
+  
+      # Create the appointment and save to the database
+      status = "Scheduled"
+      @appointment = Appointment.new(appointment_params.merge(end_date: end_date, status: status))
+      id_calendar = create_google_calendar_event(@appointment, @package, doctor.name, doctor_id)
+  
+      @appointment.google_calendar_id = id_calendar
+      if @appointment.save
+        redirect_to @appointment, notice: 'Appointment was successfully created.'
+      else
+        # Cleanup Google Calendar event if saving fails
+        eliminate_google_calendar_event(id_calendar)
+        flash.now[:alert] = "An error occurred while saving the appointment. Please try again."
+        @available_times = fetch_available_times(doctor, start_date.to_date, @duration)
         render :new
       end
-    else
-      # If reCAPTCHA validation fails, add a flash message to prompt the user
-      flash.now[:alert] = "Please complete the CAPTCHA to confirm you are human."
-      # Preserve available times and doctors list, and re-render the form with all filled data intact
-      @available_times = fetch_available_times(Doctor.find(doctor_id), start_date.to_date, @duration)
-      render :new
+    rescue ActiveRecord::RecordNotFound
+      flash[:alert] = "The selected package or doctor could not be found. Please try again."
+      redirect_to root_path
+    rescue StandardError => e
+      flash[:alert] = "An unexpected error occurred: #{e.message}. Please contact support if the issue persists."
+      redirect_to root_path
     end
   end
+  
 
   def show
     @appointment = Appointment.find(params[:id])

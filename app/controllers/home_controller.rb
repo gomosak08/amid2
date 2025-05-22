@@ -1,5 +1,5 @@
 # app/controllers/packages_controller.rb
-class PackagesController < ApplicationController
+class HomeController < ApplicationController
   def index
     @packages = Package.all
   end
