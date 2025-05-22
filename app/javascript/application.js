@@ -1,5 +1,11 @@
-import Rails from "@rails/ujs";
+import { Turbo } from "@hotwired/turbo-rails";
+import { Application } from "@hotwired/stimulus";
+import RecaptchaController from "./controllers/recaptcha_controller";
 
+import Rails from "@rails/ujs";
+import * as ActiveStorage from "@rails/activestorage";
+
+<<<<<<< HEAD
 import "@hotwired/turbo-rails";
 //import "./app/assets/stylesheets/application.tailwind.css";
 //import "../../js/appointments_controller";
@@ -30,3 +36,11 @@ import ToggleDescriptionController from "./controllers/toggle_description_contro
 
 window.Stimulus = Application.start()
 Stimulus.register("toggle-description", ToggleDescriptionController)
+=======
+Rails.start();
+Turbo.start();
+ActiveStorage.start();
+
+const application = Application.start();
+application.register("recaptcha", RecaptchaController);
+>>>>>>> 60c8d19144261bbab1690c0d31987c5de2bf2991

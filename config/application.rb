@@ -18,6 +18,12 @@ module Amid2
     config.i18n.default_locale = :es
     config.i18n.fallbacks = true
 
+    # Enable logging in the console
+    console do
+      logger = ActiveSupport::Logger.new(STDOUT)
+      logger.formatter = ::Logger::Formatter.new
+      config.logger = ActiveSupport::TaggedLogging.new(logger)
+    end
 
     # Configuration for the application, engines, and railties goes here.
     #

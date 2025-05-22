@@ -54,7 +54,6 @@ ActiveRecord::Schema[7.2].define(version: 2025_01_09_215503) do
     t.datetime "canceled_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.datetime "appointment_date"
     t.string "unique_code"
     t.string "google_calendar_id"
     t.boolean "dummy"

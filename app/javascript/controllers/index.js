@@ -4,5 +4,10 @@
 
 import { application } from "./application"
 
+<<<<<<< HEAD
 import ToggleDescriptionController from "./toggle_description_controller"
 application.register("toggle-description", ToggleDescriptionController)
+=======
+import HelloController from "./hello_controller"
+application.register("hello", HelloController)
+>>>>>>> 60c8d19144261bbab1690c0d31987c5de2bf2991
