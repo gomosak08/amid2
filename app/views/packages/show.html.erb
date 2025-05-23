@@ -1,27 +1,32 @@
 <!-- app/views/packages/show.html.erb -->
 
-<div class="max-w-4xl mx-auto px-4 py-8">
+<div class="max-w-7xl mx-auto px-4 py-12">
   <!-- Package Name -->
-  <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center"><%= @package.name %></h1>
+  <h1 class="text-5xl font-extrabold text-gray-800 mb-10 text-center"><%= @package.name %></h1>
 
   <!-- Package Image -->
   <% if @package.image.present? %>
-    <div class="flex justify-center mb-8">
-      <%= image_tag @package.image, alt: @package.name, class: 'max-w-sm sm:max-w-md h-auto rounded-lg shadow-lg' %>
+    <div class="flex justify-center mb-10">
+      <%= image_tag @package.image, alt: @package.name, class: 'w-full max-w-4xl h-auto rounded-2xl shadow-2xl' %>
     </div>
   <% end %>
 
   <!-- Package Description -->
-  <p class="text-lg text-gray-700 mb-6 text-center"><%= @package.description %></p>
+  <div class="text-center text-xl text-gray-700 mb-10 px-6">
+    <%= simple_format(@package.description) %>
+  </div>
+
+
+
 
   <!-- Package Price -->
-  <p class="text-xl font-semibold text-gray-900 text-center mb-6">
-    Price: <span class="text-blue-600"><%= number_to_currency(@package.price) %></span>
+  <p class="text-3xl font-bold text-gray-900 text-center mb-10">
+    Precio: <span class="text-blue-600"><%= number_to_currency(@package.price) %></span>
   </p>
 
   <!-- Action Button -->
   <div class="flex justify-center">
     <%= link_to "Agendar Cita", new_appointment_path(package_id: @package.id), 
-            class: "bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition duration-200" %>
+            class: "text-2xl bg-blue-600 text-white py-4 px-8 rounded-xl hover:bg-blue-700 transition duration-200" %>
   </div>
 </div>
