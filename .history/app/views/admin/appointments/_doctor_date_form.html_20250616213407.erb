@@ -1,0 +1,29 @@
+<%= turbo_frame_tag "appointment_form" do %>
+  <%= form_with url: available_fields_admin_appointments_path(format: :turbo_stream),
+                method: :get,
+                local: false,
+                data: { turbo_frame: "appointment_form" } do %>
+
+    <%#— MAKE package_id a top-level param —%>
+    <%= hidden_field_tag :package_id, package.id %>
+
+    <div class="field">
+      <label for="doctor_id">Select a doctor</label><br>
+      <%= select_tag :doctor_id,
+            options_from_collection_for_select(doctors, :id, :name, doctor_id),
+            prompt: "Select…",
+            class: "form-select" %>
+    </div>
+
+    <div class="field">
+      <label for="appointment_date">Pick a date</label><br>
+      <%= date_field_tag :appointment_date,
+            appointment_date,
+            class: "form-control" %>
+    </div>
+
+    <div class="actions">
+      <%= submit_tag "See Available Times", class: "btn btn-primary" %>
+    </div>
+  <% end %>
+<% end %>

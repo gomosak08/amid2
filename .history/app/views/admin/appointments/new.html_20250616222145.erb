@@ -1,0 +1,8 @@
+<h1>New Appointment</h1>
+
+<%= turbo_frame_tag "appointment_form" do %>
+  <%= render "package_selector" %>
+<% end %>
+
+<!-- ← **THIS** must be *outside* the turbo_frame_tag block, exactly once in this view -->
+<div id="appointment_steps"></div>

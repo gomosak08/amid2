@@ -1,0 +1,27 @@
+<%= form_with url: available_fields_admin_appointments_path,
+              method: :get,
+              data: { turbo_frame: "appointment_form" },
+              local: false,
+              format: :turbo_stream do |f| %>
+
+  <%= hidden_field_tag :package_id, package.id %>
+
+  <div class="field">
+    <%= f.label :doctor_id, "Select a doctor" %><br>
+    <%= f.select :doctor_id,
+                 doctors.map { |d| [d.name, d.id] },
+                 { prompt: "Select…"},
+                 class: "form-select" %>
+  </div>
+
+  <div class="field">
+    <%= f.label :appointment_date, "Pick a date" %><br>
+    <%= f.date_field :appointment_date,
+                     value: appointment_date,
+                     class: "form-control" %>
+  </div>
+
+  <div class="actions">
+    <%= f.submit "See Available Times", class: "btn btn-primary" %>
+  </div>
+<% end %>

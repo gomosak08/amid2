@@ -1,5 +1,3 @@
-require "google/apis/calendar_v3"
-require "prawn"
 class Admin::AppointmentsController < ApplicationController
     before_action :set_appointment, only: [ :show, :edit, :update, :cancel ]
     before_action :authenticate_user!
@@ -181,76 +179,56 @@ class Admin::AppointmentsController < ApplicationController
 
 
 
-# app/controllers/admin/appointments_controller.rb
-def create
-  # 1) Find package and build appointment
-  @package     = Package.find(params[:appointment][:package_id])
-  parsed_time  = Time.zone.parse(params[:appointment][:start_date])
-  end_time     = parsed_time + @package.duration.to_i.minutes
+  def create
+    @package = Package.find(params[:appointment][:package_id])
 
-  @appointment = Appointment.new(
-    appointment_params.merge(
-      status:   "Scheduled",
-      end_date: end_time
+    @appointment = Appointment.new(
+      appointment_params.merge(
+        status:   "Scheduled",
+        end_date: Time.zone.parse(params[:appointment][:start_date]) +
+                  @package.duration.to_i.minutes
+      )
     )
-  )
 
-  respond_to do |format|
-    # HTML branch (non-Turbo)
-    format.html do
-      # Create in Google Calendar before saving locally
-      id_calendar = create_google_calendar_event(
-        @appointment,
-        @package,
-        Doctor.find(@appointment.doctor_id).name,
-        @appointment.doctor_id
-      )
-      @appointment.google_calendar_id = id_calendar
+    respond_to do |format|
+      format.html do
+        @appointment = Appointment.new(appointment_params.merge(end_date: end_date, status: status))
 
-      if @appointment.save
-        redirect_to appointment_path(@appointment), notice: "Cita creada con éxito."
-      else
-        eliminate_google_calendar_event(id_calendar)
-        flash.now[:alert] = "Error al agendar. Por favor revisa los datos."
-        render :new, status: :unprocessable_entity
+        id_calendar = create_google_calendar_event(@appointment, @package, doctor.name, doctor_id)
+        @appointment.google_calendar_id = id_calendar
+
+        if @appointment.save
+          redirect_to appointment_path(@appointment), notice: "Cita creada con éxito."
+        else
+          eliminate_google_calendar_event(id_calendar)
+          flash.now[:alert] = "Error al agendar. Por favor revisa los datos."
+          render :new, status: :unprocessable_entity
+
+        end
       end
-    end
 
-    # Turbo-Stream branch
-    format.turbo_stream do
-      # Create in Google Calendar before saving locally
-      id_calendar = create_google_calendar_event(
-        @appointment,
-        @package,
-        Doctor.find(@appointment.doctor_id).name,
-        @appointment.doctor_id
-      )
-      @appointment.google_calendar_id = id_calendar
-
-      if @appointment.save
-        # On success, send a 303 so Turbo navigates to the show page
-        redirect_to appointment_path(@appointment), status: :see_other
-      else
-        eliminate_google_calendar_event(id_calendar)
-        # On failure, re-render the client data form with errors
-        render turbo_stream: turbo_stream.replace(
-          "client_data_frame",
-          partial: "admin/appointments/client_data_form",
-          locals: {
-            appointment:      @appointment,
-            package:          @package,
-            doctor_id:        params[:appointment][:doctor_id],
-            appointment_date: params[:appointment][:start_date].to_date.iso8601,
-            time_slot:        params[:appointment][:start_date]
-          }
-        ), status: :unprocessable_entity
+      format.turbo_stream do
+        if @appointment.save
+          # Tell Turbo to navigate to the public appointment#show page
+          render turbo_stream: turbo_stream.redirect_to(
+            appointment_path(@appointment)
+          )
+        else
+          render turbo_stream: turbo_stream.replace(
+            "client_data_frame",
+            partial: "admin/appointments/client_data_form",
+            locals: {
+              appointment:      @appointment,
+              package:          @package,
+              doctor_id:        params[:appointment][:doctor_id],
+              appointment_date: params[:appointment][:start_date].to_date.iso8601,
+              time_slot:        params[:appointment][:start_date]
+            }
+          ), status: :unprocessable_entity
+        end
       end
     end
   end
-end
-
-
-
 
 
 

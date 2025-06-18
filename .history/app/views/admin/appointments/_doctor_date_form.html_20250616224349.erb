@@ -1,0 +1,24 @@
+<!-- app/views/admin/appointments/_doctor_date_form.html.erb -->
+<%= turbo_frame_tag "doctor_date_frame" do %>
+  <%= form_with url: new_admin_appointment_path(format: :turbo_stream),
+                method: :get,
+                local: false,
+                data: { turbo_frame: "available_times_frame" } do |f| %>
+
+    <%= hidden_field_tag :package_id, package.id %>
+
+    <div class="field">
+      <%= f.label :doctor_id, "Doctor" %><br>
+      <%= f.select :doctor_id, Doctor.all.map { |d| [d.name, d.id] },
+                   { prompt: "Select doctor" },
+                   class: "form-select" %>
+    </div>
+
+    <div class="field">
+      <%= f.label :appointment_date, "Date" %><br>
+      <%= f.date_field :appointment_date, value: appointment_date, class: "form-control" %>
+    </div>
+
+    <%= f.submit "See Times", class: "btn btn-primary" %>
+  <% end %>
+<% end %>

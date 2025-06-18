@@ -1,0 +1,9 @@
+<!-- app/views/admin/appointments/_confirmation.html.erb -->
+<div class="p-6 bg-green-50 border border-green-200 rounded-md">
+  <h2 class="text-2xl font-bold mb-4">¡Cita confirmada!</h2>
+  <p><strong>Paciente:</strong> <%= @appointment.name %></p>
+  <p><strong>Médico:</strong> <%= @appointment.doctor.name %></p>
+  <p><strong>Fecha y Hora:</strong>
+    <%= @appointment.start_date.strftime("%d/%m/%Y %H:%M") %>
+  </p>
+</div>

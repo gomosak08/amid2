@@ -1,0 +1,16 @@
+<!-- app/views/admin/appointments/_package_selector.html.erb -->
+<%= form_with url: new_admin_appointment_path(format: :turbo_stream),
+              method: :get,
+              local: false,
+              data: { turbo_frame: "doctor_date_frame" } do |f| %>
+
+  <div class="field">
+    <%= f.label :package_id, "Choose a package" %><br>
+    <%= f.select :package_id,
+                 packages.map { |p| [p.name, p.id] },
+                 prompt: "Select a package…",
+                 class: "form-select" %>
+  </div>
+
+  <%= f.submit "Next", class: "btn btn-primary" %>
+<% end %>

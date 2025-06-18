@@ -1,0 +1,10 @@
+<!-- app/views/admin/appointments/new.html.erb -->
+<h1>New Appointment</h1>
+
+<%= turbo_frame_tag "appointment_form" do %>
+  <%= render "package_selector", packages: @packages %>
+<% end %>
+
+<%= turbo_frame_tag "doctor_date_frame"      do %><% end %>
+<%= turbo_frame_tag "available_times_frame"  do %><% end %>
+<%= turbo_frame_tag "client_data_frame"      do %><% end %>

@@ -1,5 +1,3 @@
-require "google/apis/calendar_v3"
-require "prawn"
 class Admin::AppointmentsController < ApplicationController
     before_action :set_appointment, only: [ :show, :edit, :update, :cancel ]
     before_action :authenticate_user!
@@ -249,7 +247,18 @@ def create
   end
 end
 
+private
 
+def appointment_params
+  params.require(:appointment).permit(
+    :package_id,
+    :doctor_id,
+    :start_date,
+    :name,
+    :age,
+    :phone
+  )
+end
 
 
 

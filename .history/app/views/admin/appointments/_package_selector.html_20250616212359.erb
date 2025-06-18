@@ -1,0 +1,18 @@
+<%= form_with url: available_fields_admin_appointments_path,
+              method: :get,
+              data: { turbo_frame: "appointment_form" },
+              local: false,
+              format: :turbo_stream do |f| %>
+
+  <div class="field">
+    <%= f.label :package_id, "Choose a package" %><br>
+    <%= f.select :package_id,
+                 packages.map { |p| [p.name, p.id] },
+                 { prompt: "Select…"},
+                 class: "form-select" %>
+  </div>
+
+  <div class="actions">
+    <%= f.submit "Next", class: "btn btn-primary" %>
+  </div>
+<% end %>

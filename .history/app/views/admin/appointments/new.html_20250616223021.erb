@@ -1,0 +1,14 @@
+<h1>New Appointment</h1>
+
+<!-- Step 1: Package selector -->
+<%= turbo_frame_tag "appointment_form" do %>
+  <%= render "package_selector" %>
+<% end %>
+
+<!-- Step 2: Doctor+date (initially empty) -->
+<%= turbo_frame_tag "doctor_date_frame" do %>
+<% end %>
+
+<!-- Step 3: Times+booking (initially empty) -->
+<%= turbo_frame_tag "available_times_frame" do %>
+<% end %>

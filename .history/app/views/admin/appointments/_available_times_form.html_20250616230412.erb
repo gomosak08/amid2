@@ -1,0 +1,28 @@
+<!-- app/views/admin/appointments/_available_times_form.html.erb -->
+<%= turbo_frame_tag "available_times_frame" do %>
+  <% if available_times.any? %>
+   <%= form_with url: new_admin_appointment_path(format: :turbo_stream),
+              method: :get,
+              local: false,
+              data: { turbo_frame: "doctor_date_frame" } do |f| %>
+
+      <%= hidden_field_tag :package_id,      package.id %>
+      <%= hidden_field_tag :doctor_id,       doctor_id %>
+      <%= hidden_field_tag :appointment_date, appointment_date %>
+
+      <div class="field">
+        <%= f.label :time_slot, "Time" %><br>
+        <%= f.select :time_slot,
+                     available_times.map { |t| [t.strftime("%H:%M"), t.iso8601] },
+                     prompt: "Select time",
+                     class: "form-select" %>
+      </div>
+
+      <%= f.submit "Next: Your Info", class: "btn btn-primary" %>
+    <% end %>
+  <% else %>
+    <div class="alert alert-warning">
+      No available times.
+    </div>
+  <% end %>
+<% end %>

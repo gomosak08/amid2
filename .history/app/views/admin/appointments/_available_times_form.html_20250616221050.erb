@@ -1,0 +1,46 @@
+<% if available_times.present? %>
+  <%= form_with model: appointment,
+                url: admin_appointments_path(format: :turbo_stream),
+                method: :post,
+                local: false,
+                data: { turbo_frame: "appointment_form" },
+                class: "space-y-6" do |f| %>
+
+    <%= hidden_field_tag :package_id,       package.id %>
+    <%= hidden_field_tag :doctor_id,        doctor_id %>
+    <%= hidden_field_tag :appointment_date, appointment_date %>
+
+    <div class="field">
+      <%= f.label :time_slot, "Available times (#{duration} min)" %>
+      <%= f.select :time_slot,
+                   available_times.map { |t| [t.strftime("%H:%M"), t.iso8601] },
+                   prompt: "Select a time",
+                   class: "form-select" %>
+    </div>
+
+    <!-- Client info -->
+    <div class="field">
+      <%= f.label :name, "Nombre" %>
+      <%= f.text_field :name, required: true, class: "form-control" %>
+    </div>
+    <div class="field">
+      <%= f.label :age, "Edad" %>
+      <%= f.number_field :age, required: true, class: "form-control" %>
+    </div>
+    <div class="field">
+      <%= f.label :phone, "Teléfono" %>
+      <%= f.telephone_field :phone, required: true, class: "form-control" %>
+    </div>
+
+    <!-- reCAPTCHA -->
+    <%= f.hidden_field :recaptcha_token,
+                       id: "recaptcha_token",
+                       data: { recaptcha_target: "recaptchaToken" } %>
+
+    <%= f.submit "Agendar Cita", class: "btn btn-success" %>
+  <% end %>
+<% else %>
+  <div class="mt-4 p-4 bg-yellow-100 border border-yellow-300 text-yellow-800 rounded">
+    Doctor no disponible
+  </div>
+<% end %>

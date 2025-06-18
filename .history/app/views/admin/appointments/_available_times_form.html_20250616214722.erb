@@ -1,0 +1,63 @@
+<%# app/views/admin/appointments/_available_times_form.html.erb %>
+<% if available_times.present? %>
+  <%= form_with model: appointment,
+                url: admin_appointments_path(format: :turbo_stream),
+                method: :post,
+                local: false,
+                data: { turbo_frame: "appointment_form" },
+                class: "space-y-6" do |f| %>
+
+    <!-- Persist wizard state -->
+    <%= hidden_field_tag :package_id,      package.id %>
+    <%= hidden_field_tag :doctor_id,       doctor_id %>
+    <%= hidden_field_tag :appointment_date, appointment_date %>
+
+    <!-- Time Selection -->
+    <div class="mb-4">
+      <%= f.label :time_slot, "Available times (#{duration} min)",
+                   class: "block text-lg font-medium text-gray-700 mb-2" %>
+      <%= f.select :time_slot,
+                   available_times.map { |t| [t.strftime("%I:%M %p"), t.iso8601] },
+                   { prompt: "Select a time" },
+                   class: "block w-full p-2 border border-gray-300 rounded-md" %>
+    </div>
+
+    <!-- Client Name -->
+    <div>
+      <%= f.label :name, "Nombre",
+                   class: "block text-lg font-medium text-gray-700 mb-2" %>
+      <%= f.text_field :name, required: true,
+                       class: "block w-full p-2 border border-gray-300 rounded-md" %>
+    </div>
+
+    <!-- Client Age -->
+    <div>
+      <%= f.label :age, "Edad",
+                   class: "block text-lg font-medium text-gray-700 mb-2" %>
+      <%= f.number_field :age, required: true,
+                         class: "block w-full p-2 border border-gray-300 rounded-md" %>
+    </div>
+
+    <!-- Client Phone -->
+    <div>
+      <%= f.label :phone, "Número de Teléfono",
+                   class: "block text-lg font-medium text-gray-700 mb-2" %>
+      <%= f.telephone_field :phone, required: true,
+                             class: "block w-full p-2 border border-gray-300 rounded-md" %>
+    </div>
+
+    <!-- reCAPTCHA Token -->
+    <%= f.hidden_field :recaptcha_token, id: "recaptcha_token",
+                       data: { recaptcha_target: "recaptchaToken" } %>
+
+    <!-- Submit Button -->
+    <div class="actions">
+      <%= f.submit "Agendar Cita",
+                  class: "bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700" %>
+    </div>
+  <% end %>
+<% else %>
+  <div class="mt-4 p-4 bg-yellow-100 border border-yellow-300 text-yellow-800 rounded">
+    Doctor no disponible
+  </div>
+<% end %>

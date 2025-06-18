@@ -23,6 +23,9 @@
     <!-- App JavaScript -->
     <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
     <%= javascript_include_tag "https://www.google.com/recaptcha/api.js", async: true, defer: true %>
+    <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true %>
+    <%= csrf_meta_tags %>
+
     <%= yield :head %>
   </head>
 
@@ -112,6 +115,9 @@
             <%= link_to "Panel de Doctores", admin_doctors_path, class: "block py-2 px-4 rounded hover:bg-gray-700" %>
             <%= link_to "Panel de Paquetes", admin_packages_path, class: "block py-2 px-4 rounded hover:bg-gray-700" %>
             <%= link_to "Panel de Citas", admin_appointments_path, class: "block py-2 px-4 rounded hover:bg-gray-700" %>
+            <%= link_to "Crear Cita", new_admin_appointment_path, class: "block py-2 px-4 rounded hover:bg-gray-700" %>
+            
+
           <% end %>
         </aside>
       <% end %>

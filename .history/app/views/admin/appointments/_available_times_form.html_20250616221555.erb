@@ -1,0 +1,37 @@
+<% if available_times.present? %>
+  <%= form_with model: appointment,
+                url: admin_appointments_path(format: :turbo_stream),
+                method: :post,
+                local: false,
+                data: { turbo_frame: "appointment_form" },
+                class: "space-y-6" do |f| %>
+
+    <%# carry the context forward %>
+    <%= hidden_field_tag :package_id,       package.id %>
+    <%= hidden_field_tag :doctor_id,        doctor_id %>
+    <%= hidden_field_tag :appointment_date, appointment_date %>
+
+    <div class="field">
+      <%= f.label :time_slot, "Available times (#{duration} min)" %><br>
+      <%= f.select :time_slot,
+                   available_times.map { |t| [t.strftime("%H:%M"), t.iso8601] },
+                   prompt: "Select a time",
+                   class: "form-select" %>
+    </div>
+
+    <!-- client info fields… -->
+    <div class="field">
+      <%= f.label :name, "Nombre" %><br>
+      <%= f.text_field :name, required: true, class: "form-control" %>
+    </div>
+    <!-- age, phone, recaptcha… -->
+
+    <div class="actions">
+      <%= f.submit "Agendar Cita", class: "btn btn-success" %>
+    </div>
+  <% end %>
+<% else %>
+  <div class="mt-4 p-4 bg-yellow-100 border border-yellow-300 text-yellow-800 rounded">
+    Doctor no disponible
+  </div>
+<% end %>

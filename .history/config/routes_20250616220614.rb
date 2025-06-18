@@ -29,13 +29,20 @@ Rails.application.routes.draw do
     end
 
     resources :packages
-  end
-  namespace :admin do
+
     resources :appointments, only: [ :new, :create ] do
-      collection { get :available_fields }
-      member     { patch :cancel }
+      # Step-by-step booking fields via turbo_stream
+      collection do
+        get :available_fields
+      end
+
+      # Cancel a single appointment
+      member do
+        patch :cancel
+      end
     end
   end
+
   # Cleanup: non-admin appointment management
   resources :packages, only: [ :index, :show ]
   resources :appointments, only: [ :edit, :update, :destroy ]

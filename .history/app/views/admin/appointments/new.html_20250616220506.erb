@@ -1,0 +1,7 @@
+<!-- app/views/admin/appointments/new.html.erb -->
+<%= turbo_frame_tag "appointment_form" do %>
+  <%= render "package_selector" %>
+<% end %>
+
+<!-- ← This empty div is critical for appending times -->
+<div id="appointment_steps"></div>
