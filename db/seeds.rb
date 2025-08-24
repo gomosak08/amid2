@@ -39,7 +39,7 @@ end
 
 # Users
 begin
-  User.create!([
+  [
     {
       name: "Admin User",
       email: "admin@example.com",
@@ -54,11 +54,20 @@ begin
       role: "secretary",
       admin: false
     }
-  ])
-  puts "✅ Users created."
+  ].each do |user_attrs|
+    User.find_or_create_by!(email: user_attrs[:email]) do |user|
+      user.name     = user_attrs[:name]
+      user.password = user_attrs[:password]
+      user.role     = user_attrs[:role]
+      user.admin    = user_attrs[:admin]
+    end
+  end
+
+  puts "✅ Users created or already exist."
 rescue ActiveRecord::RecordInvalid => e
   puts "❌ User creation failed: #{e.record.errors.full_messages.join(', ')}"
 end
+
 
 
 description = [

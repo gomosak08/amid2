@@ -3,19 +3,35 @@ class Appointment < ApplicationRecord
     belongs_to :doctor
 
     before_create :generate_unique_code
-
+    before_create :generate_token
     # Ensure these fields are always present
     validates :name, :age, :phone, presence: true
 
-    # Custom validation for either email or phone
-    #validate :email_or_phone_present
+    enum status: {
+      scheduled:          0,
+      canceled_by_admin:  1,
+      canceled_by_client: 2
+    }
 
+    # Optional: human‐friendly labels for views
+    def status_label
+      case status
+      when "scheduled"         then "Programada"
+      when "canceled_by_admin" then "Cancelada por Admin"
+      when "canceled_by_client"then "Cancelada por Cliente"
+      else status.humanize
+      end
+    end
 
+    def to_param
+      token
+    end
      # Ensure that appointment times do not overlap for the same doctor
     validate :no_double_booking
     validates :google_calendar_id, uniqueness: true, allow_nil: true
     private
-
+     
+      
     def no_double_booking
         # Check if any appointment exists for the doctor at the same date and time
         overlapping_appointment = Appointment
@@ -38,6 +54,8 @@ class Appointment < ApplicationRecord
         self.unique_code = SecureRandom.alphanumeric(8).upcase
       end
 
-
+    def generate_token
+      self.token = SecureRandom.hex(16)
+    end
 
 end

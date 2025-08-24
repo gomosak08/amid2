@@ -30,12 +30,16 @@ Rails.application.routes.draw do
 
     resources :packages
   end
+
   namespace :admin do
-    resources :appointments, only: [ :new, :create ] do
-      collection { get :available_fields }
-      member     { patch :cancel }
+    resources :appointments, only: [:index, :new, :create, :show] do
+      collection do
+        get :available_fields
+      end
     end
+    # …
   end
+
   # Cleanup: non-admin appointment management
   resources :packages, only: [ :index, :show ]
   resources :appointments, only: [ :edit, :update, :destroy ]

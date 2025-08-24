@@ -87,16 +87,19 @@ class AppointmentsController < ApplicationController
       redirect_to root_path and return
     end
 
-    g_recaptcha_token = params[:appointment][:recaptcha_token]
+    g_recaptcha_token = params.dig(:appointment, :recaptcha_token)
 
-    Rails.logger.info "==========================="
-    Rails.logger.info "Received reCAPTCHA Token: #{g_recaptcha_token.inspect}"
-    Rails.logger.info "==========================="
+    verified = verify_recaptcha(
+      action: "homepage",
+      minimum_score: 0.5,                # pon un umbral razonable; 0 acepta casi todo
+      response: g_recaptcha_token        # <— ¡ESTE ES EL FIX CLAVE!
+    )
 
-    unless verify_recaptcha(action: "homepage", minimum_score: 0)
-      Rails.logger.info "==========================="
-      Rails.logger.info "nel perro"
-      Rails.logger.info "==========================="
+    Rails.logger.info "reCAPTCHA token present? #{g_recaptcha_token.present?}"
+    Rails.logger.info "reCAPTCHA verified? #{verified}"
+    Rails.logger.info "reCAPTCHA reply: #{@recaptcha_reply.inspect}" if instance_variable_defined?(:@recaptcha_reply)
+
+    unless verified
       flash[:alert] = "reCAPTCHA verification failed. Please try again."
       redirect_to root_path and return
     end
@@ -229,10 +232,10 @@ class AppointmentsController < ApplicationController
         end_time = Time.zone.parse("#{selected_date} #{end_time_str}")
 
         # Fetch all existing appointments for the doctor on the selected date
-        existing_appointments = Appointment.where(
-          doctor_id: doctor.id,
-          start_date: selected_date.all_day
-        ).where.not(status: "Scheduled").pluck(:start_date, :end_date)
+        existing_appointments = Appointment
+                            .where(doctor_id: doctor.id, status: :scheduled)
+                            .where(start_date: selected_date.all_day)
+                            .pluck(:start_date, :end_date)
 
 
         while start_time < end_time

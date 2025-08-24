@@ -54,3 +54,11 @@
   <%= link_to "Regresar a las Citas", admin_appointments_path, class: "text-blue-500 hover:text-blue-700 font-medium" %>
 </div>
 
+<% if request.format.html? %>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Replace with the correct named helper for your admin show
+      window.location.href = "<%= admin_appointment_path(@appointment, format: :pdf) %>";
+    });
+  </script>
+<% end %>

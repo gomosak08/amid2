@@ -11,11 +11,10 @@ class Admin::AppointmentsController < ApplicationController
 
     def cancel
       id = @appointment.google_calendar_id
-      # Attempt to eliminate the Google Calendar event
       eliminate_google_calendar_event(id) if id.present?
 
       # Update the appointment status to "canceled_by_client" and set the canceled_at timestamp
-      if @appointment.update(status: "canceled_by_Admin", canceled_at: Time.current)
+      if @appointment.update(status: "canceled_by_admin", canceled_at: Time.current)
         flash[:notice] = "Appointment successfully canceled."
         redirect_to admin_appointments_path
       else
@@ -33,10 +32,10 @@ class Admin::AppointmentsController < ApplicationController
           flash[:alert] = "Appointment not found. Please check your code."
           render :find
         end
-      end
-
+    end
+    
     def edit
-    @appointment = Appointment.find(params[:id])
+      @appointment = Appointment.find(params[:id])
     end
 
     def index
@@ -66,7 +65,7 @@ class Admin::AppointmentsController < ApplicationController
     def update
         @appointment = Appointment.find(params[:id])
 
-        if appointment_params[:status] == "Canceled_by_admin"
+        if appointment_params[:status] == "canceled_by_admin"
           id = @appointment.google_calendar_id
           eliminate_google_calendar_event(id)
         end
@@ -96,7 +95,6 @@ class Admin::AppointmentsController < ApplicationController
         @available_times = fetch_available_times(doctor, @appointment_date, @duration) if doctor
       end
     else
-      # For the initial HTML load, show all packages
       @packages = Package.all
     end
 
@@ -154,14 +152,13 @@ class Admin::AppointmentsController < ApplicationController
   end
 
 
-
   def available_fields
     @package          = Package.find(params[:package_id])
+    @doctors          = Doctor.all
     @doctor_id        = params[:doctor_id]
     @appointment_date = params[:appointment_date]
-    @doctors          = Doctor.all
-    @duration         = @package.duration.to_i
     @appointment      = Appointment.new
+    @duration         = @package.duration.to_i
 
     respond_to do |format|
       format.turbo_stream do
@@ -178,79 +175,92 @@ class Admin::AppointmentsController < ApplicationController
       end
     end
   end
+  
+  def create
+    @package    = Package.find(params[:appointment][:package_id])
+    parsed     = Time.zone.parse(params[:appointment][:start_date])
+    end_time   = parsed + @package.duration.to_i.minutes
 
-
-
-# app/controllers/admin/appointments_controller.rb
-def create
-  # 1) Find package and build appointment
-  @package     = Package.find(params[:appointment][:package_id])
-  parsed_time  = Time.zone.parse(params[:appointment][:start_date])
-  end_time     = parsed_time + @package.duration.to_i.minutes
-
-  @appointment = Appointment.new(
-    appointment_params.merge(
-      status:   "Scheduled",
-      end_date: end_time
+    @appointment = Appointment.new(
+      appointment_params.merge(
+        status:   :scheduled,
+        end_date: end_time
+      )
     )
-  )
 
-  respond_to do |format|
-    # HTML branch (non-Turbo)
-    format.html do
-      # Create in Google Calendar before saving locally
-      id_calendar = create_google_calendar_event(
-        @appointment,
-        @package,
-        Doctor.find(@appointment.doctor_id).name,
-        @appointment.doctor_id
-      )
-      @appointment.google_calendar_id = id_calendar
+    respond_to do |format|
+      # HTML branch
+      format.html do
+        id_calendar = create_google_calendar_event(
+          @appointment,
+          @package,
+          Doctor.find(@appointment.doctor_id).name,
+          @appointment.doctor_id
+        )
+        @appointment.google_calendar_id = id_calendar
 
-      if @appointment.save
-        redirect_to appointment_path(@appointment), notice: "Cita creada con éxito."
-      else
-        eliminate_google_calendar_event(id_calendar)
-        flash.now[:alert] = "Error al agendar. Por favor revisa los datos."
-        render :new, status: :unprocessable_entity
+        if @appointment.save
+          redirect_to admin_appointment_path(@appointment), status: :see_other
+
+
+        else
+          eliminate_google_calendar_event(id_calendar)
+          flash[:alert] = "Error al agendar. Por favor revisa los datos."
+          redirect_to new_admin_appointment_path(
+            package_id:        params[:appointment][:package_id],
+            doctor_id:         params[:appointment][:doctor_id],
+            appointment_date:  params[:appointment][:start_date].to_date.iso8601,
+            time_slot:         params[:appointment][:start_date]
+          )
+        end
       end
-    end
 
-    # Turbo-Stream branch
-    format.turbo_stream do
-      # Create in Google Calendar before saving locally
-      id_calendar = create_google_calendar_event(
-        @appointment,
-        @package,
-        Doctor.find(@appointment.doctor_id).name,
-        @appointment.doctor_id
-      )
-      @appointment.google_calendar_id = id_calendar
+      # Turbo-Stream branch
+      format.turbo_stream do
+        id_calendar = create_google_calendar_event(
+          @appointment,
+          @package,
+          Doctor.find(@appointment.doctor_id).name,
+          @appointment.doctor_id
+        )
+        @appointment.google_calendar_id = id_calendar
 
-      if @appointment.save
-        # On success, send a 303 so Turbo navigates to the show page
-        redirect_to appointment_path(@appointment), status: :see_other
-      else
-        eliminate_google_calendar_event(id_calendar)
-        # On failure, re-render the client data form with errors
-        render turbo_stream: turbo_stream.replace(
-          "client_data_frame",
-          partial: "admin/appointments/client_data_form",
-          locals: {
-            appointment:      @appointment,
-            package:          @package,
-            doctor_id:        params[:appointment][:doctor_id],
-            appointment_date: params[:appointment][:start_date].to_date.iso8601,
-            time_slot:        params[:appointment][:start_date]
-          }
-        ), status: :unprocessable_entity
+        if @appointment.save
+          redirect_to admin_appointment_path(@appointment), status: :see_other
+
+        else
+          eliminate_google_calendar_event(id_calendar)
+          render turbo_stream: turbo_stream.replace(
+            "client_data_frame",
+            partial: "admin/appointments/client_data_form",
+            locals: {
+              appointment:      @appointment,
+              package:          @package,
+              doctor_id:        params[:appointment][:doctor_id],
+              appointment_date: params[:appointment][:start_date].to_date.iso8601,
+              time_slot:        params[:appointment][:start_date]
+            }
+          ), status: :unprocessable_entity
+        end
       end
     end
   end
+
+
+def show
+  @appointment = Appointment.find_by!(token: params[:id])
+
+  respond_to do |format|
+    format.html # Render the HTML view for `show`
+    format.pdf do
+      pdf = generate_pdf(@appointment)
+      send_data pdf,
+                filename: "cita_#{@appointment.id}.pdf",
+                type: "application/pdf",
+                disposition: "attachment" 
+    end
+  end
 end
-
-
-
 
 
 
@@ -269,7 +279,7 @@ private
   end
 
   def set_appointment
-    @appointment = Appointment.find_by(id: params[:id])
+    @appointment = Appointment.find_by(token: params[:id])
     unless @appointment
       redirect_to admin_appointments_path, alert: "Appointment not found."
     end
@@ -280,7 +290,7 @@ private
       :package_id, :status, :duration, :start_date, :google_calendar_id)
   end
 
-    def create_google_calendar_event(appointment, package, doctor, doctor_id)
+  def create_google_calendar_event(appointment, package, doctor, doctor_id)
     # Initialize Google Calendar API client
     calendar = Google::Apis::CalendarV3::CalendarService.new
     credentials = google_credentials # Ensure this returns the full client object
@@ -291,7 +301,7 @@ private
 
     # Prepare event details
     event = Google::Apis::CalendarV3::Event.new(
-      summary: "🖥️ #{package.name} con #{doctor}",
+      summary: "🧑‍💼 #{package.name} con #{doctor}",
       description: "Nombre: #{appointment.name} \n Telefono: #{appointment.phone}",
       start: Google::Apis::CalendarV3::EventDateTime.new(
         date_time: (appointment.start_date).iso8601,
@@ -315,33 +325,7 @@ private
     id
   end
 
-  def google_credentials
-    client_id = Rails.application.credentials.dig(:google, :client_id)
-    client_secret = Rails.application.credentials.dig(:google, :client_secret)
-    access_token = Rails.application.credentials.dig(:google, :access_token)
-    refresh_token = Rails.application.credentials.dig(:google, :refresh_token)
 
-
-    credentials = Signet::OAuth2::Client.new(
-      client_id: client_id,
-      client_secret: client_secret,
-      token_credential_uri: "https://oauth2.googleapis.com/token",
-      refresh_token: refresh_token,
-      authorization_uri: "https://accounts.google.com/o/oauth2/auth",
-      scope: "https://www.googleapis.com/auth/calendar",
-      redirect_uri: "http://localhost:3000"
-    )
-
-    # Refresh the access token if expired
-    if credentials.expired? || credentials.access_token.nil?
-      credentials.refresh!
-      puts "Token refreshed successfully: #{credentials.access_token}"
-      # Optional: Save the new access token if you need to use it later
-      Rails.application.credentials.google[:access_token] = credentials.access_token
-    end
-
-    credentials
-  end
 
   def require_admin_or_secretary
     unless current_user&.admin? || current_user&.secretary?
@@ -425,11 +409,11 @@ private
         end_time = Time.zone.parse("#{selected_date} #{end_time_str}")
 
         # Fetch all existing appointments for the doctor on the selected date
-        existing_appointments = Appointment.where(
-          doctor_id: doctor.id,
-          start_date: selected_date.all_day
-        ).where.not(status: "Scheduled").pluck(:start_date, :end_date)
-
+     
+        existing_appointments = Appointment
+                            .where(doctor_id: doctor.id, status: :scheduled)
+                            .where(start_date: selected_date.all_day)
+                            .pluck(:start_date, :end_date)
 
         while start_time < end_time
           if start_time >= current_time

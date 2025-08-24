@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_05_22_070146) do
+ActiveRecord::Schema[7.2].define(version: 2025_06_18_055938) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -57,6 +57,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_05_22_070146) do
     t.string "unique_code"
     t.string "google_calendar_id"
     t.boolean "dummy"
+    t.string "token"
+    t.index ["token"], name: "index_appointments_on_token"
   end
 
   create_table "doctors", force: :cascade do |t|
