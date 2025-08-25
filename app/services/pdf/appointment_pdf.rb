@@ -10,7 +10,7 @@ module Pdf
     end
 
     def status_key
-      @appointment.status.to_s # "scheduled", "canceled_by_admin", etc.
+      @a.status.to_s # "scheduled", "canceled_by_admin", ...
     end
 
     def status_label
@@ -23,13 +23,14 @@ module Pdf
     def status_color
       case status_key
       when "scheduled"                         then hex("2BB673") # verde
-      when "pending"                           then hex("F4B942") # ámbar (si existe en tu enum)
-      when "canceled_by_admin", "canceled_by_client"
+      when "pending"                           then hex("F4B942") # ámbar (si lo usas)
+      when "canceled_by_admin", "canceled_by_client", "canceled"
                                                 then hex("E63946") # rojo
       else
         palette[:brand]
       end
     end
+
 
 
     def render
@@ -65,22 +66,6 @@ module Pdf
       pdf.restore_graphics_state
     end
 
-    def status_text
-      I18n.t(
-        "activerecord.attributes.appointment.statuses.#{@a.status}",
-        default: @a.status.to_s.humanize
-      )
-    end
-
-    def status_color
-      status_text = I18n.t("activerecord.attributes.appointment.statuses")
-      case status_text.downcase
-      when "confirmada", "confirmado", "activa" then hex("2BB673")
-      when "pendiente"                          then hex("F4B942")
-      when "cancelada", "cancelado"             then hex("E63946")
-      else palette[:brand]
-      end
-    end
 
     def text_pair(pdf, label, value, label_size: 10, value_size: 12, bold_value: false)
       pdf.fill_color palette[:text_gray]
@@ -106,13 +91,35 @@ module Pdf
       end
     end
 
-    def draw_header_band(pdf)
-      header_offset = 24
-      with_g(pdf) do
-        pdf.fill_color palette[:light_bg]
-        pdf.fill_rounded_rectangle [ pdf.bounds.left, pdf.cursor + 50 - header_offset ], pdf.bounds.width, 80, 10
+    def draw_header(pdf)
+      generated_at = I18n.l(Time.zone.now, format: :custom, locale: :es)
+      pdf.bounding_box([ pdf.bounds.left + 12, pdf.cursor + 60 ], width: pdf.bounds.width - 24, height: 80) do
+        if @logo_path.present? && File.exist?(@logo_path.to_s)
+          pdf.bounding_box([ 0, pdf.bounds.top ], width: 140, height: 60) do
+            with_g(pdf) { pdf.image @logo_path.to_s, fit: [ 120, 60 ] }
+          end
+        end
+
+        pdf.fill_color palette[:brand]
+        pdf.text_box "Detalles de la Cita", size: 22, style: :bold, at: [ 160, 58 ], width: 340
+        pdf.fill_color palette[:text_gray]
+        pdf.text_box "Generado el #{generated_at}", size: 10, at: [ 160, 34 ], width: 340
+
+        # badge de estado
+        badge_w = 120
+        bx      = pdf.bounds.width - badge_w
+        by      = 58
+        with_g(pdf) do
+          pdf.fill_color status_color
+          pdf.fill_rounded_rectangle [ bx, by ], badge_w, 22, 6
+          pdf.fill_color "FFFFFF"
+          pdf.bounding_box([ bx, by ], width: badge_w, height: 22) do
+            pdf.text status_label.upcase, size: 10, style: :bold, align: :center, valign: :center
+          end
+        end
+        pdf.fill_color "000000"
       end
-      pdf.move_down header_offset
+      pdf.move_down 28
     end
 
     def draw_header(pdf)
