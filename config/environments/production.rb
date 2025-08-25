@@ -19,6 +19,15 @@ Rails.application.configure do
   config.hosts << "amid.mx"
   config.hosts << "localhost"
   config.hosts << "127.0.0.1"
+  config.action_controller.default_url_options = {
+    host: ENV.fetch("APP_HOST"),
+    protocol: ENV.fetch("APP_PROTOCOL", "https")
+  }
+
+  config.action_mailer.default_url_options = {
+    host: ENV.fetch("APP_HOST"),
+    protocol: ENV.fetch("APP_PROTOCOL", "https")
+}
   # Ensures that a master key has been made available in ENV["RAILS_MASTER_KEY"], config/master.key, or an environment
   # key such as config/credentials/production.key. This key is used to decrypt credentials (and other encrypted files).
   # config.require_master_key = true

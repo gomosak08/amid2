@@ -178,7 +178,7 @@ module Pdf
     end
 
     def draw_link_and_qr(pdf)
-      host  = Rails.application.routes.default_url_options[:host] || "http://localhost:3000"
+      host  = Rails.application.routes.default_url_options[:host]
       host  = host.to_s
       host  = "https://#{host}" unless host.start_with?("http://", "https://")
       token = @a.token.to_s
@@ -195,7 +195,7 @@ module Pdf
         draw_qr(pdf, url, fg_hex: palette[:brand], module_size: 3)
       else
         pdf.fill_color "E63946"
-        pdf.text "⚠︎ No se pudo generar el QR ni el enlace: falta token de la cita.", size: 9
+        pdf.text "No se pudo generar el QR ni el enlace: falta token de la cita.", size: 9
         pdf.fill_color "000000"
       end
     end
