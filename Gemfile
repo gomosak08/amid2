@@ -5,7 +5,7 @@ gem "rails", "~> 7.2.1"
 # The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
 gem "sprockets-rails"
 # Use sqlite3 as the database for Active Record
-gem 'sqlite3', '~> 1.4'
+gem "sqlite3", "~> 1.4"
 
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
@@ -34,25 +34,27 @@ gem "bootsnap", require: false
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # gem "image_processing", "~> 1.2"
-#gems added
-gem 'devise'
-#gem 'webpacker'
+# gems added
+gem "devise"
+# gem 'webpacker'
 
-gem 'jsbundling-rails'
+gem "jsbundling-rails"
 
-gem 'flatpickr'
+gem "flatpickr"
 
-gem 'recaptcha', require: 'recaptcha/rails'
-gem 'prawn'
+gem "recaptcha", require: "recaptcha/rails"
+gem "prawn"
 
-gem 'google-api-client' # or the latest version
-#gem 'google-api-client'
-gem 'googleauth'
-gem 'google-cloud-recaptcha_enterprise'
+gem "google-api-client" # or the latest version
+# gem 'google-api-client'
+gem "googleauth"
+gem "google-cloud-recaptcha_enterprise"
 
-gem 'omniauth-google-oauth2'         # for OAuth2 authentication
-gem 'dotenv-rails', groups: [:development, :test]
-gem 'dotenv'
+gem "omniauth-google-oauth2"         # for OAuth2 authentication
+gem "dotenv-rails", groups: [ :development, :test ]
+gem "dotenv"
+gem "rqrcode"
+gem "prawn-table"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
@@ -70,7 +72,7 @@ group :development do
   gem "web-console"
 
   # Highlight the fine-grained location where an error occurred [https://github.com/ruby/error_highlight]
-  gem "error_highlight", ">= 0.4.0", platforms: [:ruby]
+  gem "error_highlight", ">= 0.4.0", platforms: [ :ruby ]
 end
 
 group :test do

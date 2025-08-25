@@ -1,8 +1,6 @@
-Recaptcha.configure do |config|
-    config.site_key  = Rails.application.credentials.dig(:recaptcha, :site_key)
-    config.secret_key = Rails.application.credentials.dig(:recaptcha, :secret_key)
-    #config.site_key  = ENV['RECAPTCHA_SITE_KEY']
-    #config.secret_key = ENV['RECAPTCHA_SECRET_KEY']
-    #Rails.logger.debug(ENV['RECAPTCHA_SITE_KEY'])
-  end
-  
+Recaptcha.configure do |c|
+  c.site_key        =  ENV["RECAPTCHA_SITE_KEY"]      # pública
+  c.secret_key      =  ENV["RECAPTCHA_SECRET_KEY"]    # privada — LA MISMA que usaste en curl
+  c.enterprise      = false                          # estás con v3 estándar
+  c.skip_verify_env = []                             # no saltar en ningún entorno
+end

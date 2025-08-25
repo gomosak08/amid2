@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_06_18_055938) do
+ActiveRecord::Schema[7.2].define(version: 2025_08_25_062235) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -47,7 +47,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_06_18_055938) do
     t.string "sex"
     t.integer "doctor_id"
     t.integer "package_id"
-    t.string "status"
+    t.integer "status", default: 0, null: false
     t.datetime "start_date"
     t.datetime "end_date"
     t.integer "duration"
@@ -58,7 +58,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_06_18_055938) do
     t.string "google_calendar_id"
     t.boolean "dummy"
     t.string "token"
-    t.index ["token"], name: "index_appointments_on_token"
+    t.index ["token"], name: "index_appointments_on_token", unique: true
   end
 
   create_table "doctors", force: :cascade do |t|

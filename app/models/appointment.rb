@@ -1,3 +1,4 @@
+require "securerandom"
 class Appointment < ApplicationRecord
     belongs_to :package
     belongs_to :doctor
@@ -6,6 +7,9 @@ class Appointment < ApplicationRecord
     before_create :generate_token
     # Ensure these fields are always present
     validates :name, :age, :phone, presence: true
+    validates :token, presence: true, uniqueness: true
+
+    before_validation :ensure_token, on: :create
 
     enum status: {
       scheduled:          0,
@@ -24,14 +28,14 @@ class Appointment < ApplicationRecord
     end
 
     def to_param
-      token
+      token.presence || super
     end
-     # Ensure that appointment times do not overlap for the same doctor
+    # Ensure that appointment times do not overlap for the same doctor
     validate :no_double_booking
     validates :google_calendar_id, uniqueness: true, allow_nil: true
     private
-     
-      
+
+
     def no_double_booking
         # Check if any appointment exists for the doctor at the same date and time
         overlapping_appointment = Appointment
@@ -50,12 +54,15 @@ class Appointment < ApplicationRecord
         end
     end
     def generate_unique_code
-        # Generate a random alphanumeric code, e.g., 8 characters long
-        self.unique_code = SecureRandom.alphanumeric(8).upcase
-      end
+      # Generate a random alphanumeric code, e.g., 8 characters long
+      self.unique_code = SecureRandom.alphanumeric(8).upcase
+    end
+
+    def ensure_token
+      self.token ||= SecureRandom.hex(16) # 32 chars hex
+    end
 
     def generate_token
       self.token = SecureRandom.hex(16)
     end
-
 end

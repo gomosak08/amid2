@@ -22,7 +22,7 @@
 
     <!-- App JavaScript -->
     <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
-    <%= javascript_include_tag "https://www.google.com/recaptcha/api.js", async: true, defer: true %>
+    <script src="https://www.google.com/recaptcha/api.js?render=<%= ENV['RECAPTCHA_SITE_KEY'] %>" async defer></script>
     <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true %>
     <%= csrf_meta_tags %>
 
@@ -40,6 +40,9 @@
           <%= image_tag "LOGO.png", alt: "AMID Logo", class: "h-[85px] w-auto" %>
         <% end %>
       </div>
+
+
+
 
       <!-- Hamburger (Mobile) -->
       <div class="md:hidden">
@@ -194,7 +197,11 @@
     </footer>
 
 
+    <turbo-frame id="flash">
+      <%= render "shared/flash" %>
+    </turbo-frame>
 
+    <script src="https://www.google.com/recaptcha/api.js?render=<%= ENV.fetch("RECAPTCHA_SITE_KEY") %>"></script>
 
 
    

@@ -1,0 +1,8 @@
+<div class="rounded-lg border p-4 shadow-sm space-y-2">
+  <h2 class="text-xl font-semibold">Cita agendada</h2>
+  <p><strong>Paciente:</strong> <%= appointment.name %></p>
+  <p><strong>Doctor:</strong> <%= appointment.doctor.name %></p>
+  <p><strong>Paquete:</strong> <%= appointment.package.name %></p>
+  <p><strong>Inicio:</strong> <%= l(appointment.start_date, format: :long) %></p>
+  <p><strong>Fin:</strong> <%= l(appointment.end_date, format: :long) %></p>
+</div>

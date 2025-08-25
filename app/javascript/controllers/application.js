@@ -1,9 +1,9 @@
 import { Application } from "@hotwired/stimulus"
 
-const application = Application.start()
+export const application = Application.start()
 
-// Configure Stimulus development experience
+// Opcional para debug
 application.debug = false
-window.Stimulus   = application
 
-export { application }
+// Útil si quieres acceder en consola
+window.Stimulus = application

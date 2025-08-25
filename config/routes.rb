@@ -10,8 +10,11 @@ Rails.application.routes.draw do
   get "surgeries", to: "surgeries#index"
 
   # Public routes for appointments (booking flow)
-  resources :appointments, only: [ :new, :create, :show ] do
+  # resources :appointments, param: :token, only: %i[index new create show edit update destroy]
+  resources :appointments, param: :token, only: %i[new create show edit update destroy] do
     collection do
+      get  :find    # muestra el formulario para ingresar el código
+      post :locate  # procesa el código y redirige
       get  "booking_appointment"
       get  "find", to: "appointments#find"
       post "find", to: "appointments#locate"
@@ -32,7 +35,7 @@ Rails.application.routes.draw do
   end
 
   namespace :admin do
-    resources :appointments, only: [:index, :new, :create, :show] do
+    resources :appointments, only: [ :index, :new, :create, :show ] do
       collection do
         get :available_fields
       end

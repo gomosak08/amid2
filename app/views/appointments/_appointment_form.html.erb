@@ -1,32 +1,37 @@
-<%= form_with url: new_appointment_path, method: :get, id: "appointment_form", local: false, class: "space-y-6" do |form| %>
-    <!-- Hidden Field for Package ID -->
-    <%= form.hidden_field :package_id, value: @package.id %>
-    <%= form.hidden_field :recaptcha_token, id: "recaptcha_token" %>
+<%= form_with url: new_appointment_path,
+              method: :get,
+              local: true,
+              authenticity_token: false,
+              id: "availability-form",
+              class: "space-y-4" do %>
 
-    <!-- Doctor Selection -->
-    <div class="mb-4">
-      <%= form.label :doctor_id, "Selecciona un Doctor", class: "block text-lg font-medium text-gray-700 mb-2" %>
-      <%= form.select :doctor_id, 
-            options_for_select(@doctors.map { |d| [d.name, d.id] }, doctor_id), 
-            { prompt: "Selecciona un Doctor" }, 
-            class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
-      </div>
-  
-    <!-- Date Selection -->
-    <div class="mb-4">
-      <%= form.label :appointment_date, "Selecciona una fecha", class: "block text-lg font-medium text-gray-700 mb-2" %>
-      <%= form.date_field :appointment_date, 
-            value: appointment_date, 
+  <%= hidden_field_tag :package_id, @ctx.package&.id %>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <label class="block text-lg font-medium text-gray-700 mb-2">Selecciona un Doctor</label>
+      <%= select_tag "appointment[doctor_id]",
+            options_from_collection_for_select(@ctx.doctors, :id, :name, @ctx.doctor_id),
+            include_blank: "Selecciona un Doctor",
             class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
     </div>
-  
-    <!-- Submit Button -->
-    <%= form.submit "Verificar Disponibilidad", 
-          class: "bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-200" %>
+
+    <div>
+      <label class="block text-lg font-medium text-gray-700 mb-2">Selecciona una fecha</label>
+      <%= date_field_tag :appointment_date,
+            (@ctx.appointment_date || Date.current),
+            class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm" %>
+    </div>
+  </div>
+
+  <% unless @ctx.available_times.present? %>
+    <%= button_tag "Verificar Disponibilidad",
+          type: :submit,
+          class: "bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-200",
+          data: { turbo_submits_with: "Verificando…" } %>
+  <% else %>
+    <p class="text-sm text-gray-600">
+      Para cambiar doctor o fecha, ajusta arriba y vuelve a consultar.
+    </p>
   <% end %>
-  
-  <!-- Render additional fields if times are available -->
-  <% if available_times.present? %>
-    <%= render partial: "appointments/available_fields", locals: { available_times: available_times, package_id: @package.id } %>
-  <% end %>
-  
+<% end %>

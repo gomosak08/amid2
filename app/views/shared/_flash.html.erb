@@ -1,0 +1,16 @@
+<%# app/views/shared/_flash.html.erb %>
+
+<% n = local_assigns[:notice] || flash[:notice] %>
+<% a = local_assigns[:alert]  || flash[:alert]  %>
+
+<% if n.present? %>
+  <div class="mb-4 p-3 rounded-md bg-green-50 text-green-700 border border-green-300">
+    <%= n %>
+  </div>
+<% end %>
+
+<% if a.present? %>
+  <div class="mb-4 p-3 rounded-md bg-red-50 text-red-700 border border-red-300">
+    <%= a %>
+  </div>
+<% end %>

@@ -1,30 +1,27 @@
-// Core Rails and Stimulus setup
-// import { Turbo } from "@hotwired/turbo-rails";
-import { Application } from "@hotwired/stimulus";
-//import Rails from "@rails/ujs";
-import * as ActiveStorage from "@rails/activestorage";
+// Hotwire
+import "@hotwired/turbo-rails"
 
-// Start Rails and ActiveStorage
-Rails.start();
-ActiveStorage.start();
-import * as Turbo from "@hotwired/turbo-rails"
-// Stimulus controllers
-import ToggleDescriptionController from "./controllers/toggle_description_controller";
-import RecaptchaController from "./controllers/recaptcha_controller";
-import "./controllers/appointment.js";
+// Stimulus: usa la app ya creada
+import { application } from "./controllers/application"
 
-// Initialize Stimulus
-window.Stimulus = Application.start();
-Stimulus.register("toggle-description", ToggleDescriptionController);
-Stimulus.register("recaptcha", RecaptchaController);
+// Active Storage
+import * as ActiveStorage from "@rails/activestorage"
+ActiveStorage.start()
 
-// Flatpickr datepicker with Spanish locale
-import flatpickr from "flatpickr";
-import { Spanish } from "flatpickr/dist/l10n/es.js";
+// Controllers propios
+import RecaptchaController from "./controllers/recaptcha_controller"
+import ToggleDescriptionController from "./controllers/toggle_description_controller"
+// Si tienes otros como "./controllers/appointment", impórtalos aquí:
+import "./controllers/appointment"
+
+// Registra en **la misma** app
+application.register("recaptcha", RecaptchaController)
+application.register("toggle-description", ToggleDescriptionController)
+
+// Flatpickr (opcional)
+import flatpickr from "flatpickr"
+import { Spanish } from "flatpickr/dist/l10n/es.js"
 
 document.addEventListener("turbo:load", () => {
-  flatpickr(".datepicker", {
-    locale: Spanish,
-    dateFormat: "Y-m-d",
-  });
-});
+  flatpickr(".datepicker", { locale: Spanish, dateFormat: "Y-m-d" })
+})

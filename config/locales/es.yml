@@ -1,14 +1,55 @@
 es:
+  activerecord:
+    attributes:
+      appointment:
+        # algunos proyectos usan "status"…
+        status:
+          scheduled: "Agendada"
+          canceled_by_admin: "Cancelada por administración"
+          canceled_by_client: "Cancelada por el paciente"
+        # otros usan "statuses"…
+        statuses:
+          scheduled: "Agendada"
+          canceled_by_admin: "Cancelada por administración"
+          canceled_by_client: "Cancelada por el paciente"
+  # y otros usan "enums"
+  enums:
+    appointment:
+      status:
+        scheduled: "Agendada"
+        canceled_by_admin: "Cancelada por administración"
+        canceled_by_client: "Cancelada por el paciente"
   time:
     formats:
       default: "%H:%M"
-      custom: "%d %B %Y %I:%M %p" # Add the custom format here
-    am: "a. m." # Spanish representation for AM
-    pm: "p. m." # Spanish representation for PM
+      long: "%-d de %B de %Y %H:%M"
+      short: "%d/%m %H:%M"
+      custom: "%d %B %Y %I:%M %p"
+    am: "a. m."
+    pm: "p. m."
+
   date:
     formats:
       default: "%d/%m/%Y"
-      custom: "%d %B %Y %I:%M %p" # Custom format for dates
+      long: "%-d de %B de %Y"
+      short: "%d/%m/%Y"
+      custom: "%d %B %Y %I:%M %p"
+    day_names:
+      - domingo
+      - lunes
+      - martes
+      - miércoles
+      - jueves
+      - viernes
+      - sábado
+    abbr_day_names:
+      - dom
+      - lun
+      - mar
+      - mié
+      - jue
+      - vie
+      - sáb
     month_names:
       - ~
       - enero
@@ -37,3 +78,7 @@ es:
       - oct
       - nov
       - dic
+    order:
+      - :day
+      - :month
+      - :year
