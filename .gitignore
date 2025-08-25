@@ -49,3 +49,5 @@ config/credentials/production.yml.enc
 .history
 .yarn
 config/credentials.yml.enc.bak
+config/environments/production.rb
+config/master.key.bak
