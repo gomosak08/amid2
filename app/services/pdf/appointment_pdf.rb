@@ -1,4 +1,3 @@
-# app/services/pdf/appointment_pdf.rb
 # frozen_string_literal: true
 
 module Pdf
@@ -9,34 +8,10 @@ module Pdf
       @brand_hex  = hex(brand_color)
     end
 
-    def status_key
-      @a.status.to_s # "scheduled", "canceled_by_admin", ...
-    end
-
-    def status_label
-      I18n.t(
-        "activerecord.attributes.appointment.statuses.#{status_key}",
-        default: status_key.humanize
-      )
-    end
-
-    def status_color
-      case status_key
-      when "scheduled"                         then hex("2BB673") # verde
-      when "pending"                           then hex("F4B942") # ámbar (si lo usas)
-      when "canceled_by_admin", "canceled_by_client", "canceled"
-                                                then hex("E63946") # rojo
-      else
-        palette[:brand]
-      end
-    end
-
-
-
     def render
       Prawn::Document.new(page_size: "A4", margin: [ 90, 36, 36, 36 ]) do |pdf|
         setup_fonts(pdf)
-        draw_header_band(pdf)
+        draw_header_band(pdf)   # <- ahora existe
         draw_header(pdf)
         draw_main_card(pdf)
         draw_instructions(pdf)
@@ -47,7 +22,7 @@ module Pdf
 
     private
 
-    # ---------- helpers de estilo/datos ----------
+    # ---------- helpers ----------
     def hex(v) v.to_s.delete("#").upcase end
 
     def palette
@@ -66,14 +41,26 @@ module Pdf
       pdf.restore_graphics_state
     end
 
-
-    def text_pair(pdf, label, value, label_size: 10, value_size: 12, bold_value: false)
-      pdf.fill_color palette[:text_gray]
-      pdf.text label, size: label_size
-      pdf.fill_color "000000"
-      pdf.text((value.presence || "N/A"), size: value_size, style: (bold_value ? :bold : :normal))
-      pdf.move_down 10
+    # --- ESTATUS (única fuente de verdad) ---
+    def status_key
+      @a.status.to_s.presence || "scheduled"
     end
+
+    def status_label
+      I18n.t("activerecord.attributes.appointment.statuses.#{status_key}",
+             default: status_key.humanize)
+    end
+
+    def status_color
+      case status_key
+      when "scheduled"                         then hex("2BB673") # verde
+      when "pending"                           then hex("F4B942") # ámbar (si existiera)
+      when "canceled_by_admin", "canceled_by_client", "canceled"
+                                                then hex("E63946") # rojo
+      else palette[:brand]
+      end
+    end
+    # ----------------------------------------
 
     # ---------- secciones ----------
     def setup_fonts(pdf)
@@ -91,9 +78,22 @@ module Pdf
       end
     end
 
+    # <- ESTA ES LA QUE FALTABA
+    def draw_header_band(pdf)
+      header_offset = 24
+      with_g(pdf) do
+        pdf.fill_color palette[:light_bg]
+        pdf.fill_rounded_rectangle [ pdf.bounds.left, pdf.cursor + 50 - header_offset ],
+                                   pdf.bounds.width, 80, 10
+      end
+      pdf.move_down header_offset
+    end
+
     def draw_header(pdf)
       generated_at = I18n.l(Time.zone.now, format: :custom, locale: :es)
-      pdf.bounding_box([ pdf.bounds.left + 12, pdf.cursor + 60 ], width: pdf.bounds.width - 24, height: 80) do
+
+      pdf.bounding_box([ pdf.bounds.left + 12, pdf.cursor + 60 ],
+                       width: pdf.bounds.width - 24, height: 80) do
         if @logo_path.present? && File.exist?(@logo_path.to_s)
           pdf.bounding_box([ 0, pdf.bounds.top ], width: 140, height: 60) do
             with_g(pdf) { pdf.image @logo_path.to_s, fit: [ 120, 60 ] }
@@ -119,37 +119,7 @@ module Pdf
         end
         pdf.fill_color "000000"
       end
-      pdf.move_down 28
-    end
 
-    def draw_header(pdf)
-      generated_at = I18n.l(Time.zone.now, format: :custom, locale: :es)
-      pdf.bounding_box([ pdf.bounds.left + 12, pdf.cursor + 60 ], width: pdf.bounds.width - 24, height: 80) do
-        if @logo_path.present? && File.exist?(@logo_path.to_s)
-          pdf.bounding_box([ 0, pdf.bounds.top ], width: 140, height: 60) do
-            with_g(pdf) { pdf.image @logo_path.to_s, fit: [ 120, 60 ] }
-          end
-        end
-
-        pdf.fill_color palette[:brand]
-        pdf.text_box "Detalles de la Cita", size: 22, style: :bold, at: [ 160, 58 ], width: 340
-        pdf.fill_color palette[:text_gray]
-        pdf.text_box "Generado el #{generated_at}", size: 10, at: [ 160, 34 ], width: 340
-
-        # badge de estado, centrado vertical
-        badge_w = 120
-        bx      = pdf.bounds.width - badge_w
-        by      = 58
-        with_g(pdf) do
-          pdf.fill_color status_color
-          pdf.fill_rounded_rectangle [ bx, by ], badge_w, 22, 6
-          pdf.fill_color "FFFFFF"
-          pdf.bounding_box([ bx, by ], width: badge_w, height: 22) do
-            pdf.text status_text.upcase, size: 10, style: :bold, align: :center, valign: :center
-          end
-        end
-        pdf.fill_color "000000"
-      end
       pdf.move_down 28
     end
 
@@ -185,6 +155,14 @@ module Pdf
       end
 
       pdf.move_down 22
+    end
+
+    def text_pair(pdf, label, value, label_size: 10, value_size: 12, bold_value: false)
+      pdf.fill_color palette[:text_gray]
+      pdf.text label, size: label_size
+      pdf.fill_color "000000"
+      pdf.text((value.presence || "N/A"), size: value_size, style: (bold_value ? :bold : :normal))
+      pdf.move_down 10
     end
 
     def draw_instructions(pdf)
@@ -233,7 +211,6 @@ module Pdf
       end
 
       qrcode = RQRCode::QRCode.new(payload.to_s)
-
       matrix = qrcode.respond_to?(:modules) ? qrcode.modules : nil
       count  = if qrcode.respond_to?(:module_count)
                  qrcode.module_count
@@ -267,6 +244,7 @@ module Pdf
           end
         end
       end
+
       pdf.move_down px + 6
       pdf.fill_color "000000"
     rescue => e
@@ -277,8 +255,7 @@ module Pdf
 
     def draw_footer(pdf)
       pdf.number_pages "<page>/<total>", at: [ pdf.bounds.right - 50, 0 ], width: 50, align: :right, size: 9
-      page_total = pdf.page_count
-      (1..page_total).each do |i|
+      (1..pdf.page_count).each do |i|
         pdf.go_to_page(i)
         pdf.bounding_box([ pdf.bounds.left, 30 ], width: pdf.bounds.width, height: 30) do
           pdf.stroke_color palette[:border]
