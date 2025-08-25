@@ -9,6 +9,29 @@ module Pdf
       @brand_hex  = hex(brand_color)
     end
 
+    def status_key
+      @appointment.status.to_s # "scheduled", "canceled_by_admin", etc.
+    end
+
+    def status_label
+      I18n.t(
+        "activerecord.attributes.appointment.statuses.#{status_key}",
+        default: status_key.humanize
+      )
+    end
+
+    def status_color
+      case status_key
+      when "scheduled"                         then hex("2BB673") # verde
+      when "pending"                           then hex("F4B942") # ámbar (si existe en tu enum)
+      when "canceled_by_admin", "canceled_by_client"
+                                                then hex("E63946") # rojo
+      else
+        palette[:brand]
+      end
+    end
+
+
     def render
       Prawn::Document.new(page_size: "A4", margin: [ 90, 36, 36, 36 ]) do |pdf|
         setup_fonts(pdf)
@@ -50,6 +73,7 @@ module Pdf
     end
 
     def status_color
+      status_text = I18n.t("activerecord.attributes.appointment.statuses")
       case status_text.downcase
       when "confirmada", "confirmado", "activa" then hex("2BB673")
       when "pendiente"                          then hex("F4B942")
