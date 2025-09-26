@@ -1,3 +1,4 @@
+// app/javascript/application.js
 // Hotwire
 import "@hotwired/turbo-rails"
 
@@ -18,10 +19,9 @@ import "./controllers/appointment"
 application.register("recaptcha", RecaptchaController)
 application.register("toggle-description", ToggleDescriptionController)
 
-// Flatpickr (opcional)
-import flatpickr from "flatpickr"
-import { Spanish } from "flatpickr/dist/l10n/es.js"
 
-document.addEventListener("turbo:load", () => {
-  flatpickr(".datepicker", { locale: Spanish, dateFormat: "Y-m-d" })
-})
+
+import DatePickerController from "./controllers/date_picker_controller"
+application.register("date-picker", DatePickerController)
+
+

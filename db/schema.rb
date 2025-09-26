@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_08_25_062235) do
+ActiveRecord::Schema[7.2].define(version: 2025_09_05_221744) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -58,7 +58,18 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_25_062235) do
     t.string "google_calendar_id"
     t.boolean "dummy"
     t.string "token"
+    t.integer "scheduled_by"
     t.index ["token"], name: "index_appointments_on_token", unique: true
+  end
+
+  create_table "doctor_packages", force: :cascade do |t|
+    t.integer "doctor_id", null: false
+    t.integer "package_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["doctor_id", "package_id"], name: "index_doctor_packages_on_doctor_id_and_package_id", unique: true
+    t.index ["doctor_id"], name: "index_doctor_packages_on_doctor_id"
+    t.index ["package_id"], name: "index_doctor_packages_on_package_id"
   end
 
   create_table "doctors", force: :cascade do |t|
@@ -99,4 +110,6 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_25_062235) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "doctor_packages", "doctors"
+  add_foreign_key "doctor_packages", "packages"
 end

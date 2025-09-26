@@ -30,8 +30,13 @@
             <td class="py-3 px-6 text-center">
               <%= link_to 'Mostrar', admin_package_path(package), class: 'text-blue-600 hover:underline' %> |
               <%= link_to 'Editar', edit_admin_package_path(package), class: 'text-blue-600 hover:underline' %> |
-              <%= link_to 'Borrar', admin_package_path(package), method: :delete, data: { confirm: 'Estas seguro' }, class: 'text-red-600 hover:underline' %>
-            </td>
+              <%= button_to 'Borrar',
+              admin_package_path(package),
+              method: :delete,
+              form: { data: { turbo_confirm: '¿Estás seguro?' } },
+              class: 'text-red-600 hover:underline' %>
+
+
           </tr>
         <% end %>
       </tbody>

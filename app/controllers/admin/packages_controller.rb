@@ -74,7 +74,7 @@ module Admin
     end
 
     def package_params
-      params.require(:package).permit(:name, :description, :image, :price, :duration, :image, :kind, :featured)
+      params.require(:package).permit(:name, :description, :image, :price, :duration, :image, :kind, :featured, doctor_ids: [])
     end
 
     def require_admin

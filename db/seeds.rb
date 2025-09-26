@@ -1,75 +1,89 @@
+# db/seeds.rb
 puts "🌱 Seeding database..."
 
-# Doctors
+# =========================
+# Helpers
+# =========================
+def default_hours_json
+  {
+    "Monday"    => [ "09:00-17:00" ],
+    "Tuesday"   => [ "09:00-17:00" ],
+    "Wednesday" => [ "09:00-17:00" ],
+    "Thursday"  => [ "09:00-17:00" ],
+    "Friday"    => [ "09:00-17:00" ],
+    "Saturday"  => [ "09:00-17:00" ],
+    "Sunday"    => [ "09:00-17:00" ]
+  }.to_json
+end
+
+def pkgs_by_names_includes(*fragments)
+  or_sql = fragments.map { "LOWER(name) LIKE ?" }.join(" OR ")
+  binds  = fragments.map { |f| "%#{f.downcase}%" }
+  Package.where(or_sql, *binds)
+end
+
+def pkgs_by_kind(kind)
+  Package.where(kind: kind)
+end
+
+def link_doctor_packages!(doctor, relation)
+  return unless doctor
+  ids = relation.distinct.pluck(:id)
+  ids.each do |pid|
+    DoctorPackage.find_or_create_by!(doctor_id: doctor.id, package_id: pid)
+  end
+  puts "🔗  #{doctor.name}: #{ids.size} paquetes vinculados"
+end
+
+# =========================
+# Doctors (2 existentes + 2 nuevos)
+# =========================
 begin
-  Doctor.create!([
-    {
-      name: "Dr. Salvador C.",
-      specialty: "Cardiology",
-      email: "salvador@example.com",
-      available_hours: {
-        "Monday"    => [ "09:00-17:00" ],
-        "Tuesday"   => [ "09:00-17:00" ],
-        "Wednesday" => [ "09:00-17:00" ],
-        "Thursday"  => [ "09:00-17:00" ],
-        "Friday"    => [ "09:00-17:00" ],
-        "Saturday"  => [ "09:00-17:00" ],
-        "Sunday"    => [ "09:00-17:00" ]
-      }.to_json
-    },
-    {
-      name: "Dr. Mariana R.",
-      specialty: "Dermatology",
-      email: "mariana@example.com",
-      available_hours: {
-        "Monday"    => [ "09:00-17:00" ],
-        "Tuesday"   => [ "09:00-17:00" ],
-        "Wednesday" => [ "09:00-17:00" ],
-        "Thursday"  => [ "09:00-17:00" ],
-        "Friday"    => [ "09:00-17:00" ],
-        "Saturday"  => [ "09:00-17:00" ],
-        "Sunday"    => [ "09:00-17:00" ]
-      }.to_json
-    }
-  ])
-  puts "✅ Doctors created."
+  base_doctors = [
+    { name: "Dr. Salvador C.", specialty: "Cardiology",  email: "salvador@example.com" },
+    { name: "Dr. Mariana R.",  specialty: "Dermatology", email: "mariana@example.com" }
+  ]
+
+  extra_doctors = [
+    { name: "Dr. Juan P.",     specialty: "Radiology",   email: "juanp@example.com"  },
+    { name: "Dra. Elena G.",   specialty: "Gynecology",  email: "elena@example.com"  }
+  ]
+
+  (base_doctors + extra_doctors).each do |attrs|
+    Doctor.find_or_create_by!(email: attrs[:email]) do |d|
+      d.name            = attrs[:name]
+      d.specialty       = attrs[:specialty]
+      d.available_hours = default_hours_json
+    end
+  end
+  puts "✅ Doctors created/ensured."
 rescue ActiveRecord::RecordInvalid => e
   puts "❌ Doctor creation failed: #{e.record.errors.full_messages.join(', ')}"
 end
 
+# =========================
 # Users
+# =========================
 begin
   [
-    {
-      name: "Admin User",
-      email: "admin@example.com",
-      password: "admin123",
-      role: "admin",
-      admin: true
-    },
-    {
-      name: "Secretary User",
-      email: "secretary@example.com",
-      password: "secret123",
-      role: "secretary",
-      admin: false
-    }
-  ].each do |user_attrs|
-    User.find_or_create_by!(email: user_attrs[:email]) do |user|
-      user.name     = user_attrs[:name]
-      user.password = user_attrs[:password]
-      user.role     = user_attrs[:role]
-      user.admin    = user_attrs[:admin]
+    { name: "Admin User",     email: "admin@example.com",     password: "admin123",  role: "admin",     admin: true  },
+    { name: "Secretary User", email: "secretary@example.com", password: "secret123", role: "secretary", admin: false }
+  ].each do |u|
+    User.find_or_create_by!(email: u[:email]) do |user|
+      user.name     = u[:name]
+      user.password = u[:password]
+      user.role     = u[:role]
+      user.admin    = u[:admin]
     end
   end
-
-  puts "✅ Users created or already exist."
+  puts "✅ Users created/ensured."
 rescue ActiveRecord::RecordInvalid => e
   puts "❌ User creation failed: #{e.record.errors.full_messages.join(', ')}"
 end
 
-
-
+# =========================
+# Packages (catálogo)
+# =========================
 description = [
   "Incluye revisión de Hígado, Vesícula Biliar, Riñones, Bazo y Páncreas.\nSe requiere ayuno de por lo menos 6Hrs. Duración 30 Minutos.",
   "Valoración de próstata y vejiga.\nSe requiere ingerir 2 litros de Agua 1.5hrs antes del estudio. Duración 30 minutos.",
@@ -113,7 +127,6 @@ description = [
   "Se requiere valoración."
 ]
 
-
 name = [
   "Ultrasonido Abdominal", "Ultrasonido de Próstata", "Ultrasonido de Tiroides",
   "Ultrasonido Renal", "Ultrasonido de Embarazo", "Ultrasonido de Abdomen",
@@ -132,57 +145,14 @@ name = [
   "Cesárea", "Histeroscopia Diagnostica", "Histeroscopia Quirúrgica", "Retiro de Verrugas",
   "Retiro de Lesión del VPH con láser", "Electrocirugía para VPH"
 ]
+
 feature = [
-  true,   # Ultrasonido Abdominal
-  true,   # Ultrasonido de Próstata
-  true,   # Ultrasonido de Tiroides
-  true,   # Ultrasonido Renal
-  true,   # Ultrasonido de Embarazo
-  true,   # Ultrasonido de Abdomen
-  false,  # Ultrasonido de Riñón
-  false,  # Ultrasonido de Mama
-  false,  # Ultrasonido de Hígado
-  false,  # Ultrasonido Testicular
-  false,  # Ultrasonido 4D y 5D
-  false,  # Ultrasonido 11 a 14 semanas
-  false,  # Ultrasonido de Rodilla
-  false,  # Ultrasonido de Hombro
-  false,  # Ultrasonido Doppler
-  false,  # Ultrasonido Estructural
-  false,  # Ultrasonido de Partes Blandas
-  false,  # Ultrasonido de Vesícula Biliar
-  false,  # Ultrasonido Arterial o Venoso
-  false,  # Blanqueamiento íntimo
-  false,  # Histeroscopia
-  false,  # Láser para incontinencia
-  false,  # Láser para cicatrices
-  false,  # Láser para estrías
-  false,  # Láser para VPH
-  false,  # Láser para rejuvenecimiento vaginal
-  false,  # Láser para verrugas genitales
-  true,   # Paquete Ginecológico
-  true,   # Paquete Mujer
-  true,   # Paquete Colposcopia
-  false,  # Parto y Cesárea
-  false,  # Vacuna para VPH
-  false,  # Biopsia de Cérvix
-  false,  # Biopsia de Endometrio
-  false,  # Atención Psicológica
-  true,   # OTB Laparoscópica
-  true,   # OTB Abierta
-  true,   # Retiro de Quiste Laparoscópica (Cistectomía)
-  false,  # Retiro de Quistes Abierta (Cistectomía)
-  false,  # Miomectomía Laparoscópica
-  false,  # Miomectomía Abierta
-  false,  # Histerectomía Laparoscópica
-  false,  # Histerectomía Abierta
-  false,  # Parto
-  false,  # Cesárea
-  false,  # Histeroscopia Diagnostica
-  false,  # Histeroscopia Quirúrgica
-  false,  # Retiro de Verrugas
-  false,  # Retiro de Lesión del VPH con láser
-  false   # Electrocirugía para VPH
+  true, true, true, true, true, true, false, false, false, false,
+  false, false, false, false, false, false, false, false, false,
+  false, false, false, false, false, false, false, true, true, true,
+  false, false, false, false, false,
+  true, true, true, false, false, false, false, false, false, false,
+  false, false, false, false, false
 ]
 
 price = [
@@ -192,66 +162,104 @@ price = [
   18000, 3500, 3500, 3500, 350,
   20000, 18000, 25000, 20000, 25000, 20000,
   30000, 27000, 18000, 18000, 3500, 15000,
-  2000,   # Desde $2,000
-  7000,   # Desde $7,000
-  5000    # Desde $5,000
+  2000, 7000, 5000
 ]
 
 time = [
   30, 30, 30, 30, 40, 40, 30, 30, 30, 30,
   60, 40, 30, 30, 60, 60, 30, 30, 60,
-  "", "", "", "", "", "", "", "", "", "",  # 9 blancos
-  50,
-  "",                                      # 1 blanco
-  30,
-  "", "", "", ""                           # 4 blancos
+  "", "", "", "", "", "", "", "", "", "",
+  50, "", 30, "", "", "", "",
+  20000, 18000, 25000, 20000, 25000, 20000,
+  30000, 27000, 18000, 18000, 3500, 15000,
+  2000, 7000, 5000
 ]
+# Nota: En tu arreglo original, algunos "time" venían en blanco; si "duration" es obligatorio, conviértelo a nil o a un entero por defecto.
+time = time.map { |t| t.to_i.zero? ? nil : t.to_i }
+
 kind = [
   "servicios", "servicios", "servicios", "servicios", "servicios", "servicios", "servicios", "servicios", "servicios",
   "servicios", "servicios", "servicios", "servicios", "servicios", "servicios", "servicios", "servicios", "servicios",
   "servicios", "servicios", "servicios", "servicios", "servicios", "servicios", "servicios", "servicios", "servicios",
   "paquete", "paquete", "paquete", "paquete",
-  "servicios", "servicios", "servicios", "servicios", "cirugia", "cirugia", "cirugia", "cirugia", "cirugia", "cirugia", "cirugia", "cirugia",
-  "cirugia", "cirugia", "cirugia", "cirugia", "cirugia", "cirugia", "cirugia"
+  "servicios", "servicios", "servicios", "servicios", "cirugia", "cirugia", "cirugia", "cirugia", "cirugia", "cirugia",
+  "cirugia", "cirugia", "cirugia", "cirugia", "cirugia", "cirugia", "cirugia", "cirugia", "cirugia"
 ]
 
-
-
+puts "🧩 Creating packages..."
 name.each_with_index do |package_name, i|
-  image_path = Rails.root.join("app/assets/images/paquete#{i + 1}.jpg")
-
-  package = Package.new(
-    name: package_name,
+  attrs = {
+    name:        package_name,
     description: description[i],
-    price: price[i],
-    duration: time[i],
-    featured: feature[i],
-    kind: kind[i]
-  )
+    price:       price[i],
+    duration:    time[i],
+    featured:    feature[i],
+    kind:        kind[i]
+  }
 
-  if File.exist?(image_path)
-    package.image.attach(
-      io: File.open(image_path),
-      filename: "paquete#{i + 1}.jpg",
-      content_type: "image/jpeg"
-    )
+  package = Package.find_or_initialize_by(name: package_name)
+  package.assign_attributes(attrs)
+
+  image_path = Rails.root.join("app/assets/images/paquete#{i + 1}.jpg")
+  default_image = Rails.root.join("app/assets/images/default.jpg")
+
+  if package.image.attached?
+    # ya tiene imagen; no hacemos nada
   else
-    puts "⚠️ Image file not found for package #{i + 1}: #{image_path}"
-    # Optionally attach a default image to avoid validation error:
-    default_image = Rails.root.join("app/assets/images/default.jpg")
-    if File.exist?(default_image)
-      package.image.attach(
-        io: File.open(default_image),
-        filename: "default.jpg",
-        content_type: "image/jpeg"
-      )
+    if File.exist?(image_path)
+      package.image.attach(io: File.open(image_path), filename: "paquete#{i + 1}.jpg", content_type: "image/jpeg")
+    elsif File.exist?(default_image)
+      package.image.attach(io: File.open(default_image), filename: "default.jpg", content_type: "image/jpeg")
+      puts "⚠️ default.jpg attached for #{package_name}"
+    else
+      puts "⚠️ No image found for #{package_name} (no default.jpg either)"
     end
   end
 
   if package.save
-    puts "✅ Created #{package.name}"
+    puts "✅ Created/Updated #{package.name}"
   else
-    puts "❌ Failed to create package #{i + 1}: #{package.errors.full_messages.join(', ')}"
+    puts "❌ Failed to upsert package #{i + 1} (#{package_name}): #{package.errors.full_messages.join(', ')}"
   end
-  sleep(0.1)
+  sleep(0.05)
 end
+
+# =========================
+# Associations Doctor ↔ Package
+# =========================
+puts "🔧 Linking doctors to packages..."
+
+doc_salvador = Doctor.find_by(email: "salvador@example.com") # Cardiology
+doc_mariana  = Doctor.find_by(email: "mariana@example.com")  # Dermatology
+doc_juan     = Doctor.find_by(email: "juanp@example.com")    # Radiology
+doc_elena    = Doctor.find_by(email: "elena@example.com")    # Gynecology
+
+# Perfiles (ajusta a tu catálogo real si quieres más precisión)
+radiology_pkgs = pkgs_by_names_includes(
+  "Ultrasonido", "Doppler", "Estructural", "Partes Blandas", "Testicular", "Tiroides",
+  "Renal", "Riñón", "Hígado", "Vesícula", "Abdomen", "4D", "5D", "11 a 14 semanas",
+  "Rodilla", "Hombro", "Arterial", "Venoso", "Mama"
+).or(pkgs_by_kind("servicios"))
+
+gyne_pkgs = pkgs_by_kind("paquete").or(
+  pkgs_by_names_includes(
+    "Ginecol", "Mujer", "Colposcopia", "Papanicolau", "Cesárea", "Parto",
+    "VPH", "Verrugas", "Láser", "Rejuvenecimiento vaginal", "Histeroscopia", "Útero", "Ovarios", "Mama"
+  )
+)
+
+derm_pkgs = pkgs_by_names_includes(
+  "Partes Blandas", "Piel", "Láser", "cicatrices", "estrías", "Verrugas", "Lesión del VPH", "Blanqueamiento íntimo", "Mama"
+)
+
+cardio_pkgs = pkgs_by_names_includes(
+  "Doppler", "Arterial", "Venoso", "Abdominal", "Hígado", "Vesícula", "Renal", "Tiroides"
+)
+
+link_doctor_packages!(doc_juan,     radiology_pkgs) # Radiología
+link_doctor_packages!(doc_elena,    gyne_pkgs)      # Ginecología
+link_doctor_packages!(doc_mariana,  derm_pkgs)      # Dermatología
+link_doctor_packages!(doc_salvador, cardio_pkgs)    # Cardiología
+
+puts "✅ Doctor ↔ Package associations done."
+puts "🎉 Seeding finished!"

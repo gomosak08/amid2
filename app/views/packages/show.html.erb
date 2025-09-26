@@ -6,8 +6,12 @@
 
   <!-- Package Image -->
   <% if @package.image.present? %>
-    <div class="flex justify-center mb-10">
-      <%= image_tag @package.image, alt: @package.name, class: 'w-full max-w-4xl h-auto rounded-2xl shadow-2xl' %>
+    <div
+      data-action="click->toggle-description#toggle"
+      class="mb-4 cursor-pointer bg-gray-100 rounded-md flex items-center justify-center">
+      <%= image_tag @package.image,
+            alt: @package.name,
+            class: "w-full h-64 object-contain rounded-md bg-white" %>
     </div>
   <% end %>
 

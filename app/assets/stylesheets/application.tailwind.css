@@ -1,3 +1,28 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+@import "flatpickr/dist/themes/material_blue.css";
+
+/* Ajustes de tamaño y colores */
+.flatpickr-calendar.inline {
+  width: auto;
+  box-shadow: none;
+  border: none;
+  font-family: inherit;
+}
+
+.flatpickr-day {
+  width: 2.25rem;
+  height: 2.25rem;
+  line-height: 2.25rem;
+  margin: 0.125rem;
+  border-radius: 0.5rem;
+}
+
+.flatpickr-day.selected {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}

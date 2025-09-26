@@ -2,23 +2,13 @@ es:
   activerecord:
     attributes:
       appointment:
-        # algunos proyectos usan "status"…
         status:
           scheduled: "Agendada"
           canceled_by_admin: "Cancelada por administración"
           canceled_by_client: "Cancelada por el paciente"
-        # otros usan "statuses"…
-        statuses:
-          scheduled: "Agendada"
-          canceled_by_admin: "Cancelada por administración"
-          canceled_by_client: "Cancelada por el paciente"
-  # y otros usan "enums"
-  enums:
-    appointment:
-      status:
-        scheduled: "Agendada"
-        canceled_by_admin: "Cancelada por administración"
-        canceled_by_client: "Cancelada por el paciente"
+          completed: "Completada"
+
+
   time:
     formats:
       default: "%H:%M"

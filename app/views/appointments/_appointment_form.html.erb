@@ -3,31 +3,82 @@
               local: true,
               authenticity_token: false,
               id: "availability-form",
-              class: "space-y-4" do %>
+              class: "space-y-6" do %>
 
   <%= hidden_field_tag :package_id, @ctx.package&.id %>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div>
-      <label class="block text-lg font-medium text-gray-700 mb-2">Selecciona un Doctor</label>
+  <div data-controller="date-picker" class="space-y-6">
+    <!-- Doctor -->
+    <div class="w-full">
+      <label class="block text-lg font-semibold text-gray-800 mb-2">Selecciona un Doctor</label>
+
       <%= select_tag "appointment[doctor_id]",
             options_from_collection_for_select(@ctx.doctors, :id, :name, @ctx.doctor_id),
             include_blank: "Selecciona un Doctor",
-            class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
+            class: "block w-full p-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" %>
+
+      <% if @ctx.doctor_id.present? %>
+        <p class="mt-2 text-sm text-gray-600">
+          Próxima disponibilidad:
+          <% next_date =
+              (@ctx.appointment_date ||
+                @ctx.available_times&.first&.to_date) %>
+
+          <span class="font-medium"><%= next_date ? next_date.strftime("%d/%m/%Y") : "—" %></span>
+
+        </p>
+      <% else %>
+        <p class="mt-2 text-sm text-gray-500">Selecciona un doctor para ver su disponibilidad.</p>
+      <% end %>
+
+      <!-- Panel del calendario: OCULTO hasta que se haga clic en la barra -->
+      <div id="calendar-panel" data-date-picker-target="panel" class="hidden mt-4">
+        <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-3">
+          <div class="flex justify-center">
+            <div data-date-picker-target="anchor" class="inline-block w-[320px] sm:w-[360px]"></div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div>
-      <label class="block text-lg font-medium text-gray-700 mb-2">Selecciona una fecha</label>
-      <%= date_field_tag :appointment_date,
-            (@ctx.appointment_date || Date.current),
-            class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm" %>
+    <!-- Fecha (barra disparadora) -->
+    <div class="w-full">
+      <label class="block text-lg font-semibold text-gray-800 mb-2">Selecciona una fecha</label>
+
+      <div
+        data-date-picker-target="card"
+        data-action="click->date-picker#toggle keydown.enter->date-picker#toggle keydown.space->date-picker#toggle"
+        role="button" tabindex="0" aria-expanded="false" aria-controls="calendar-panel"
+        class="bg-white border border-gray-300 rounded-xl p-3 shadow-sm hover:shadow-md transition">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 7V3m8 4V3m-9 8h10m-12 8h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="text-sm text-gray-500">Fecha de la cita</div>
+            <div class="text-base font-medium text-gray-900" data-date-picker-target="label">
+              <%= (@ctx.appointment_date || Date.current).strftime("%d/%m/%Y") %>
+            </div>
+          </div>
+        </div>
+
+        <!-- input real -->
+        <%= text_field_tag :appointment_date,
+              (@ctx.appointment_date || Date.current).strftime("%Y-%m-%d"),
+              class: "sr-only",
+              data: { date_picker_target: "input" },
+              autocomplete: "off" %>
+      </div>
     </div>
   </div>
 
   <% unless @ctx.available_times.present? %>
     <%= button_tag "Verificar Disponibilidad",
           type: :submit,
-          class: "bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-200",
+          class: "bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors",
           data: { turbo_submits_with: "Verificando…" } %>
   <% else %>
     <p class="text-sm text-gray-600">

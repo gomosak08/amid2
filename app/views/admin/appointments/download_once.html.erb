@@ -1,0 +1,22 @@
+<%# Dispara la descarga sin salir de la página y limpia el query param %>
+<div class="container">
+  <p>Generando PDF de la cita…</p>
+</div>
+
+<iframe src="<%= @pdf_url %>" style="display:none;" aria-hidden="true"></iframe>
+
+<script>
+  (function() {
+    // Quita ?download=1 de la URL para evitar repeticiones en snapshots/back/forward
+    try {
+      var url = new URL(window.location.href);
+      url.searchParams.delete('download');
+      window.history.replaceState({}, document.title, url.toString());
+    } catch(e) {}
+
+    // Opcional: si quieres, puedes mostrar un toast o redirigir al show “limpio”
+    // setTimeout(function() {
+    //   window.location.replace(url.toString());
+    // }, 500);
+  })();
+</script>

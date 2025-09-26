@@ -5,9 +5,13 @@
   <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center"><%= @package.name %></h1>
 
   <!-- Package Image -->
-  <% if @package.image.present? %>
-    <div class="flex justify-center mb-8">
-      <%= image_tag @package.image, alt: @package.name, class: 'max-w-sm sm:max-w-md h-auto rounded-lg shadow-lg' %>
+  <% if package.image.present? %>
+    <div
+      data-action="click->toggle-description#toggle"
+      class="mb-4 cursor-pointer bg-gray-100 rounded-md flex items-center justify-center">
+      <%= image_tag package.image,
+            alt: package.name,
+            class: "w-full h-64 object-contain rounded-md bg-white" %>
     </div>
   <% end %>
 

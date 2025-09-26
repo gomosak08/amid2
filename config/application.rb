@@ -18,8 +18,11 @@ module Amid2
     config.i18n.default_locale = :es
     config.i18n.available_locales = [ :es ]
 
-    config.i18n.fallbacks = true
 
+    config.i18n.fallbacks = true
+    config.time_zone = "America/Mexico_City"      # render en zona local
+    config.active_record.default_timezone = :utc  # DB en UTC (recomendado)
+    config.i18n.default_locale = :es
     # Enable logging in the console
     console do
       logger = ActiveSupport::Logger.new(STDOUT)

@@ -3,7 +3,8 @@
 <div class="container mx-auto px-4 py-8 max-w-md">
   <h2 class="text-2xl font-bold mb-4 text-center">Maneja tus Citas</h2>
   <p class="text-gray-700 mb-6 text-center">Ingresa tu código único de cita a continuación para cancelar tu cita.</p>
-
+  <%= turbo_frame_tag "flash" %>
+  <%= turbo_frame_tag "appointment_result" %>
   <%= form_with url: find_appointments_path, method: :post, local: true, class: "space-y-4" do |form| %>
     <!-- Campo del Código de Cita -->
     <div>

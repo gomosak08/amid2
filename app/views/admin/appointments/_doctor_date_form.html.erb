@@ -1,36 +1,24 @@
-<!-- app/views/admin/appointments/_doctor_date_form.html.erb -->
-<%= turbo_frame_tag "doctor_date_frame" do %>
-  <%= form_with url: new_admin_appointment_path(format: :turbo_stream),
-                method: :get,
-                local: false,
-                id:    "appointment-form",
-                class: "space-y-6",
-                data:  { turbo_frame: "available_times_frame" } do |f| %>
+<%= form_with url: available_fields_admin_appointments_path(format: :turbo_stream),
+              method: :get,
+              class: "space-y-6",
+              data: { turbo_stream: true } do |f| %>
 
-    <%= f.hidden_field :package_id, value: package.id %>
+  <%= f.hidden_field :package_id, value: package.id %>
 
-    <div>
-      <%= f.label :doctor_id,
-                  "Doctor",
-                  class: "block text-lg font-medium text-gray-700 mb-2" %>
-      <%= f.select :doctor_id,
-                   doctors.map { |d| [d.name, d.id] },
-                   { prompt: "Selecciona un Doctor" },
-                   class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
-    </div>
+  <div class="field">
+    <%= f.label :doctor_id, "Doctor", class: "block text-lg font-medium text-gray-700 mb-2" %>
+    <%= f.collection_select :doctor_id,
+          doctors, :id, :name,
+          { prompt: "Selecciona un Doctor", selected: doctor_id },
+          { class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500",
+            onchange: "this.form.requestSubmit()" } %>
+  </div>
 
-    <div>
-      <%= f.label :appointment_date,
-                  "Fecha",
-                  class: "block text-lg font-medium text-gray-700 mb-2" %>
-      <%= f.date_field :appointment_date,
-                       value: appointment_date,
-                       class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
-    </div>
-
-    <div class="actions">
-      <%= f.submit "Ver horarios disponibles",
-                   class: "bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-200" %>
-    </div>
-  <% end %>
+  <div class="field">
+    <%= f.label :appointment_date, "Fecha", class: "block text-lg font-medium text-gray-700 mb-2" %>
+    <%= f.date_field :appointment_date,
+          value: (appointment_date || Date.current),
+          class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500",
+          onchange: "this.form.requestSubmit()" %>
+  </div>
 <% end %>

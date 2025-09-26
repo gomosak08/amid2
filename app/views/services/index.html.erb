@@ -20,8 +20,10 @@
         <% if package.image.present? %>
           <div
             data-action="click->toggle-description#toggle"
-            class="mb-4 cursor-pointer">
-            <%= image_tag package.image, alt: package.name, class: "w-full h-48 object-cover rounded-md" %>
+            class="mb-4 cursor-pointer bg-gray-100 rounded-md flex items-center justify-center">
+            <%= image_tag package.image,
+                  alt: package.name,
+                  class: "w-full h-64 object-contain rounded-md bg-white" %>
           </div>
         <% end %>
 

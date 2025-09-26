@@ -1,0 +1,16 @@
+<!-- admin/appointments/_show_body.html.erb -->
+<section class="max-w-4xl mx-auto px-6 py-8">
+  <h1 class="text-2xl font-bold mb-4">
+    Cita <span class="text-gray-500">#<%= @appointment.unique_code %></span>
+  </h1>
+
+  <div class="space-y-3 text-gray-800">
+    <p><strong>Paciente:</strong> <%= @appointment.name %></p>
+    <p><strong>Médico:</strong> <%= @appointment.doctor&.name %></p>
+    <p><strong>Paquete:</strong> <%= @appointment.package&.name %></p>
+    <p><strong>Fecha y hora:</strong>
+      <%= l(@appointment.start_date.in_time_zone, format: :long) %>
+      <% if @appointment.end_date.present? %> – <%= l(@appointment.end_date.in_time_zone, format: :long) %><% end %>
+    </p>
+  </div>
+</section>

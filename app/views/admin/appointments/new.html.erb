@@ -1,12 +1,11 @@
-<!-- app/views/admin/appointments/new.html.erb -->
 <h1 class="text-2xl font-bold mb-6">Nueva Cita</h1>
 
 <%= turbo_frame_tag "appointment_form" do %>
-  <% if defined?(@packages) %>
+  <% if @packages.present? %>
     <%= render "admin/appointments/package_selector", packages: @packages %>
   <% end %>
 <% end %>
 
-<%= turbo_frame_tag "doctor_date_frame"      do %><% end %>
-<%= turbo_frame_tag "available_times_frame"  do %><% end %>
-<%= turbo_frame_tag "client_data_frame"      do %><% end %>
+<%= turbo_frame_tag "doctor_date_frame" %>
+<%= turbo_frame_tag "available_times_frame" %>
+<%= turbo_frame_tag "client_data_frame" %>

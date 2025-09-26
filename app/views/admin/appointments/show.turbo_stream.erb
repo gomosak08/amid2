@@ -1,0 +1,7 @@
+<%= turbo_stream.update "content" do %>
+  <%= render "admin/appointments/show_body", appointment: @appointment %>
+<% end %>
+
+<%= turbo_stream.update "flash" do %>
+  <%= render "shared/flash" %>
+<% end %>

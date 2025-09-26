@@ -35,17 +35,21 @@ Rails.application.routes.draw do
   end
 
   namespace :admin do
-    resources :appointments, only: [ :index, :new, :create, :show ] do
+    resources :appointments, only: [ :index, :show, :new, :create, :edit, :update, :destroy ] do
       collection do
         get :available_fields
       end
+    member do
+      patch :cancel   # ✅ esto te crea cancel_admin_appointment_path(:id)
     end
-    # …
+    end
   end
 
   # Cleanup: non-admin appointment management
   resources :packages, only: [ :index, :show ]
-  resources :appointments, only: [ :edit, :update, :destroy ]
+  namespace :admin do
+    resources :packages
+  end
   post "check_availability", to: "appointments#check_availability"
 
   # Legacy static aliases (if you still need /terms, /privacy, /contact)

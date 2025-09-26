@@ -25,6 +25,9 @@
     <script src="https://www.google.com/recaptcha/api.js?render=<%= ENV['RECAPTCHA_SITE_KEY'] %>" async defer></script>
     <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true %>
     <%= csrf_meta_tags %>
+    <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true %>
+    <%= stylesheet_link_tag "https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css", "data-turbo-track": "reload" %>
+
 
     <%= yield :head %>
   </head>
@@ -204,7 +207,24 @@
     <script src="https://www.google.com/recaptcha/api.js?render=<%= ENV.fetch("RECAPTCHA_SITE_KEY") %>"></script>
 
 
-   
+    <!-- layouts/application.html.erb, antes de </body> -->
+    <script nonce="<%= content_security_policy_script_nonce if respond_to?(:content_security_policy_script_nonce) %>">
+      document.addEventListener("turbo:load", function() {
+        var el = document.getElementById("auto-pdf");
+        if (!el) return;
+
+        // Navegación real: dispara la descarga
+        window.location = el.dataset.url;
+
+        // Limpia ?download=1 del URL para no repetir en refresh/back
+        try {
+          var u = new URL(window.location.href);
+          u.searchParams.delete("download");
+          history.replaceState({}, document.title, u.toString());
+        } catch(e) {}
+      });
+    </script>
+
 
 
 

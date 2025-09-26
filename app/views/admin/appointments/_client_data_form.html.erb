@@ -1,41 +1,46 @@
-<!-- app/views/admin/appointments/_client_data_form.html.erb -->
-<%= form_with model: @appointment,
-              url: admin_appointments_path,
-              method: :post,
-              data: { turbo: false },
-              id: "appointment-form",
-              class: "space-y-6" do |f| %>
+<% ts = local_assigns[:time_slot].presence %>
 
-  <%= f.hidden_field :package_id, value: package.id %>
-  <%= f.hidden_field :doctor_id,  value: doctor_id %>
-  <%= f.hidden_field :start_date, value: time_slot %>
-
-  <div class="field">
-    <%= f.label :name, "Nombre", class: "block text-lg font-medium text-gray-700 mb-2" %>
-    <%= f.text_field :name, required: true, class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
-    <% if f.object.errors[:name].any? %>
-      <div class="text-red-600"><%= f.object.errors[:name].join(", ") %></div>
-    <% end %>
+<% if ts.blank? %>
+  <div class="mt-4 p-5 bg-blue-50 border border-blue-200 text-blue-800 rounded-lg text-base">
+    Selecciona doctor, fecha y horario para continuar con los datos del paciente.
   </div>
+<% else %>
+  <%= form_with scope: :appointment,
+                url: admin_appointments_path,
+                method: :post,
+                data: { turbo_frame: "_top" },
+                class: "space-y-6" do |f| %>
 
-  <div class="field">
-    <%= f.label :age, "Edad", class: "block text-lg font-medium text-gray-700 mb-2" %>
-    <%= f.number_field :age, required: true, class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
-    <% if f.object.errors[:age].any? %>
-      <div class="text-red-600"><%= f.object.errors[:age].join(", ") %></div>
-    <% end %>
-  </div>
+    <%= f.hidden_field :package_id, value: package.id %>
+    <%= f.hidden_field :doctor_id,  value: doctor_id %>
+    <%= f.hidden_field :start_date, value: (ts.respond_to?(:iso8601) ? ts.iso8601 : ts) %>
+    <%= f.hidden_field :duration, value: duration %>
+    <!-- reCAPTCHA como param top-level -->
+    <%= hidden_field_tag :recaptcha_token, "", id: "recaptcha_token" %>
 
-  <div class="field">
-    <%= f.label :phone, "Número de Teléfono", class: "block text-lg font-medium text-gray-700 mb-2" %>
-    <%= f.telephone_field :phone, required: true, class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
-    <% if f.object.errors[:phone].any? %>
-      <div class="text-red-600"><%= f.object.errors[:phone].join(", ") %></div>
-    <% end %>
-  </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div>
+        <%= f.label :name, "Nombre", class: "block text-base font-medium text-gray-700 mb-2" %>
+        <%= f.text_field :name, required: true,
+              class: "block w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+      </div>
 
-  <div class="actions">
-    <%= f.submit "Agendar Cita", class: "bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition-colors duration-200" %>
-  </div>
+      <div>
+        <%= f.label :phone, "Teléfono", class: "block text-base font-medium text-gray-700 mb-2" %>
+        <%= f.telephone_field :phone, required: true,
+              class: "block w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+      </div>
 
+      <div>
+        <%= f.label :age, "Edad", class: "block text-base font-medium text-gray-700 mb-2" %>
+        <%= f.number_field :age, min: 0, step: 1, required: true,
+              class: "block w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+      </div>
+    </div>
+
+    <div class="pt-2">
+      <%= f.submit "Reservar cita",
+            class: "w-full md:w-auto px-5 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-base font-semibold" %>
+    </div>
+  <% end %>
 <% end %>
