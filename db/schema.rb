@@ -59,7 +59,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_09_05_221744) do
     t.boolean "dummy"
     t.string "token"
     t.integer "scheduled_by"
-    t.index ["token"], name: "index_appointments_on_token", unique: true
+    t.index ["token"], name: "index_appointments_on_token"
   end
 
   create_table "doctor_packages", force: :cascade do |t|
