@@ -1,20 +1,89 @@
-<!-- app/views/appointments/find.html.erb -->
+<div class="min-h-[75vh] bg-gradient-to-b from-sky-50 via-white to-white">
+  <div class="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
+    <div class="overflow-hidden rounded-[28px] border border-gray-200 bg-white shadow-xl shadow-blue-100/40">
+      
+      <!-- Encabezado -->
+      <div class="relative overflow-hidden bg-gradient-to-r from-blue-600 via-cyan-500 to-sky-500 px-6 py-10 text-white sm:px-10">
+        <div class="absolute inset-0 opacity-10">
+          <div class="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white"></div>
+          <div class="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-white"></div>
+        </div>
 
-<div class="container mx-auto px-4 py-8 max-w-md">
-  <h2 class="text-2xl font-bold mb-4 text-center">Maneja tus Citas</h2>
-  <p class="text-gray-700 mb-6 text-center">Ingresa tu código único de cita a continuación para cancelar tu cita.</p>
-  <%= turbo_frame_tag "flash" %>
-  <%= turbo_frame_tag "appointment_result" %>
-  <%= form_with url: find_appointments_path, method: :post, local: true, class: "space-y-4" do |form| %>
-    <!-- Campo del Código de Cita -->
-    <div>
-      <%= form.label :unique_code, "Código de Cita", class: "block text-lg font-medium text-gray-700 mb-2" %>
-      <%= form.text_field :unique_code, class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
-    </div>
+        <div class="relative mx-auto max-w-lg text-center">
+          <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10m-11 9h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </div>
 
-    <!-- Botón de Enviar -->
-    <div class="text-center">
-      <%= form.submit "Buscar Citas", class: "w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200" %>
+          <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">
+            Maneja tu cita
+          </h1>
+
+          <p class="mt-3 text-sm leading-6 text-blue-50 sm:text-base">
+            Consulta, edita o cancela tu cita médica usando tu código único de confirmación.
+          </p>
+        </div>
+      </div>
+
+      <!-- Contenido -->
+      <div class="px-6 py-8 sm:px-10">
+        <% if flash[:alert].present? %>
+          <div class="mb-6 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-700">
+            <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-5 w-5 flex-shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 4h.01M10.29 3.86l-7.5 13A1 1 0 003.67 18h16.66a1 1 0 00.87-1.5l-7.5-13a1 1 0 00-1.74 0z" />
+            </svg>
+            <div><%= flash[:alert] %></div>
+          </div>
+        <% elsif flash[:notice].present? %>
+          <div class="mb-6 flex items-start gap-3 rounded-2xl border border-green-200 bg-green-50 px-4 py-4 text-sm text-green-700">
+            <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-5 w-5 flex-shrink-0 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div><%= flash[:notice] %></div>
+          </div>
+        <% end %>
+
+        <%= form_with url: locate_appointments_path,
+                      method: :post,
+                      local: true,
+                      class: "space-y-6" do |form| %>
+          
+          <div class="space-y-2">
+            <%= form.label :unique_code, "Código único de cita", class: "block text-sm font-semibold text-gray-800" %>
+
+            <div class="relative">
+              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16 7V5a4 4 0 10-8 0v2M5 9h14l-1 10H6L5 9z" />
+                </svg>
+              </div>
+
+              <%= form.text_field :unique_code,
+                    value: params[:unique_code],
+                    placeholder: "Ej. AMID-8F3K2P",
+                    autofocus: true,
+                    autocomplete: "off",
+                    class: "block w-full rounded-2xl border border-gray-300 py-3 pl-11 pr-4 text-base uppercase tracking-wide text-gray-900 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/15" %>
+            </div>
+
+            <p class="text-sm text-gray-500">
+              Escribe el código tal como aparece en tu confirmación.
+            </p>
+          </div>
+
+          <div class="pt-1">
+            <%= form.submit "Buscar cita",
+                  class: "inline-flex w-full items-center justify-center rounded-2xl bg-blue-600 px-5 py-3.5 text-sm font-semibold text-white shadow-md shadow-blue-200 transition hover:-translate-y-0.5 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500/20" %>
+          </div>
+        <% end %>
+
+        <div class="mt-8 border-t border-gray-100 pt-6 text-center">
+          <p class="text-sm text-gray-500">
+            ¿No encuentras tu código? Revisa tu comprobante o mensaje de confirmación.
+          </p>
+        </div>
+      </div>
     </div>
-  <% end %>
+  </div>
 </div>

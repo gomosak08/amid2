@@ -1,247 +1,945 @@
 <style>
-/* Make indicator buttons circular */
-.carousel-indicators [data-bs-target] {
-  width: 12px;
-  height: 12px;
-  background-color: #9ca3af; /* gray */
-  border-radius: 50% !important;
-  margin: 0 6px;
-  border: none;
-}
+  .home-wrap{
+    padding: .2rem 0 1.6rem;
+  }
 
-.carousel-indicators .active {
-  background-color: #3b82f6 !important; /* active = blue */
-}
+  .home-container{
+    width:100%;
+    max-width:100%;
+    margin:0 auto;
+  }
 
-/* Nav buttons: remove background/border, make larger */
-.carousel-control-prev,
-.carousel-control-next {
-  width: 4rem;
-  height: 4rem;
-  background-color: transparent;
-  border: none;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-}
+  .hero-main{
+    position:relative;
+    overflow:hidden;
+    border-radius: 28px;
+    background:
+      radial-gradient(circle at top left, rgba(255,255,255,.26), transparent 30%),
+      linear-gradient(135deg, #0ea5e9 0%, #2563eb 45%, #1d4ed8 100%);
+    box-shadow: 0 18px 40px rgba(37,99,235,.18);
+    color:#fff;
+    margin-bottom: 1.25rem;
+  }
 
-/* Remove Bootstrap default arrow background */
-.carousel-control-prev-icon,
-.carousel-control-next-icon {
-  background-image: none;
-  display: inline-block;
-  width: 0;
-  height: 0;
-}
+  .hero-main::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:
+      linear-gradient(120deg, rgba(255,255,255,.08), transparent 30%),
+      radial-gradient(circle at 85% 20%, rgba(255,255,255,.16), transparent 22%);
+    pointer-events:none;
+  }
 
-/* Left-pointing gray triangle */
-.carousel-control-prev-icon {
-  border-top: 15px solid transparent;
-  border-bottom: 15px solid transparent;
-  border-right: 25px solid #9ca3af; /* gray-400 */
-}
+  .hero-grid{
+    position:relative;
+    z-index:1;
+    display:grid;
+    grid-template-columns: 1.08fr .92fr;
+    gap: 1.25rem;
+    align-items:center;
+    padding: clamp(1.2rem, 3vw, 2.4rem);
+  }
 
-/* Right-pointing gray triangle */
-.carousel-control-next-icon {
-  border-top: 15px solid transparent;
-  border-bottom: 15px solid transparent;
-  border-left: 25px solid #9ca3af; /* gray-400 */
-}
+  .hero-copy{ max-width: 760px; }
 
-/* === NUEVO: Misma medida sin recortar (rellena estirando/encogiendo) === */
-.carousel-img-fill {
-  width: 100%;
-  height: 450px;     /* ajusta si necesitas */
-  object-fit: fill;  /* estira/encoge para ocupar todo */
-}
+  .hero-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:.55rem;
+    background: rgba(255,255,255,.14);
+    border:1px solid rgba(255,255,255,.20);
+    backdrop-filter: blur(8px);
+    color:#fff;
+    font-size:.83rem;
+    font-weight:900;
+    border-radius:999px;
+    padding:.65rem .9rem;
+    margin-bottom:1rem;
+  }
 
-.card-img-fill {
-  width: 100%;
-  height: 16rem;     /* ~ h-64 de Tailwind */
-  object-fit: fill;  /* sin recorte; puede deformar */
-  background-color: #fff;
-  border-radius: 0.375rem; /* similar a rounded-md */
-}
+  .hero-title{
+    font-size: clamp(2rem, 4vw, 4.25rem);
+    line-height: .98;
+    font-weight: 950;
+    margin: 0 0 .85rem;
+    letter-spacing: -.03em;
+  }
+
+  .hero-text{
+    font-size: clamp(1rem, 1.4vw, 1.12rem);
+    line-height:1.7;
+    color: rgba(255,255,255,.95);
+    max-width: 58ch;
+    margin: 0 0 1.2rem;
+  }
+
+  .hero-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:.8rem;
+    margin-bottom:1.1rem;
+  }
+
+  .hero-btn-primary,
+  .hero-btn-secondary{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:.65rem;
+    padding:.95rem 1.2rem;
+    border-radius:16px;
+    text-decoration:none;
+    font-weight:900;
+    transition: transform .18s ease, filter .18s ease, background .18s ease;
+  }
+
+  .hero-btn-primary{
+    background:#22c55e;
+    color:#06240f;
+    box-shadow:0 14px 30px rgba(34,197,94,.24);
+  }
+
+  .hero-btn-primary:hover{
+    transform: translateY(-2px);
+    filter: brightness(.98);
+    color:#06240f;
+  }
+
+  .hero-btn-secondary{
+    background: rgba(255,255,255,.14);
+    color:#fff;
+    border:1px solid rgba(255,255,255,.22);
+    backdrop-filter: blur(8px);
+  }
+
+  .hero-btn-secondary:hover{
+    transform: translateY(-2px);
+    background: rgba(255,255,255,.22);
+    color:#fff;
+  }
+
+  .hero-points{
+    display:grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap:.8rem;
+    max-width:900px;
+  }
+
+  .hero-point{
+    background: rgba(255,255,255,.12);
+    border:1px solid rgba(255,255,255,.16);
+    border-radius:18px;
+    padding:.9rem 1rem;
+    backdrop-filter: blur(8px);
+  }
+
+  .hero-point strong{
+    display:block;
+    font-size:1rem;
+    font-weight:900;
+    margin-bottom:.15rem;
+  }
+
+  .hero-point span{
+    font-size:.9rem;
+    color:rgba(255,255,255,.92);
+  }
+
+  .hero-visual{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .hero-carousel-card{
+    width:100%;
+    max-width: 580px;
+    overflow:hidden;
+    border-radius: 24px;
+    background: rgba(255,255,255,.10);
+    border:1px solid rgba(255,255,255,.18);
+    box-shadow: 0 16px 36px rgba(15,23,42,.18);
+    backdrop-filter: blur(10px);
+  }
+
+  .hero-slide{
+    position:relative;
+    height: clamp(320px, 42vw, 480px);
+    background:#dbeafe;
+  }
+
+  .hero-slide img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+
+  .carousel-indicators{
+    margin-bottom: .75rem;
+  }
+
+  .carousel-indicators [data-bs-target]{
+    width:10px;
+    height:10px;
+    border-radius:999px;
+    background:#dbeafe;
+    border:none;
+    opacity:.8;
+    margin:0 5px;
+  }
+
+  .carousel-indicators .active{
+    background:#22c55e !important;
+    opacity:1;
+  }
+
+  .carousel-control-prev,
+  .carousel-control-next{
+    width: 2.8rem;
+    height: 2.8rem;
+    top:50%;
+    transform:translateY(-50%);
+    margin:0 .8rem;
+    border-radius:999px;
+    background: rgba(255,255,255,.78);
+  }
+
+  .carousel-control-prev-icon,
+  .carousel-control-next-icon{
+    background-image:none;
+    width:0;
+    height:0;
+  }
+
+  .carousel-control-prev-icon{
+    border-top:9px solid transparent;
+    border-bottom:9px solid transparent;
+    border-right:14px solid #111827;
+  }
+
+  .carousel-control-next-icon{
+    border-top:9px solid transparent;
+    border-bottom:9px solid transparent;
+    border-left:14px solid #111827;
+  }
+
+  .search-panel{
+    margin-top: -34px;
+    position:relative;
+    z-index:3;
+    margin-bottom:1.4rem;
+  }
+
+  .search-card{
+    background:#fff;
+    border:1px solid #e2e8f0;
+    box-shadow: 0 16px 36px rgba(15,23,42,.08);
+    border-radius: 24px;
+    padding: 1rem;
+  }
+
+  .search-grid{
+    display:grid;
+    grid-template-columns: 1.2fr auto;
+    gap:.9rem;
+    align-items:center;
+  }
+
+  .search-input-wrap{ position:relative; }
+
+  .search-input-icon{
+    position:absolute;
+    left:16px;
+    top:50%;
+    transform:translateY(-50%);
+    color:#64748b;
+    font-size:1rem;
+  }
+
+  .search-input{
+    width:100%;
+    border:1px solid #dbe3ee;
+    background:#f8fafc;
+    border-radius:16px;
+    padding:1rem 1rem 1rem 2.85rem;
+    font-size:1rem;
+    color:#0f172a;
+    outline:none;
+    transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+  }
+
+  .search-input:focus{
+    border-color:#93c5fd;
+    background:#fff;
+    box-shadow: 0 0 0 4px rgba(59,130,246,.10);
+  }
+
+  .search-button{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:.55rem;
+    padding:1rem 1.2rem;
+    border-radius:16px;
+    background:#2563eb;
+    color:#fff;
+    font-weight:900;
+    text-decoration:none;
+    white-space:nowrap;
+    border:none;
+  }
+
+  .search-button:hover{
+    background:#1d4ed8;
+    color:#fff;
+  }
+
+  .chip-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:.75rem;
+    margin-top:.95rem;
+  }
+
+  .quick-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:.55rem;
+    padding:.8rem 1rem;
+    border-radius:999px;
+    text-decoration:none;
+    font-weight:800;
+    background:#eff6ff;
+    color:#1d4ed8;
+    border:1px solid #dbeafe;
+    transition: transform .18s ease, background .18s ease, border-color .18s ease;
+  }
+
+  .quick-chip:hover{
+    transform: translateY(-1px);
+    background:#dbeafe;
+    color:#1d4ed8;
+  }
+
+  .trust-grid{
+    display:grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap:1rem;
+    margin-bottom:1.6rem;
+  }
+
+  .trust-card{
+    background:#fff;
+    border:1px solid #e2e8f0;
+    border-radius:22px;
+    padding:1.05rem;
+    box-shadow: 0 10px 24px rgba(15,23,42,.05);
+    text-align:center;
+  }
+
+  .trust-icon{
+    width:52px;
+    height:52px;
+    border-radius:16px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    background:#eff6ff;
+    color:#2563eb;
+    font-size:1.15rem;
+    margin-bottom:.8rem;
+  }
+
+  .trust-card h3{
+    margin:0 0 .2rem;
+    font-size:1rem;
+    font-weight:900;
+    color:#0f172a;
+  }
+
+  .trust-card p{
+    margin:0;
+    color:#64748b;
+    line-height:1.55;
+    font-size:.92rem;
+  }
+
+  .selection-block{
+    margin-bottom:1.6rem;
+    scroll-margin-top: 120px;
+  }
+
+  .selection-card{
+    background:#fff;
+    border:1px solid #e2e8f0;
+    border-radius:26px;
+    padding:1.2rem;
+    box-shadow: 0 12px 28px rgba(15,23,42,.05);
+  }
+
+  .selection-grid{
+    display:grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap:1rem;
+  }
+
+  .selection-option{
+    display:flex;
+    flex-direction:column;
+    gap:.8rem;
+    padding:1.1rem;
+    border-radius:22px;
+    border:1px solid #e2e8f0;
+    background:#f8fbff;
+    text-decoration:none;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  }
+
+  .selection-option:hover{
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(15,23,42,.08);
+    border-color:#93c5fd;
+  }
+
+  .selection-icon{
+    width:56px;
+    height:56px;
+    border-radius:18px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    background:#dbeafe;
+    color:#1d4ed8;
+    font-size:1.25rem;
+  }
+
+  .selection-option h3{
+    margin:0;
+    font-size:1.05rem;
+    font-weight:900;
+    color:#0f172a;
+  }
+
+  .selection-option p{
+    margin:0;
+    color:#64748b;
+    line-height:1.6;
+  }
+
+  .section-block{
+    margin-top: 1.2rem;
+    scroll-margin-top: 120px;
+  }
+
+  .section-head{
+    display:flex;
+    align-items:end;
+    justify-content:space-between;
+    gap:1rem;
+    margin-bottom:1rem;
+    flex-wrap:wrap;
+  }
+
+  .section-kicker{
+    display:inline-flex;
+    align-items:center;
+    gap:.5rem;
+    font-size:.8rem;
+    font-weight:900;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    color:#2563eb;
+    margin-bottom:.35rem;
+  }
+
+  .section-title{
+    margin:0;
+    font-size: clamp(1.55rem, 2vw, 2.2rem);
+    font-weight:950;
+    line-height:1.05;
+    color:#0f172a;
+  }
+
+  .section-sub{
+    margin:.35rem 0 0;
+    color:#64748b;
+    font-size:.97rem;
+  }
+
+  .section-link{
+    display:inline-flex;
+    align-items:center;
+    gap:.5rem;
+    text-decoration:none;
+    font-weight:900;
+    color:#2563eb;
+  }
+
+  .section-link:hover{
+    color:#1d4ed8;
+  }
+
+  .cards-grid{
+    display:grid;
+    gap:1.25rem;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .search-item-hidden{
+    display:none !important;
+  }
+
+  .empty-search{
+    display:none;
+    margin-top:1rem;
+    background:#fff;
+    border:1px dashed #cbd5e1;
+    border-radius:22px;
+    padding:1.2rem;
+    text-align:center;
+    color:#64748b;
+  }
+
+  .empty-search.is-visible{
+    display:block;
+  }
+
+  .empty-state{
+    background:#fff;
+    border:1px dashed #cbd5e1;
+    border-radius:22px;
+    padding:1.4rem;
+    text-align:center;
+    color:#64748b;
+  }
+
+  @media (max-width: 1400px){
+    .cards-grid{
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 1100px){
+    .hero-grid{
+      grid-template-columns: 1fr;
+    }
+
+    .hero-copy{
+      max-width:none;
+    }
+
+    .hero-points{
+      grid-template-columns: 1fr;
+    }
+
+    .selection-grid{
+      grid-template-columns: 1fr;
+    }
+
+    .cards-grid{
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 991.98px){
+    .trust-grid{
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 767.98px){
+    .hero-main{
+      border-radius:22px;
+    }
+
+    .hero-grid{
+      padding:1rem;
+      gap:1rem;
+    }
+
+    .hero-title{
+      font-size: 2rem;
+    }
+
+    .hero-actions{
+      flex-direction:column;
+    }
+
+    .hero-btn-primary,
+    .hero-btn-secondary{
+      width:100%;
+    }
+
+    .search-panel{
+      margin-top: .9rem;
+    }
+
+    .search-card{
+      border-radius:20px;
+      padding:.9rem;
+    }
+
+    .search-grid{
+      grid-template-columns: 1fr;
+    }
+
+    .trust-grid,
+    .cards-grid{
+      grid-template-columns: 1fr;
+    }
+
+    .section-head{
+      align-items:start;
+    }
+  }
 </style>
 
+<%
+  featured_services  = @packages.where(kind: "servicios", featured: true)
+  featured_packages  = @packages.where(kind: "paquete", featured: true)
+  featured_surgeries = @packages.where(kind: "cirugia", featured: true)
+%>
 
+<div class="home-wrap">
+  <div class="home-container">
 
-<div id="carouselExample" class="carousel slide" data-bs-ride="carousel" data-bs-interval="4000">
-  <!-- Indicators -->
-  <div class="carousel-indicators">
-    <button type="button" data-bs-target="#carouselExample" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-    <button type="button" data-bs-target="#carouselExample" data-bs-slide-to="1" aria-label="Slide 2"></button>
-    <button type="button" data-bs-target="#carouselExample" data-bs-slide-to="2" aria-label="Slide 3"></button>
-    <button type="button" data-bs-target="#carouselExample" data-bs-slide-to="3" aria-label="Slide 4"></button>
-    <button type="button" data-bs-target="#carouselExample" data-bs-slide-to="4" aria-label="Slide 5"></button>
-  </div>
+    <section class="hero-main">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <span class="hero-pill">
+            <i class="fa-solid fa-heart-pulse"></i>
+            Atención médica profesional y confiable
+          </span>
 
-  <!-- Slides -->
-  <div class="carousel-inner">
-    <div class="carousel-item active">
-      <%= image_tag "slider1.jpg", class: "d-block w-100 carousel-img-fill" %>
-    </div>
-    <div class="carousel-item">
-      <%= image_tag "slider2.jpg", class: "d-block w-100 carousel-img-fill" %>
-    </div>
-    <div class="carousel-item">
-      <%= image_tag "slider3.jpg", class: "d-block w-100 carousel-img-fill" %>
-    </div>
-    <div class="carousel-item">
-      <%= image_tag "slider4.jpg", class: "d-block w-100 carousel-img-fill" %>
-    </div>
-    <div class="carousel-item">
-      <%= image_tag "slider5.jpg", class: "d-block w-100 carousel-img-fill" %>
-    </div>
-  </div>
+          <h1 class="hero-title">Agenda tu cita médica de forma rápida y sencilla</h1>
 
-  <!-- Controls -->
-  <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
-    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">Anterior</span>
-  </button>
-  <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
-    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">Siguiente</span>
-  </button>
-</div>
+          <p class="hero-text">
+            Primero elige el servicio, paquete o cirugía que necesitas. Después podrás seleccionar
+            médico, fecha y horario de forma más clara.
+          </p>
 
+          <div class="hero-actions">
+            <%= link_to "#seleccionar-agenda", class: "hero-btn-primary" do %>
+              <i class="fa-solid fa-calendar-check"></i>
+              Elegir qué agendar
+            <% end %>
 
-
-
-<!-- Servicios Section -->
-<div class="mb-12">
-  <h2 class="text-3xl font-bold text-center mb-6" style="color:rgb(0, 126, 27);">
-    <%= link_to "Servicios", services_path, class: "hover:underline" %>
-  </h2>
-
-  <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-3">
-    <% @packages.where(kind: 'servicios', featured: true).each do |package| %>
-      <div class="bg-white shadow-md rounded-lg overflow-hidden p-6" data-controller="toggle-description">
-        
-        <!-- Title -->
-        <h3 class="text-xl font-semibold mb-1">
-          <%= link_to package.name, package_path(package), class: "text-blue-600 hover:underline" %>
-        </h3>
-
-        <!-- Always-visible Price -->
-        <p class="text-gray-900 font-bold mb-2">Precio: <%= number_to_currency(package.price) %></p>
-
-        <!-- Clickable Image -->
-        <% if package.image.present? %>
-          <div
-            data-action="click->toggle-description#toggle"
-            class="mb-4 cursor-pointer bg-gray-100 rounded-md flex items-center justify-center">
-            <%= image_tag package.image,
-                  alt: package.name,
-                  class: "card-img-fill" %>
+            <%= link_to "#servicios", class: "hero-btn-secondary" do %>
+              <i class="fa-solid fa-stethoscope"></i>
+              Ver servicios
+            <% end %>
           </div>
-        <% end %>
 
-        <!-- Toggleable Description -->
-        <div data-toggle-description-target="description" class="hidden mb-6">
-          <%= simple_format(package.description, {}, wrapper_tag: "p", class: "text-gray-700") %>
+          <div class="hero-points">
+            <div class="hero-point">
+              <strong>Proceso más claro</strong>
+              <span>Primero eliges el estudio o paquete y luego agendas.</span>
+            </div>
+
+            <div class="hero-point">
+              <strong>Menos confusión</strong>
+              <span>Así el sistema sí sabe qué opción elegiste para mostrar médicos.</span>
+            </div>
+
+            <div class="hero-point">
+              <strong>Más rápido para el paciente</strong>
+              <span>Encuentra, compara y agenda desde la misma página.</span>
+            </div>
+          </div>
         </div>
 
-        <!-- Always-visible Booking Button -->
-        <%= link_to "Agendar Cita", new_appointment_path(package_id: package.id), 
-          class: "bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-200",
-          data: { turbo: false } %>
+        <div class="hero-visual">
+          <div class="hero-carousel-card">
+            <div id="carouselExample" class="carousel slide" data-bs-ride="carousel" data-bs-interval="4500">
+              <div class="carousel-indicators">
+                <% 5.times do |i| %>
+                  <button type="button"
+                          data-bs-target="#carouselExample"
+                          data-bs-slide-to="<%= i %>"
+                          class="<%= 'active' if i == 0 %>"
+                          aria-label="Slide <%= i + 1 %>"></button>
+                <% end %>
+              </div>
 
-      </div>
-    <% end %>
-  </div>
-</div>
+              <div class="carousel-inner">
+                <% ["slider1.jpg","slider2.jpg","slider3.jpg","slider4.jpg","slider5.jpg"].each_with_index do |img, idx| %>
+                  <div class="carousel-item <%= 'active' if idx == 0 %>">
+                    <div class="hero-slide">
+                      <%= image_tag img, alt: "AMID", class: "w-full h-full object-cover" %>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
 
+              <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Anterior</span>
+              </button>
 
-
-<!-- Paquetes Section -->
-<div class="mb-12">
-  <h2 class="text-3xl font-bold text-center mb-6 text-blue-600">
-    <%= link_to "Paquetes", packages_path, class: "hover:underline" %>
-  </h2>
-  <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-3">
-    <% @packages.where(kind: 'paquete', featured: true).each do |package| %>
-      <div class="bg-white shadow-md rounded-lg overflow-hidden p-6" data-controller="toggle-description">
-        
-        <!-- Title -->
-        <h3 class="text-xl font-semibold mb-1">
-          <%= link_to package.name, package_path(package), class: "text-blue-600 hover:underline" %>
-        </h3>
-
-        <!-- Always-visible Price -->
-        <p class="text-gray-900 font-bold mb-2">Precio: <%= number_to_currency(package.price) %></p>
-
-        <!-- Clickable Image -->
-        <% if package.image.present? %>
-          <div
-            data-action="click->toggle-description#toggle"
-            class="mb-4 cursor-pointer bg-gray-100 rounded-md flex items-center justify-center">
-            <%= image_tag package.image,
-                  alt: package.name,
-                  class: "card-img-fill" %>
+              <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Siguiente</span>
+              </button>
+            </div>
           </div>
-        <% end %>
+        </div>
+      </div>
+    </section>
 
-        <!-- Toggleable Description -->
-        <div data-toggle-description-target="description" class="hidden mb-6">
-          <%= simple_format(package.description, {}, wrapper_tag: "p", class: "text-gray-700") %>
+    <section class="search-panel">
+      <div class="search-card">
+        <div class="search-grid">
+          <div class="search-input-wrap">
+            <i class="fa-solid fa-magnifying-glass search-input-icon"></i>
+            <input
+              id="home-search-input"
+              type="text"
+              class="search-input"
+              placeholder="Busca un servicio, paquete o estudio..."
+              aria-label="Buscar servicios"
+            >
+          </div>
+
+          <button id="home-search-clear" type="button" class="search-button">
+            <i class="fa-solid fa-rotate-left"></i>
+            Limpiar búsqueda
+          </button>
         </div>
 
-        <!-- Always-visible Booking Button -->
-        <%= link_to "Agendar Cita", new_appointment_path(package_id: package.id), 
-          class: "bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duración-200",
-          data: { turbo: false } %>
+        <div class="chip-row">
+          <a href="#servicios" class="quick-chip">
+            <i class="fa-solid fa-wave-square"></i>
+            Ultrasonidos y servicios
+          </a>
 
+          <a href="#paquetes" class="quick-chip">
+            <i class="fa-solid fa-box-open"></i>
+            Paquetes
+          </a>
+
+          <a href="#cirugias" class="quick-chip">
+            <i class="fa-solid fa-user-doctor"></i>
+            Cirugías
+          </a>
+
+          <a href="#seleccionar-agenda" class="quick-chip">
+            <i class="fa-solid fa-calendar-plus"></i>
+            Elegir para agendar
+          </a>
+
+          <%= link_to find_appointments_path, class: "quick-chip" do %>
+            <i class="fa-solid fa-magnifying-glass-location"></i>
+            Buscar cita
+          <% end %>
+        </div>
       </div>
-    <% end %>
-  </div>
-</div>
+    </section>
 
+    <section class="trust-grid">
+      <div class="trust-card">
+        <div class="trust-icon"><i class="fa-solid fa-list-check"></i></div>
+        <h3>Primero eliges</h3>
+        <p>Selecciona el servicio, paquete o cirugía antes de agendar.</p>
+      </div>
 
+      <div class="trust-card">
+        <div class="trust-icon"><i class="fa-solid fa-user-doctor"></i></div>
+        <h3>Médicos correctos</h3>
+        <p>Con un paquete elegido, el formulario ya puede mostrar opciones correctamente.</p>
+      </div>
 
-<!-- Cirugias Section -->
-<div class="mb-12">
-  <h2 class="text-3xl font-bold text-center mb-6 text-blue-600">
-    <%= link_to "Cirugías", surgeries_path, class: "hover:underline" %>
-  </h2>
-  <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-3">
-    <% @packages.where(kind: 'cirugia', featured: true).each do |package| %>
-      <div class="bg-white shadow-md rounded-lg overflow-hidden p-6" data-controller="toggle-description">
-        
-        <!-- Title -->
-        <h3 class="text-xl font-semibold mb-1">
-          <%= link_to package.name, package_path(package), class: "text-blue-600 hover:underline" %>
-        </h3>
+      <div class="trust-card">
+        <div class="trust-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+        <h3>Búsqueda rápida</h3>
+        <p>Filtra estudios y opciones desde la misma portada.</p>
+      </div>
 
-        <!-- Always-visible Price -->
-        <p class="text-gray-900 font-bold mb-2">Precio: <%= number_to_currency(package.price) %></p>
+      <div class="trust-card">
+        <div class="trust-icon"><i class="fa-solid fa-comments"></i></div>
+        <h3>Ayuda inmediata</h3>
+        <p>Contáctanos por WhatsApp si tienes dudas antes de agendar.</p>
+      </div>
+    </section>
 
-        <!-- Clickable Image -->
-        <% if package.image.present? %>
-          <div
-            data-action="click->toggle-description#toggle"
-            class="mb-4 cursor-pointer bg-gray-100 rounded-md flex items-center justify-center">
-            <%= image_tag package.image,
-                  alt: package.name,
-                  class: "card-img-fill" %>
+    <section class="selection-block" id="seleccionar-agenda">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">
+            <i class="fa-solid fa-calendar-check"></i>
+            Agenda paso a paso
           </div>
-        <% end %>
+          <h2 class="section-title">¿Qué deseas agendar?</h2>
+          <p class="section-sub">Elige primero la categoría. Después selecciona la opción específica y agenda.</p>
+        </div>
+      </div>
 
-        <!-- Toggleable Description -->
-        <div data-toggle-description-target="description" class="hidden mb-6">
-          <%= simple_format(package.description, {}, wrapper_tag: "p", class: "text-gray-700") %>
+      <div class="selection-card">
+        <div class="selection-grid">
+          <a href="#servicios" class="selection-option">
+            <span class="selection-icon"><i class="fa-solid fa-stethoscope"></i></span>
+            <h3>Servicios</h3>
+            <p>Ultrasonidos, consultas y otros estudios o servicios médicos.</p>
+          </a>
+
+          <a href="#paquetes" class="selection-option">
+            <span class="selection-icon"><i class="fa-solid fa-box-open"></i></span>
+            <h3>Paquetes</h3>
+            <p>Opciones agrupadas para una atención más completa.</p>
+          </a>
+
+          <a href="#cirugias" class="selection-option">
+            <span class="selection-icon"><i class="fa-solid fa-user-doctor"></i></span>
+            <h3>Cirugías</h3>
+            <p>Procedimientos especializados con información clara.</p>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-block" id="servicios">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">
+            <i class="fa-solid fa-stethoscope"></i>
+            Servicios destacados
+          </div>
+          <h2 class="section-title">Servicios médicos</h2>
+          <p class="section-sub">Selecciona un servicio y usa su botón para agendar con esa opción ya elegida.</p>
         </div>
 
-        <!-- Always-visible Booking Button -->
-        <%= link_to "Agendar Cita", new_appointment_path(package_id: package.id), 
-          class: "bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-200",
-          data: { turbo: false } %>
-
+        <%= link_to services_path, class: "section-link" do %>
+          Ver todos
+          <i class="fa-solid fa-arrow-right"></i>
+        <% end %>
       </div>
-    <% end %>
+
+      <% if featured_services.any? %>
+        <div class="cards-grid">
+          <% featured_services.each do |package| %>
+            <div class="home-search-item"
+                 data-search-text="<%= [package.name, package.description, package.kind, package.price, package.duration].compact.join(' ').downcase %>">
+              <%= render "shared/featured_package_card", package: package %>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="empty-state">Aún no hay servicios destacados disponibles.</div>
+      <% end %>
+    </section>
+
+    <section class="section-block" id="paquetes">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">
+            <i class="fa-solid fa-box-open"></i>
+            Opciones recomendadas
+          </div>
+          <h2 class="section-title">Paquetes</h2>
+          <p class="section-sub">Selecciona un paquete y agenda con esa opción ya precargada.</p>
+        </div>
+
+        <%= link_to packages_path, class: "section-link" do %>
+          Ver todos
+          <i class="fa-solid fa-arrow-right"></i>
+        <% end %>
+      </div>
+
+      <% if featured_packages.any? %>
+        <div class="cards-grid">
+          <% featured_packages.each do |package| %>
+            <div class="home-search-item"
+                 data-search-text="<%= [package.name, package.description, package.kind, package.price, package.duration].compact.join(' ').downcase %>">
+              <%= render "shared/featured_package_card", package: package %>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="empty-state">Aún no hay paquetes destacados disponibles.</div>
+      <% end %>
+    </section>
+
+    <section class="section-block" id="cirugias">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">
+            <i class="fa-solid fa-user-doctor"></i>
+            Atención especializada
+          </div>
+          <h2 class="section-title">Cirugías</h2>
+          <p class="section-sub">Selecciona una cirugía y continúa con la agenda teniendo ya esa opción definida.</p>
+        </div>
+
+        <%= link_to surgeries_path, class: "section-link" do %>
+          Ver todas
+          <i class="fa-solid fa-arrow-right"></i>
+        <% end %>
+      </div>
+
+      <% if featured_surgeries.any? %>
+        <div class="cards-grid">
+          <% featured_surgeries.each do |package| %>
+            <div class="home-search-item"
+                 data-search-text="<%= [package.name, package.description, package.kind, package.price, package.duration].compact.join(' ').downcase %>">
+              <%= render "shared/featured_package_card", package: package %>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="empty-state">Aún no hay cirugías destacadas disponibles.</div>
+      <% end %>
+    </section>
+
+    <div id="home-search-empty" class="empty-search">
+      No encontramos resultados con ese texto. Prueba con otro nombre o revisa las categorías.
+    </div>
   </div>
 </div>
+
+<script>
+  document.addEventListener("turbo:load", function () {
+    const input = document.getElementById("home-search-input");
+    const clearBtn = document.getElementById("home-search-clear");
+    const items = Array.from(document.querySelectorAll(".home-search-item"));
+    const empty = document.getElementById("home-search-empty");
+
+    if (!input || !clearBtn || items.length === 0) return;
+
+    function normalize(text) {
+      return (text || "")
+        .toString()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
+    }
+
+    function runSearch() {
+      const term = normalize(input.value);
+      let visibleCount = 0;
+
+      items.forEach((item) => {
+        const text = normalize(item.dataset.searchText);
+        const matches = term === "" || text.includes(term);
+
+        item.classList.toggle("search-item-hidden", !matches);
+        if (matches) visibleCount += 1;
+      });
+
+      if (empty) {
+        empty.classList.toggle("is-visible", term.length > 0 && visibleCount === 0);
+      }
+    }
+
+    input.addEventListener("input", runSearch);
+
+    clearBtn.addEventListener("click", function () {
+      input.value = "";
+      runSearch();
+      input.focus();
+    });
+
+    runSearch();
+  });
+</script>

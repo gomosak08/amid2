@@ -1,83 +1,141 @@
 <!-- app/views/appointments/edit.html.erb -->
-<div class="max-w-2xl lg:max-w-3xl mx-auto px-4 md:px-6 py-6">
-  <h1 class="text-2xl md:text-3xl font-bold text-center mb-2">Cancelar cita</h1>
-  <p class="text-center text-gray-600 text-sm md:text-base mb-6">Revisa la información antes de continuar.</p>
+<div class="min-h-[80vh] bg-gradient-to-b from-red-50 via-white to-white">
+  <div class="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:max-w-4xl lg:px-8">
+    <% status_key   = (@appointment.status.presence || "scheduled").to_s %>
+    <% status_label = @appointment.status_label %>
 
-  <% status_key   = (@appointment.status.presence || "scheduled").to_s %>
-  <% status_label = @appointment.status_label %>
+    <% status_class =
+        case status_key
+        when "scheduled"
+          "bg-green-100 text-green-800 ring-1 ring-inset ring-green-200"
+        when "canceled_by_admin", "canceled_by_client"
+          "bg-red-100 text-red-800 ring-1 ring-inset ring-red-200"
+        else
+          "bg-gray-100 text-gray-800 ring-1 ring-inset ring-gray-200"
+        end %>
 
-  <% status_class =
-      case status_key
-      when "scheduled" then "bg-green-100 text-green-800 ring-1 ring-inset ring-green-200"
-      when "canceled_by_admin", "canceled_by_client" then "bg-red-100 text-red-800 ring-1 ring-inset ring-red-200"
-      else "bg-gray-100 text-gray-800 ring-1 ring-inset ring-gray-200"
-      end %>
+    <div class="overflow-hidden rounded-[28px] border border-gray-200 bg-white shadow-xl shadow-gray-200/70">
+      <!-- Header -->
+      <div class="relative overflow-hidden bg-gradient-to-r from-red-600 via-rose-500 to-pink-500 px-6 py-10 text-white sm:px-8">
+        <div class="absolute inset-0 opacity-10">
+          <div class="absolute -top-10 -right-10 h-36 w-36 rounded-full bg-white"></div>
+          <div class="absolute -bottom-12 -left-10 h-44 w-44 rounded-full bg-white"></div>
+        </div>
 
+        <div class="relative text-center">
+          <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10m-7 4h4m-9 3h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
 
-
-
-  <div class="bg-white rounded-xl shadow p-5 md:p-6 space-y-6">
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-      <div>
-        <span class="block text-xs md:text-sm text-gray-500">Estado</span>
-        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs md:text-sm font-medium <%= status_class %>">
-          <%= status_label %>
-        </span>
-      </div>
-    </div>
-
-    <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div class="p-4 rounded-lg bg-gray-50">
-        <dt class="text-sm text-gray-600">Paciente</dt>
-        <dd class="mt-0.5 text-base font-semibold text-gray-900"><%= @appointment.name %></dd>
-      </div>
-
-      <div class="p-4 rounded-lg bg-gray-50">
-        <dt class="text-sm text-gray-600">Edad</dt>
-        <dd class="mt-0.5 text-base font-semibold text-gray-900"><%= @appointment.age %></dd>
-      </div>
-
-      <div class="p-4 rounded-lg bg-gray-50">
-        <dt class="text-sm text-gray-600">Médico</dt>
-        <dd class="mt-0.5 text-base font-semibold text-gray-900"><%= @appointment.doctor&.name %></dd>
+          <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">
+            Cancelar cita
+          </h1>
+          <p class="mt-3 text-sm leading-6 text-red-50 sm:text-base">
+            Revisa cuidadosamente la información antes de confirmar la cancelación.
+          </p>
+        </div>
       </div>
 
-      <div class="p-4 rounded-lg bg-gray-50">
-        <dt class="text-sm text-gray-600">Paquete</dt>
-        <dd class="mt-0.5 text-base font-semibold text-gray-900"><%= @appointment.package&.name %></dd>
+      <!-- Content -->
+      <div class="px-6 py-8 sm:px-8">
+        <!-- Estado -->
+        <div class="mb-6 flex flex-col gap-3 rounded-2xl bg-gray-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+              Estado actual
+            </p>
+            <div class="mt-2">
+              <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold sm:text-sm <%= status_class %>">
+                <%= status_label %>
+              </span>
+            </div>
+          </div>
+
+          <div class="text-sm text-gray-500">
+            Código: <span class="font-mono font-semibold text-gray-800"><%= @appointment.unique_code %></span>
+          </div>
+        </div>
+
+        <!-- Resumen -->
+        <div class="mb-6">
+          <h2 class="mb-4 text-lg font-bold text-gray-900 sm:text-xl">
+            Resumen de la cita
+          </h2>
+
+          <dl class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div class="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+              <dt class="text-sm font-medium text-gray-500">Paciente</dt>
+              <dd class="mt-1 text-base font-semibold text-gray-900"><%= @appointment.name %></dd>
+            </div>
+
+            <div class="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+              <dt class="text-sm font-medium text-gray-500">Edad</dt>
+              <dd class="mt-1 text-base font-semibold text-gray-900"><%= @appointment.age %></dd>
+            </div>
+
+            <div class="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+              <dt class="text-sm font-medium text-gray-500">Médico</dt>
+              <dd class="mt-1 text-base font-semibold text-gray-900"><%= @appointment.doctor&.name || "No asignado" %></dd>
+            </div>
+
+            <div class="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+              <dt class="text-sm font-medium text-gray-500">Paquete</dt>
+              <dd class="mt-1 text-base font-semibold text-gray-900"><%= @appointment.package&.name || "No especificado" %></dd>
+            </div>
+
+            <div class="rounded-2xl border border-gray-100 bg-gray-50 p-4 md:col-span-2">
+              <dt class="text-sm font-medium text-gray-500">Fecha y hora</dt>
+              <dd class="mt-1 text-base font-semibold leading-relaxed text-gray-900">
+                <%= l(@appointment.start_date, format: :long) %>
+                <% if @appointment.end_date.present? %>
+                  <span class="text-gray-400">–</span>
+                  <%= l(@appointment.end_date, format: :long) %>
+                <% end %>
+              </dd>
+            </div>
+
+            <div class="rounded-2xl border border-gray-100 bg-gray-50 p-4 md:col-span-2">
+              <dt class="text-sm font-medium text-gray-500">Código único</dt>
+              <dd class="mt-1 break-all font-mono text-base font-bold tracking-wider text-gray-900">
+                <%= @appointment.unique_code %>
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <!-- Advertencia -->
+        <div class="mb-8 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-4">
+          <div class="flex items-start gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 4h.01M10.29 3.86l-7.5 13A1 1 0 003.67 18h16.66a1 1 0 00.87-1.5l-7.5-13a1 1 0 00-1.74 0z" />
+            </svg>
+
+            <div class="text-sm leading-6 text-amber-900">
+              Al cancelar esta cita, el horario quedará disponible para otros pacientes.
+              <strong class="font-semibold">Esta acción no se puede deshacer.</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <%= link_to "Volver al inicio",
+                root_path,
+                class: "inline-flex w-full items-center justify-center rounded-xl border border-gray-300 px-4 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 sm:w-auto" %>
+
+          <%= button_to "Confirmar cancelación",
+                appointment_path(@appointment),
+                method: :delete,
+                form: {
+                  data: {
+                    turbo_confirm: "¿Seguro que deseas cancelar esta cita? Esta acción no se puede deshacer."
+                  }
+                },
+                class: "inline-flex w-full items-center justify-center rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 sm:w-auto" %>
+        </div>
       </div>
-
-      <div class="p-4 rounded-lg bg-gray-50 md:col-span-2">
-        <dt class="text-sm text-gray-600">Fecha y hora</dt>
-        <dd class="mt-0.5 text-base font-semibold text-gray-900">
-          <%= l(@appointment.start_date, format: :long) %>
-          <% if @appointment.end_date.present? %>
-            – <%= l(@appointment.end_date, format: :long) %>
-          <% end %>
-        </dd>
-      </div>
-
-      <div class="p-4 rounded-lg bg-gray-50 md:col-span-2">
-        <dt class="text-sm text-gray-600">Código único</dt>
-        <dd class="mt-0.5 text-base font-mono font-semibold text-gray-900 tracking-wide">
-          <%= @appointment.unique_code %>
-        </dd>
-      </div>
-    </dl>
-
-    <div class="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-900 text-sm leading-relaxed">
-      Al cancelar, se liberará este horario para otros pacientes. <strong>Esta acción no se puede deshacer.</strong>
-    </div>
-
-    <div class="mt-4 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3">
-      <%= link_to "Volver", root_path,
-            class: "inline-flex justify-center px-4 py-2.5 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm font-medium" %>
-
-      <%= button_to "Cancelar cita",
-            appointment_path(@appointment),
-            method: :delete,
-            form: { data: { turbo_confirm: "¿Seguro que deseas cancelar esta cita?" } },
-            class: "inline-flex justify-center px-4 py-2.5 rounded-md bg-red-600 text-white hover:bg-red-700 text-sm font-semibold shadow-sm" %>
     </div>
   </div>
 </div>

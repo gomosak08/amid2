@@ -1,11 +1,15 @@
 <%= turbo_frame_tag "appointment_form" do %>
   <%= render "shared/flash" %>
 
-  <!-- Formulario GET para consultar disponibilidad -->
-  <%= render "appointments/appointment_form" %>
+  <div data-controller="availability-guard">
+    <div data-availability-guard-target="searchSection">
+      <%= render "appointments/appointment_form" %>
+    </div>
 
-  <!-- Formulario POST para crear, solo si hay horarios -->
-  <% if @ctx.available_times.present? %>
-    <%= render "appointments/available_fields" %>
-  <% end %>
+    <% if @ctx.available_times.present? %>
+      <div data-availability-guard-target="resultsSection">
+        <%= render "appointments/available_fields" %>
+      </div>
+    <% end %>
+  </div>
 <% end %>

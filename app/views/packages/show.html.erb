@@ -1,54 +1,223 @@
 <!-- app/views/packages/show.html.erb -->
 
 <style>
-  /* Imagen grande, responsiva y sin recortes */
+  .package-show-shell {
+    width: 100%;
+  }
+
+  .package-show-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .package-hero-card,
+  .package-info-card,
+  .package-description-card {
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 1.5rem;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+  }
+
+  .package-hero-wrap {
+    padding: 1rem;
+    background: linear-gradient(180deg, #f8fbff 0%, #eef6ff 100%);
+  }
+
   .package-hero {
     width: 100%;
-    height: clamp(480px, 75vh, 1000px); /* mínimo 480px, ideal 75vh, máximo 1000px */
-    object-fit: contain;                /* no recorta; respeta proporción */
+    height: clamp(380px, 68vh, 860px);
+    object-fit: contain;
     background: #fff;
-    border-radius: 0.5rem;
+    border-radius: 1rem;
   }
 
-  /* El wrapper no limita la altura ni recorta */
-  .package-hero-wrap {
-    max-height: none;
-    overflow: visible;
+  .package-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .45rem .9rem;
+    border-radius: 9999px;
+    background: #eff6ff;
+    color: #2563eb;
+    font-size: .9rem;
+    font-weight: 700;
   }
 
-  /* Opcional: si quieres que JAMÁS se vea “pequeña” en pantallas muy altas */
-  @media (min-height: 1000px) {
-    .package-hero { height: 900px; } /* ajústalo si quieres */
+  .package-price-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: .9rem 1.25rem;
+    border-radius: 1rem;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    color: #1d4ed8;
+    font-weight: 800;
+    font-size: clamp(1.35rem, 2vw, 2rem);
+    line-height: 1.1;
+  }
+
+  .package-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .65rem;
+    width: 100%;
+    min-height: 54px;
+    padding: .9rem 1.25rem;
+    border-radius: 1rem;
+    background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+    box-shadow: 0 10px 24px rgba(37, 99, 235, 0.25);
+  }
+
+  .package-cta:hover {
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 14px 28px rgba(37, 99, 235, 0.32);
+  }
+
+  .package-feature {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    padding: .9rem 1rem;
+    border-radius: 1rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+  }
+
+  .package-feature-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: .85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #dbeafe;
+    color: #2563eb;
+    flex-shrink: 0;
+  }
+
+  .package-description-text {
+    white-space: pre-line;
+    color: #475569;
+    line-height: 1.8;
+  }
+
+  @media (max-width: 1024px) {
+    .package-show-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .package-hero {
+      height: clamp(320px, 52vh, 620px);
+    }
   }
 </style>
 
-<div class="w-full mx-auto px-4 py-8"> <!-- quitamos max-w-* para no limitar -->
-  <!-- Package Name -->
-  <h1 class="text-4xl font-bold text-gray-800 mb-6 text-center"><%= @package.name %></h1>
+<div class="package-show-shell w-full mx-auto px-4 md:px-6 py-8">
+  <div class="max-w-[1500px] mx-auto">
+    <!-- Encabezado -->
+    <div class="mb-8 text-center">
+      <div class="package-badge mb-4">
+        <i class="fa-solid fa-box-open"></i>
+        Paquete médico
+      </div>
 
-  <!-- Package Image -->
-  <% if @package.image.present? %>
-    <div
-      data-action="click->toggle-description#toggle"
-      class="package-hero-wrap mb-8 cursor-pointer bg-gray-100 rounded-md flex items-center justify-center p-2">
-      <%= image_tag @package.image,
-            alt: @package.name,
-            class: "package-hero" %>
-      <!-- Si prefieres ocupar TODO el marco aunque se deforme, cambia object-fit a 'fill' en .package-hero -->
+      <h1 class="text-3xl md:text-5xl font-extrabold text-slate-800 tracking-tight">
+        <%= @package.name %>
+      </h1>
+
+      <% if @package.description.present? %>
+        <p class="mt-4 text-base md:text-lg text-slate-500 max-w-3xl mx-auto">
+          Conoce los detalles, beneficios y costo de este paquete.
+        </p>
+      <% end %>
     </div>
-  <% end %>
 
-  <!-- Package Description -->
-  <p class="text-lg text-gray-700 mb-6 text-center"><%= @package.description %></p>
+    <div class="package-show-grid">
+      <!-- Imagen -->
+      <section class="package-hero-card overflow-hidden">
+        <% if @package.image.present? %>
+          <div class="package-hero-wrap">
+            <%= image_tag @package.image,
+                  alt: @package.name,
+                  class: "package-hero" %>
+          </div>
+        <% else %>
+          <div class="flex items-center justify-center h-[420px] bg-slate-50 text-slate-400 rounded-[1.5rem]">
+            <div class="text-center px-6">
+              <div class="mx-auto mb-4 w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center">
+                <i class="fa-regular fa-image text-2xl"></i>
+              </div>
+              <p class="text-lg font-semibold">Imagen no disponible</p>
+            </div>
+          </div>
+        <% end %>
+      </section>
 
-  <!-- Package Price -->
-  <p class="text-2xl font-semibold text-gray-900 text-center mb-8">
-    Precio: <span class="text-blue-600"><%= number_to_currency(@package.price) %></span>
-  </p>
+      <!-- Resumen -->
+      <aside class="space-y-6">
+        <div class="package-info-card p-6 md:p-7">
+          <p class="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400 mb-3">
+            Información del paquete
+          </p>
 
-  <!-- Action Button -->
-  <div class="flex justify-center">
-    <%= link_to "Agendar Cita", new_appointment_path(package_id: @package.id), 
-            class: "bg-blue-600 text-white py-3 px-8 rounded-lg hover:bg-blue-700 transition duration-200" %>
+          <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mb-5">
+            <%= @package.name %>
+          </h2>
+
+          <div class="mb-6">
+            <div class="text-sm text-slate-500 mb-2">Precio</div>
+            <div class="package-price-pill">
+              <%= number_to_currency(@package.price) %>
+            </div>
+          </div>
+
+          <div class="space-y-3 mb-6">
+            <div class="package-feature">
+              <div class="package-feature-icon">
+                <i class="fa-solid fa-calendar-check"></i>
+              </div>
+              <div>
+                <div class="font-semibold text-slate-800">Agenda tu cita fácilmente</div>
+                <div class="text-sm text-slate-500">Selecciona este paquete y continúa con tu reservación.</div>
+              </div>
+            </div>
+
+            <div class="package-feature">
+              <div class="package-feature-icon">
+                <i class="fa-solid fa-user-doctor"></i>
+              </div>
+              <div>
+                <div class="font-semibold text-slate-800">Atención profesional</div>
+                <div class="text-sm text-slate-500">Ideal para una experiencia más clara y organizada.</div>
+              </div>
+            </div>
+          </div>
+
+          <%= link_to new_appointment_path(package_id: @package.id),
+                class: "package-cta" do %>
+            <i class="fa-solid fa-calendar-plus"></i>
+            Agendar cita
+          <% end %>
+        </div>
+
+        <% if @package.description.present? %>
+          <div class="package-description-card p-6 md:p-7">
+            <h3 class="text-xl font-bold text-slate-800 mb-4">Descripción</h3>
+            <div class="package-description-text text-base">
+              <%= @package.description %>
+            </div>
+          </div>
+        <% end %>
+      </aside>
+    </div>
   </div>
 </div>

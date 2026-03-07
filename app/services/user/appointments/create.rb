@@ -15,13 +15,37 @@ module User::Appointments
       # Fecha/hora
       begin
         start_date = Time.zone.parse(params[:start_date].to_s)
-      rescue
+      rescue StandardError
         start_date = nil
       end
       return Result.new(success?: false, error: "Fecha y hora inválidas.") unless start_date
 
       duration = package.duration.to_i
       end_date = start_date + duration.minutes
+
+      # Teléfono normalizado
+      phone_e164 = PhoneNormalizer.to_e164(params[:phone])
+
+      # Baneo por teléfono
+      phone_ban = PhoneBan.active_now.find_by(phone_e164: phone_e164)
+
+      if phone_ban.present?
+        if phone_ban.hard?
+          return Result.new(
+            success?: false,
+            start_date: start_date,
+            error: "Este número no puede agendar ni contactar a un asistente."
+          )
+        end
+
+        if phone_ban.soft? && caller_role.to_sym == :user
+          return Result.new(
+            success?: false,
+            start_date: start_date,
+            error: "Este número no puede agendar en línea. Debe hacerlo con un asistente."
+          )
+        end
+      end
 
       # Disponibilidad
       unless User::Availability::SlotFree.call(doctor_id: doctor.id, start_date: start_date)
@@ -33,17 +57,26 @@ module User::Appointments
       end
 
       # Persistencia
-      appt = Appointment.new(params.merge(start_date: start_date, end_date: end_date, status: "scheduled"))
+      appt = Appointment.new(
+        params.merge(
+          phone: phone_e164,
+          start_date: start_date,
+          end_date: end_date,
+          status: "scheduled"
+        )
+      )
+
       if appt.save
         event_id = User::GoogleCalendar::Events::Create.call(
           appointment: appt,
-          package:     package,
-          doctor_name: Doctor.find(doctor_id)&.name,
+          package: package,
+          doctor_name: doctor.name,
           caller_role: caller_role
         )
 
         appt.update_column(:google_calendar_id, event_id) if event_id.present?
         appt.update_column(:scheduled_by, (%w[admin secretary].include?(caller_role.to_s) ? :admin : :patient))
+
         Result.new(success?: true, appointment: appt, start_date: start_date)
       else
         Result.new(success?: false, start_date: start_date, error: appt.errors.full_messages.to_sentence)

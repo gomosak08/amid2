@@ -1,84 +1,131 @@
 <!-- app/views/appointments/show.html.erb -->
 <%= turbo_frame_tag "appointment_form" do %>
-  <div class="container mx-auto px-4 py-8">
-
-    <!-- Alert Message -->
-    <div class="bg-green-100 border border-green-500 text-green-700 px-6 py-4 rounded mb-6 shadow-md text-center text-lg max-w-lg mx-auto" role="alert">
-      <strong class="font-bold">¡Éxito!</strong>
-      <span class="block sm:inline">Cita creada.</span>
-    </div>
-    
-    <!-- PDF Download Script -->
+  <div class="max-w-4xl mx-auto px-4 py-8">
+    <!-- Redirección automática al PDF -->
     <script>
-      // Delay the PDF download redirection by 3 seconds
-      setTimeout(function () {
+      setTimeout(() => {
         window.location.href = "<%= appointment_path(@appointment, format: :pdf) %>";
       }, 3000);
     </script>
-    
-    <h1 class="text-3xl font-bold mb-6 text-center">Detalles de la Cita</h1>
 
-    <!-- Appointment Details Card -->
-    <div class="bg-white shadow-md rounded-lg p-6 space-y-6">
-      <!-- Name -->
-      <p class="text-lg">
-        <strong class="font-semibold text-gray-700">Nombre:</strong>
-        <span class="text-gray-800"><%= @appointment.name.presence || "N/A" %></span>
-      </p>
+    <!-- Encabezado éxito -->
+    <div class="mb-8 rounded-3xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 p-6 shadow-sm">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div class="flex items-start gap-4">
+          <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-sm">
+            <i class="fa-solid fa-circle-check text-2xl"></i>
+          </div>
 
-      <!-- Age -->
-      <p class="text-lg">
-        <strong class="font-semibold text-gray-700">Edad:</strong>
-        <span class="text-gray-800"><%= @appointment.age.presence || "N/A" %></span>
-      </p>
+          <div>
+            <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900">
+              ¡Cita creada con éxito!
+            </h1>
+            <p class="mt-1 text-gray-600">
+              En unos segundos se descargará automáticamente tu comprobante en PDF.
+            </p>
+          </div>
+        </div>
 
-      <!-- Phone -->
-      <p class="text-lg">
-        <strong class="font-semibold text-gray-700">Número de Teléfono:</strong>
-        <span class="text-gray-800"><%= @appointment.phone.presence || "N/A" %></span>
-      </p>
+        <div class="rounded-2xl bg-white px-4 py-3 border border-emerald-100 shadow-sm">
+          <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Código único</p>
+          <p class="text-lg font-bold text-emerald-700 tracking-wide">
+            <%= @appointment.unique_code.presence || "N/A" %>
+          </p>
+        </div>
+      </div>
+    </div>
 
-      <!-- Code -->
-      <p class="text-lg">
-        <strong class="font-semibold text-gray-700">Codigo Unico:</strong>
-        <span class="text-gray-800"><%= @appointment.unique_code.presence || "N/A" %></span>
-      </p>
-
-
-      <!-- Appointment Date -->
-      <p class="text-lg">
-        <strong class="font-semibold text-gray-700">Fecha de la Cita:</strong>
-        <span class="text-gray-800">
-          <%= I18n.l(@appointment.start_date.in_time_zone("America/Mexico_City"), format: :custom, locale: :es) rescue "N/A" %>
-        </span>
-      </p>
-
-      <!-- Package -->
-      <% if @appointment.package.present? %>
-        <p class="text-lg">
-          <strong class="font-semibold text-gray-700">Paquete:</strong>
-          <span class="text-gray-800"><%= @appointment.package.name %></span>
+    <!-- Tarjeta principal -->
+    <div class="overflow-hidden rounded-3xl bg-white shadow-xl border border-gray-100">
+      <!-- Header de la tarjeta -->
+      <div class="bg-gradient-to-r from-sky-500 to-blue-600 px-6 py-5 text-white">
+        <h2 class="text-xl md:text-2xl font-bold">Detalles de la cita</h2>
+        <p class="text-sm text-blue-50 mt-1">
+          Revisa tu información antes de continuar.
         </p>
-        <p class="text-lg">
-          <strong class="font-semibold text-gray-700">Precio:</strong>
-          <span class="text-gray-800">$<%= @appointment.package.price %></span>
-        </p>
-      <% else %>
-        <p class="text-lg text-red-500">
-          <strong class="font-semibold text-gray-700">Paquete:</strong>
-          No se encontró información del paquete.
-        </p>
-      <% end %>
+      </div>
 
-      <p class="text-sm italic text-gray-500">
-        <strong>El precio no incluye consultas subsecuentes.</strong>
-      </p>
+      <div class="p-6 md:p-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+          <div class="rounded-2xl bg-gray-50 border border-gray-100 p-4">
+            <p class="text-sm font-semibold text-gray-500 mb-1">Nombre</p>
+            <p class="text-base md:text-lg font-semibold text-gray-900">
+              <%= @appointment.name.presence || "N/A" %>
+            </p>
+          </div>
 
-      <!-- Continue Button -->
-      <div class="pt-6 text-center">
-        <%= link_to "Continuar", root_path, 
-                    class: "bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-200",
-                    data: { turbo: false } %>
+          <div class="rounded-2xl bg-gray-50 border border-gray-100 p-4">
+            <p class="text-sm font-semibold text-gray-500 mb-1">Edad</p>
+            <p class="text-base md:text-lg font-semibold text-gray-900">
+              <%= @appointment.age.presence || "N/A" %>
+            </p>
+          </div>
+
+          <div class="rounded-2xl bg-gray-50 border border-gray-100 p-4">
+            <p class="text-sm font-semibold text-gray-500 mb-1">Número de teléfono</p>
+            <p class="text-base md:text-lg font-semibold text-gray-900">
+              <%= @appointment.phone.presence || "N/A" %>
+            </p>
+          </div>
+
+          <div class="rounded-2xl bg-blue-50 border border-blue-100 p-4">
+            <p class="text-sm font-semibold text-blue-700 mb-1">Fecha de la cita</p>
+            <p class="text-base md:text-lg font-bold text-gray-900">
+              <%= I18n.l(@appointment.start_date.in_time_zone("America/Mexico_City"), format: :custom, locale: :es) rescue "N/A" %>
+            </p>
+          </div>
+        </div>
+
+        <!-- Sección paquete -->
+        <div class="mt-6">
+          <% if @appointment.package.present? %>
+            <div class="rounded-3xl border border-blue-100 bg-gradient-to-r from-blue-50 to-cyan-50 p-5 md:p-6">
+              <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <p class="text-sm font-semibold uppercase tracking-wide text-blue-700 mb-1">
+                    Paquete seleccionado
+                  </p>
+                  <h3 class="text-xl md:text-2xl font-bold text-gray-900">
+                    <%= @appointment.package.name %>
+                  </h3>
+                  <p class="mt-2 text-sm italic text-gray-600">
+                    El precio no incluye consultas subsecuentes.
+                  </p>
+                </div>
+
+                <div class="rounded-2xl bg-white border border-blue-100 px-5 py-4 shadow-sm min-w-[180px] text-center">
+                  <p class="text-sm font-semibold text-gray-500 mb-1">Precio</p>
+                  <p class="text-2xl font-extrabold text-blue-700">
+                    <%= number_to_currency(@appointment.package.price) %>
+                  </p>
+                </div>
+              </div>
+            </div>
+          <% else %>
+            <div class="rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700">
+              <p class="font-semibold">No se encontró información del paquete.</p>
+            </div>
+          <% end %>
+        </div>
+
+        <!-- Nota PDF -->
+        <div class="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <span class="font-semibold">Aviso:</span>
+          El comprobante PDF se descargará automáticamente en unos segundos.
+        </div>
+
+        <!-- Acciones -->
+        <div class="mt-8 flex flex-col sm:flex-row gap-3 sm:justify-center">
+          <%= link_to "Continuar al inicio",
+                      root_path,
+                      class: "inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-3 text-white font-semibold hover:bg-blue-700 transition-colors duration-200",
+                      data: { turbo: false } %>
+
+          <%= link_to "Descargar PDF ahora",
+                      appointment_path(@appointment, format: :pdf),
+                      class: "inline-flex items-center justify-center rounded-xl bg-white border border-gray-300 px-6 py-3 text-gray-700 font-semibold hover:bg-gray-50 transition-colors duration-200",
+                      data: { turbo: false } %>
+        </div>
       </div>
     </div>
   </div>

@@ -2,27 +2,130 @@
 @tailwind components;
 @tailwind utilities;
 
-
 @import "flatpickr/dist/themes/material_blue.css";
 
-/* Ajustes de tamaño y colores */
-.flatpickr-calendar.inline {
-  width: auto;
-  box-shadow: none;
-  border: none;
+/* =========================================
+   FLATPICKR BASE
+========================================= */
+
+.flatpickr-calendar {
   font-family: inherit;
 }
 
-.flatpickr-day {
-  width: 2.25rem;
-  height: 2.25rem;
-  line-height: 2.25rem;
-  margin: 0.125rem;
-  border-radius: 0.5rem;
+.flatpickr-calendar.inline {
+  width: 100% !important;
+  max-width: 100%;
+  box-shadow: none !important;
+  border: none !important;
+  background: transparent !important;
 }
 
-.flatpickr-day.selected {
-  background: #2563eb;
-  border-color: #2563eb;
-  color: #fff;
+/* =========================================
+   CONTENEDOR INLINE
+========================================= */
+
+.date-picker-inline {
+  width: 100%;
+}
+
+.date-picker-inline .flatpickr-calendar {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.date-picker-inline .flatpickr-innerContainer {
+  display: block !important;
+  width: 100% !important;
+}
+
+.date-picker-inline .flatpickr-rContainer {
+  width: 100% !important;
+}
+
+.date-picker-inline .flatpickr-days {
+  width: 100% !important;
+}
+
+.date-picker-inline .dayContainer {
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* =========================================
+   HEADER / MESES
+========================================= */
+
+.date-picker-inline .flatpickr-months {
+  margin-bottom: 0.75rem;
+}
+
+.date-picker-inline .flatpickr-month {
+  height: 48px;
+}
+
+.date-picker-inline .flatpickr-current-month {
+  font-size: 1rem;
+  padding-top: 8px;
+}
+
+.date-picker-inline .flatpickr-weekdays {
+  margin-bottom: 0.35rem;
+}
+
+.date-picker-inline .flatpickr-weekday {
+  font-weight: 700;
+  color: #64748b;
+  background: transparent !important;
+}
+
+/* =========================================
+   DÍAS
+========================================= */
+
+.date-picker-inline .flatpickr-day {
+  max-width: inherit !important;
+  height: 42px;
+  line-height: 42px;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.date-picker-inline .flatpickr-day:hover {
+  background: #eff6ff !important;
+  border-color: #bfdbfe !important;
+}
+
+.date-picker-inline .flatpickr-day.selected,
+.date-picker-inline .flatpickr-day.startRange,
+.date-picker-inline .flatpickr-day.endRange {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+  color: #fff !important;
+}
+
+.date-picker-inline .flatpickr-day.today {
+  border-color: #2563eb !important;
+  color: #2563eb;
+}
+
+.date-picker-inline .flatpickr-day.flatpickr-disabled,
+.date-picker-inline .flatpickr-day.prevMonthDay,
+.date-picker-inline .flatpickr-day.nextMonthDay {
+  color: #cbd5e1 !important;
+}
+
+/* =========================================
+   MÓVIL
+========================================= */
+
+@media (max-width: 768px) {
+  .date-picker-inline .flatpickr-day {
+    height: 38px;
+    line-height: 38px;
+  }
 }

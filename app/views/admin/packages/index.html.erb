@@ -1,45 +1,332 @@
 <!-- app/views/admin/packages/index.html.erb -->
 
-<div class="container mx-auto px-4 py-8">
-  <h1 class="text-3xl font-bold mb-6 text-center">Administrador de Paquetes</h1>
+<div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+  <% total_packages = @total_count || @packages.size %>
 
-  <!-- New Package Button -->
-  <div class="mb-4 text-right">
-    <%= link_to 'Nuevo Paquete', new_admin_package_path, class: 'bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-200' %>
+  <!-- Header -->
+  <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-blue-900 to-cyan-700 px-6 py-8 sm:px-8 sm:py-10 shadow-xl mb-8">
+    <div class="absolute inset-0 opacity-10">
+      <div class="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-white"></div>
+      <div class="absolute bottom-0 left-0 h-32 w-32 rounded-full bg-white"></div>
+    </div>
+
+    <div class="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+      <div class="max-w-2xl">
+        <span class="inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-blue-100 ring-1 ring-white/20">
+          Panel administrativo
+        </span>
+
+        <h1 class="mt-3 text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white">
+          Administrador de Paquetes
+        </h1>
+
+        <p class="mt-3 text-sm sm:text-base text-blue-100/90 leading-relaxed">
+          Consulta, busca y organiza los paquetes del sistema desde una vista más clara.
+        </p>
+      </div>
+
+      <div class="w-full sm:w-auto">
+        <%= link_to "＋ Nuevo Paquete",
+            new_admin_package_path,
+            class: "inline-flex w-full sm:w-auto items-center justify-center rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow-lg transition hover:scale-[1.01] hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-800" %>
+      </div>
+    </div>
   </div>
 
-  <!-- Packages Table -->
-  <div class="overflow-x-auto">
-    <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-      <thead>
-        <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-          <th class="py-3 px-6 text-left">Nombre</th>
-          <th class="py-3 px-6 text-left">Descripcion</th>
-          <th class="py-3 px-6 text-left">Precio</th>
-          <th class="py-3 px-6 text-left">Duracion</th>
-          <th class="py-3 px-6 text-center">Acciones</th>
-        </tr>
-      </thead>
-      <tbody class="text-gray-700 text-sm font-light">
-        <% @packages.each do |package| %>
-          <tr class="border-b border-gray-200 hover:bg-gray-100">
-            <td class="py-3 px-6 text-left"><%= package.name %></td>
-            <td class="py-3 px-6 text-left"><%= package.description %></td>
-            <td class="py-3 px-6 text-left"><%= number_to_currency(package.price) %></td>
-            <td class="py-3 px-6 text-left"><%= package.duration %> mins</td>
-            <td class="py-3 px-6 text-center">
-              <%= link_to 'Mostrar', admin_package_path(package), class: 'text-blue-600 hover:underline' %> |
-              <%= link_to 'Editar', edit_admin_package_path(package), class: 'text-blue-600 hover:underline' %> |
-              <%= button_to 'Borrar',
-              admin_package_path(package),
-              method: :delete,
-              form: { data: { turbo_confirm: '¿Estás seguro?' } },
-              class: 'text-red-600 hover:underline' %>
+  <!-- Stats -->
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-8">
+    <div class="group rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="text-sm font-medium text-slate-500">Total de paquetes</p>
+          <p class="mt-2 text-3xl font-bold tracking-tight text-slate-900"><%= total_packages %></p>
+          <p class="mt-1 text-sm text-slate-500">Resultados encontrados</p>
+        </div>
+        <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-700 text-xl shadow-sm">
+          📦
+        </div>
+      </div>
+    </div>
 
-
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
+    <div class="group rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="text-sm font-medium text-slate-500">Página actual</p>
+          <p class="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+            <%= @page %> / <%= @total_pages %>
+          </p>
+          <p class="mt-1 text-sm text-slate-500">Navegación del listado</p>
+        </div>
+        <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-700 text-xl shadow-sm">
+          📄
+        </div>
+      </div>
+    </div>
   </div>
+
+  <!-- Search + Filters -->
+  <div class="rounded-3xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm mb-8">
+    <%= form_with url: admin_packages_path, method: :get, local: true, class: "grid grid-cols-1 lg:grid-cols-12 gap-3 items-end" do %>
+      <div class="lg:col-span-6">
+        <label for="q" class="block text-sm font-semibold text-slate-700 mb-2">
+          Buscar paquete
+        </label>
+        <%= text_field_tag :q,
+            params[:q],
+            placeholder: "Buscar por nombre o descripción...",
+            class: "w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-800 placeholder-slate-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" %>
+      </div>
+
+      <div class="lg:col-span-4">
+        <label for="sort" class="block text-sm font-semibold text-slate-700 mb-2">
+          Ordenar por
+        </label>
+        <%= select_tag :sort,
+            options_for_select([
+              ["Más recientes", ""],
+              ["Nombre A-Z", "name_asc"],
+              ["Nombre Z-A", "name_desc"],
+              ["Precio: menor a mayor", "price_asc"],
+              ["Precio: mayor a menor", "price_desc"],
+              ["Duración: menor a mayor", "duration_asc"],
+              ["Duración: mayor a menor", "duration_desc"]
+            ], params[:sort]),
+            class: "w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-800 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" %>
+      </div>
+
+      <div class="lg:col-span-2 flex gap-2">
+        <%= button_tag "Aplicar",
+            type: "submit",
+            class: "inline-flex w-full items-center justify-center rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700" %>
+
+        <%= link_to "Limpiar",
+            admin_packages_path,
+            class: "inline-flex w-full items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50" %>
+      </div>
+    <% end %>
+  </div>
+
+  <% if @packages.any? %>
+    <!-- Desktop -->
+    <div class="hidden lg:block overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      <div class="border-b border-slate-200 bg-slate-50/80 px-6 py-4">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <h2 class="text-base font-semibold text-slate-900">Listado de paquetes</h2>
+            <p class="text-sm text-slate-500">Vista general con acciones rápidas</p>
+          </div>
+
+          <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800">
+            <%= total_packages %> resultados
+          </span>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-slate-200">
+          <thead class="bg-slate-50">
+            <tr>
+              <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">#</th>
+              <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Paquete</th>
+              <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Descripción</th>
+              <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Precio</th>
+              <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Duración</th>
+              <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody class="divide-y divide-slate-100 bg-white">
+            <% @packages.each_with_index do |package, index| %>
+              <% row_number = ((@page - 1) * @per_page) + index + 1 %>
+              <tr class="transition hover:bg-slate-50/80">
+                <td class="px-6 py-5 align-top">
+                  <span class="inline-flex h-8 min-w-[2rem] items-center justify-center rounded-full bg-slate-100 px-2 text-xs font-bold text-slate-700">
+                    <%= row_number %>
+                  </span>
+                </td>
+
+                <td class="px-6 py-5 align-top">
+                  <div class="max-w-xs">
+                    <p class="font-semibold text-slate-900 leading-snug">
+                      <%= package.name %>
+                    </p>
+                    <p class="mt-1 text-xs text-slate-500">
+                      ID: <%= package.id %>
+                    </p>
+                  </div>
+                </td>
+
+                <td class="px-6 py-5 align-top">
+                  <div class="max-w-xl text-sm leading-relaxed text-slate-600">
+                    <%= truncate(package.description.to_s.presence || "Sin descripción registrada.", length: 120) %>
+                  </div>
+                </td>
+
+                <td class="px-6 py-5 align-top">
+                  <span class="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">
+                    <%= number_to_currency(package.price) %>
+                  </span>
+                </td>
+
+                <td class="px-6 py-5 align-top">
+                  <span class="inline-flex rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-sm font-semibold text-amber-700">
+                    <%= package.duration %>
+                  </span>
+                </td>
+
+                <td class="px-6 py-5 align-top">
+                  <div class="flex items-center justify-end gap-2">
+                    <%= link_to "Ver",
+                        admin_package_path(package),
+                        class: "inline-flex items-center rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50" %>
+
+                    <%= link_to "Editar",
+                        edit_admin_package_path(package),
+                        class: "inline-flex items-center rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-2 text-sm font-medium text-blue-700 transition hover:bg-blue-100" %>
+
+                    <%= button_to "Eliminar",
+                        admin_package_path(package),
+                        method: :delete,
+                        form: {
+                          class: "inline-block",
+                          data: { turbo_confirm: "¿Estás seguro de eliminar el paquete #{package.name}?" }
+                        },
+                        class: "inline-flex items-center rounded-xl border border-red-200 bg-red-50 px-3.5 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100" %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Mobile -->
+    <div class="grid grid-cols-1 gap-4 lg:hidden">
+      <% @packages.each_with_index do |package, index| %>
+        <% row_number = ((@page - 1) * @per_page) + index + 1 %>
+
+        <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md">
+          <div class="bg-gradient-to-r from-slate-50 to-blue-50 px-4 py-4 border-b border-slate-200">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full bg-slate-900 px-2 text-xs font-bold text-white">
+                    <%= row_number %>
+                  </span>
+
+                  <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
+                    ID: <%= package.id %>
+                  </span>
+                </div>
+
+                <h2 class="mt-3 text-lg font-bold text-slate-900 break-words">
+                  <%= package.name %>
+                </h2>
+              </div>
+
+              <div class="shrink-0">
+                <span class="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 whitespace-nowrap">
+                  <%= number_to_currency(package.price) %>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4">
+            <p class="text-sm leading-relaxed text-slate-600">
+              <%= truncate(package.description.to_s.presence || "Sin descripción registrada.", length: 180) %>
+            </p>
+
+            <div class="mt-4 flex flex-wrap items-center gap-2">
+              <span class="inline-flex rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-sm font-medium text-amber-700">
+                Duración: <%= package.duration %>
+              </span>
+            </div>
+
+            <div class="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <%= link_to "Ver",
+                  admin_package_path(package),
+                  class: "inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50" %>
+
+              <%= link_to "Editar",
+                  edit_admin_package_path(package),
+                  class: "inline-flex items-center justify-center rounded-2xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-medium text-blue-700 transition hover:bg-blue-100" %>
+
+              <%= button_to "Eliminar",
+                  admin_package_path(package),
+                  method: :delete,
+                  form: {
+                    data: { turbo_confirm: "¿Estás seguro de eliminar el paquete #{package.name}?" }
+                  },
+                  class: "inline-flex w-full items-center justify-center rounded-2xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-700 transition hover:bg-red-100" %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Pagination -->
+    <% if @total_pages > 1 %>
+      <div class="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 rounded-3xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
+        <p class="text-sm text-slate-600">
+          Página <span class="font-semibold text-slate-900"><%= @page %></span> de
+          <span class="font-semibold text-slate-900"><%= @total_pages %></span>
+        </p>
+
+        <div class="flex items-center gap-2">
+          <% prev_params = request.query_parameters.merge(page: @page - 1) %>
+          <% next_params = request.query_parameters.merge(page: @page + 1) %>
+
+          <% if @page > 1 %>
+            <%= link_to "← Anterior",
+                admin_packages_path(prev_params),
+                class: "inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" %>
+          <% else %>
+            <span class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-medium text-slate-400 cursor-not-allowed">
+              ← Anterior
+            </span>
+          <% end %>
+
+          <% if @page < @total_pages %>
+            <%= link_to "Siguiente →",
+                admin_packages_path(next_params),
+                class: "inline-flex items-center justify-center rounded-2xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" %>
+          <% else %>
+            <span class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-medium text-slate-400 cursor-not-allowed">
+              Siguiente →
+            </span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="overflow-hidden rounded-3xl border border-dashed border-slate-300 bg-white shadow-sm">
+      <div class="px-6 py-14 sm:px-10 sm:py-20 text-center">
+        <div class="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-slate-100 text-4xl">
+          📦
+        </div>
+
+        <div class="mx-auto mt-6 max-w-lg">
+          <h2 class="text-2xl font-bold tracking-tight text-slate-900">
+            No hay paquetes para mostrar
+          </h2>
+
+          <p class="mt-3 text-sm sm:text-base leading-relaxed text-slate-600">
+            No se encontraron paquetes con los filtros actuales o aún no has creado registros.
+          </p>
+        </div>
+
+        <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+          <%= link_to "Crear primer paquete",
+              new_admin_package_path,
+              class: "inline-flex items-center justify-center rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700" %>
+
+          <%= link_to "Limpiar filtros",
+              admin_packages_path,
+              class: "inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50" %>
+        </div>
+      </div>
+    </div>
+  <% end %>
 </div>

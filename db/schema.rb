@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_09_05_221744) do
+ActiveRecord::Schema[7.2].define(version: 2026_03_07_072510) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -59,7 +59,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_09_05_221744) do
     t.boolean "dummy"
     t.string "token"
     t.integer "scheduled_by"
-    t.index ["token"], name: "index_appointments_on_token"
+    t.string "phone_number_e164"
+    t.index ["token"], name: "index_appointments_on_token", unique: true
   end
 
   create_table "doctor_packages", force: :cascade do |t|
@@ -70,6 +71,26 @@ ActiveRecord::Schema[7.2].define(version: 2025_09_05_221744) do
     t.index ["doctor_id", "package_id"], name: "index_doctor_packages_on_doctor_id_and_package_id", unique: true
     t.index ["doctor_id"], name: "index_doctor_packages_on_doctor_id"
     t.index ["package_id"], name: "index_doctor_packages_on_package_id"
+  end
+
+  create_table "doctor_time_blocks", force: :cascade do |t|
+    t.integer "doctor_id", null: false
+    t.time "starts_at"
+    t.time "ends_at"
+    t.json "days_of_week", default: [], null: false
+    t.string "reason"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["doctor_id"], name: "index_doctor_time_blocks_on_doctor_id"
+  end
+
+  create_table "doctor_unavailabilities", force: :cascade do |t|
+    t.integer "doctor_id", null: false
+    t.date "date"
+    t.string "reason"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["doctor_id"], name: "index_doctor_unavailabilities_on_doctor_id"
   end
 
   create_table "doctors", force: :cascade do |t|
@@ -93,6 +114,22 @@ ActiveRecord::Schema[7.2].define(version: 2025_09_05_221744) do
     t.boolean "featured"
   end
 
+  create_table "phone_bans", force: :cascade do |t|
+    t.string "phone_e164", null: false
+    t.integer "level", default: 0, null: false
+    t.integer "source", default: 0, null: false
+    t.string "reason", null: false
+    t.boolean "active", default: true, null: false
+    t.datetime "expires_at"
+    t.integer "trigger_count"
+    t.integer "created_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_phone_bans_on_active"
+    t.index ["created_by_id"], name: "index_phone_bans_on_created_by_id"
+    t.index ["phone_e164"], name: "index_phone_bans_on_phone_e164", unique: true
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "name"
     t.string "email"
@@ -112,4 +149,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_09_05_221744) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "doctor_packages", "doctors"
   add_foreign_key "doctor_packages", "packages"
+  add_foreign_key "doctor_time_blocks", "doctors"
+  add_foreign_key "doctor_unavailabilities", "doctors"
+  add_foreign_key "phone_bans", "users", column: "created_by_id"
 end

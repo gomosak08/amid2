@@ -1,54 +1,131 @@
-<%= form_with(model: [:admin, @doctor], local: true, class: "space-y-6 bg-white p-8 rounded-lg shadow-md") do |form| %>
-  <% if @doctor.errors.any? %>
-    <div id="error_explanation" class="bg-red-100 text-red-700 p-4 rounded-md mb-6">
-      <h2 class="font-semibold mb-2"><%= pluralize(@doctor.errors.count, "error") %> impidieron que se guardara este doctor:</h2>
-      <ul class="list-disc pl-5">
-        <% @doctor.errors.full_messages.each do |message| %>
-          <li><%= message %></li>
+<%= form_with(model: [:admin, @doctor], local: true, class: "bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden") do |form| %>
+  <!-- Header -->
+  <div class="px-5 py-6 sm:px-8 sm:py-8 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white">
+    <h2 class="text-2xl font-bold text-gray-900">
+      <%= @doctor.persisted? ? "Editar doctor" : "Nuevo doctor" %>
+    </h2>
+    <p class="mt-1 text-sm text-gray-600">
+      Completa la información del doctor y configura su disponibilidad semanal.
+    </p>
+  </div>
+
+  <div class="p-5 sm:p-8 space-y-8">
+    <% if @doctor.errors.any? %>
+      <div id="error_explanation" class="rounded-xl border border-red-200 bg-red-50 p-4">
+        <h2 class="text-sm font-semibold text-red-800 mb-2">
+          <%= pluralize(@doctor.errors.count, "error") %> impidieron guardar este doctor:
+        </h2>
+        <ul class="list-disc pl-5 space-y-1 text-sm text-red-700">
+          <% @doctor.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <!-- Información general -->
+    <section class="space-y-5">
+      <div>
+        <h3 class="text-lg font-semibold text-gray-900">Información general</h3>
+        <p class="text-sm text-gray-500">Datos principales del doctor.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <!-- Nombre -->
+        <div class="md:col-span-2">
+          <%= form.label :name, "Nombre", class: "block text-sm font-semibold text-gray-800 mb-2" %>
+          <%= form.text_field :name,
+              placeholder: "Ej. Dra. María González",
+              class: "block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500" %>
+        </div>
+
+        <!-- Especialidad -->
+        <div>
+          <%= form.label :specialty, "Especialidad", class: "block text-sm font-semibold text-gray-800 mb-2" %>
+          <%= form.text_field :specialty,
+              placeholder: "Ej. Pediatría",
+              class: "block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500" %>
+        </div>
+
+        <!-- Correo -->
+        <div>
+          <%= form.label :email, "Correo electrónico", class: "block text-sm font-semibold text-gray-800 mb-2" %>
+          <%= form.email_field :email,
+              placeholder: "doctor@clinica.com",
+              class: "block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500" %>
+        </div>
+      </div>
+    </section>
+
+    <!-- Disponibilidad -->
+    <section class="space-y-5">
+      <div>
+        <h3 class="text-lg font-semibold text-gray-900">Disponibilidad semanal</h3>
+        <p class="text-sm text-gray-500">
+          Define el horario disponible para cada día. Si un día no tiene horario, déjalo vacío.
+        </p>
+      </div>
+
+      <div class="space-y-4">
+        <% %w[Lunes Martes Miércoles Jueves Viernes Sábado Domingo].zip(%w[Monday Tuesday Wednesday Thursday Friday Saturday Sunday]).each do |dia, day| %>
+          <% times = (@doctor.available_hours || {})[day] || [] %>
+          <% start_time = times.first&.split("-")&.first %>
+          <% end_time   = times.first&.split("-")&.last %>
+
+          <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4 sm:p-5">
+            <div class="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6">
+              <!-- Día -->
+              <div class="lg:w-44 shrink-0">
+                <div class="text-sm font-semibold text-gray-900"><%= dia %></div>
+                <div class="text-xs text-gray-500"><%= day %></div>
+              </div>
+
+              <!-- Inputs -->
+              <div class="flex-1 grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-3 items-center">
+                <div>
+                  <label for="<%= day.downcase %>-start" class="block text-xs font-medium text-gray-600 mb-1">
+                    Hora de inicio
+                  </label>
+                  <input
+                    type="time"
+                    id="<%= day.downcase %>-start"
+                    name="doctor[available_hours][<%= day %>][]"
+                    value="<%= start_time %>"
+                    class="block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div class="hidden sm:flex items-center justify-center pt-6 text-gray-400 font-semibold">
+                  a
+                </div>
+
+                <div>
+                  <label for="<%= day.downcase %>-end" class="block text-xs font-medium text-gray-600 mb-1">
+                    Hora de fin
+                  </label>
+                  <input
+                    type="time"
+                    id="<%= day.downcase %>-end"
+                    name="doctor[available_hours][<%= day %>][]"
+                    value="<%= end_time %>"
+                    class="block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         <% end %>
-      </ul>
-    </div>
-  <% end %>
-
-  <!-- Name Field -->
-  <div>
-    <%= form.label :name, "Nombre", class: "block text-lg font-medium text-gray-700 mb-2" %>
-    <%= form.text_field :name, class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
+      </div>
+    </section>
   </div>
 
-  <!-- Specialty Field -->
-  <div>
-    <%= form.label :specialty, "Especialidad", class: "block text-lg font-medium text-gray-700 mb-2" %>
-    <%= form.text_field :specialty, class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
-  </div>
+  <!-- Footer -->
+  <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 px-5 py-5 sm:px-8 border-t border-gray-100 bg-gray-50">
+    <%= link_to "Cancelar",
+        admin_doctors_path,
+        class: "inline-flex items-center justify-center rounded-xl border border-gray-300 bg-white px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-100 transition" %>
 
-  <!-- Email Field -->
-  <div>
-    <%= form.label :email, "Correo Electrónico", class: "block text-lg font-medium text-gray-700 mb-2" %>
-    <%= form.email_field :email, class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
-  </div>
-
-  <!-- Weekly Availability -->
-  <div class="space-y-4">
-  <% %w[Lunes Martes Miércoles Jueves Viernes Sábado Domingo].zip(%w[Monday Tuesday Wednesday Thursday Friday Saturday Sunday]).each do |dia, day| %>
-    <% times = (@doctor.available_hours || '{}')[day] || [] %>
-    <div class="flex items-center space-x-4">
-      <label class="w-1/6 font-medium text-gray-700"><%= dia %></label>
-      <input type="time" id="<%= day.downcase %>-start" 
-             name="doctor[available_hours][<%= day %>][]" 
-             value="<%= times.first&.split('-')&.first %>" 
-             class="block w-1/4 p-2 border border-gray-300 rounded-md shadow-sm" />
-      <span>-</span>
-      <input type="time" id="<%= day.downcase %>-end" 
-             name="doctor[available_hours][<%= day %>][]" 
-             value="<%= times.first&.split('-')&.last %>" 
-             class="block w-1/4 p-2 border border-gray-300 rounded-md shadow-sm" />
-    </div>
-  <% end %>
-</div>
-
-  <!-- Submit Button -->
-  <div class="mt-6">
-    <%= form.submit "Guardar Doctor", class: "w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-200" %>
+    <%= form.submit(@doctor.persisted? ? "Actualizar doctor" : "Guardar doctor",
+        class: "inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition") %>
   </div>
 <% end %>

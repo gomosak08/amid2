@@ -2,23 +2,35 @@ class Appointment < ApplicationRecord
   belongs_to :package
   belongs_to :doctor
 
-  enum scheduled_by: { patient: 0, admin: 1 }
-
-  before_create :generate_unique_code
-  before_create :generate_token
+  before_validation :ensure_unique_code, on: :create
   before_validation :ensure_token, on: :create
+  before_validation :normalize_phone_number
 
   validates :name, :age, :phone, presence: true
   validates :token, presence: true, uniqueness: true
+  validates :unique_code, presence: true, uniqueness: true
   validates :google_calendar_id, uniqueness: true, allow_nil: true
-  validate :doctor_can_deliver_package, if: -> { doctor && package }
 
-  enum status: {
-    scheduled:          0,
-    canceled_by_admin:  1,
-    canceled_by_client: 2,
-    completed:          3
+  validate :doctor_can_deliver_package, if: -> { doctor && package }
+  validate :phone_not_banned, on: :create
+  validate :no_double_booking
+  validate :doctor_not_unavailable, if: -> { doctor && start_date }
+
+  enum :scheduled_by, {
+    patient: 0,
+    admin: 1
   }
+
+  enum :status, {
+    scheduled: 0,
+    canceled_by_admin: 1,
+    canceled_by_client: 2,
+    completed: 3
+  }
+
+  def to_param
+    token.presence || super
+  end
 
   def scheduled_by_label
     case scheduled_by
@@ -30,20 +42,44 @@ class Appointment < ApplicationRecord
 
   def status_label
     case status
-    when "scheduled"         then "Programada"
-    when "canceled_by_admin" then "Cancelada por Admin"
-    when "canceled_by_client"then "Cancelada por Cliente"
-    when "completed"         then "Completada"
+    when "scheduled"          then "Programada"
+    when "canceled_by_admin"  then "Cancelada por Admin"
+    when "canceled_by_client" then "Cancelada por Cliente"
+    when "completed"          then "Completada"
     else status.humanize
     end
   end
 
-  def to_param
-    token.presence || super
+  def normalize_phone_number
+    raw_phone =
+      if respond_to?(:phone_number) && phone_number.present?
+        phone_number
+      elsif respond_to?(:phone) && phone.present?
+        phone
+      end
+
+    self.phone_number_e164 = PhoneNormalizer.to_e164(raw_phone) if respond_to?(:phone_number_e164=)
   end
 
-  # Validaciones de negocio
-  validate :no_double_booking
+  def phone_not_banned
+    return unless respond_to?(:phone_number_e164)
+    return if phone_number_e164.blank?
+
+    ban = PhoneBan.active_now.find_by(phone_e164: phone_number_e164)
+    return if ban.blank?
+
+    if ban.hard?
+      errors.add(:base, "Este número no puede agendar ni contactar asistencia.")
+    else
+      errors.add(:base, "Este número no puede agendar en línea. Debe hacerlo con un asistente.")
+    end
+  end
+
+  def doctor_not_unavailable
+    if DoctorUnavailability.exists?(doctor_id: doctor_id, date: start_date.to_date)
+      errors.add(:start_date, "el doctor no está disponible ese día.")
+    end
+  end
 
   private
 
@@ -64,15 +100,21 @@ class Appointment < ApplicationRecord
     end
   end
 
-  def generate_unique_code
-    self.unique_code = SecureRandom.alphanumeric(8).upcase
+  def ensure_unique_code
+    return if unique_code.present?
+
+    loop do
+      self.unique_code = SecureRandom.alphanumeric(8).upcase
+      break unless self.class.exists?(unique_code: unique_code)
+    end
   end
 
   def ensure_token
-    self.token ||= SecureRandom.hex(16) # 32 chars
-  end
+    return if token.present?
 
-  def generate_token
-    self.token = SecureRandom.hex(16)
+    loop do
+      self.token = SecureRandom.hex(16)
+      break unless self.class.exists?(token: token)
+    end
   end
 end

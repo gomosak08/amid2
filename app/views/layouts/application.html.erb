@@ -1,232 +1,729 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title><%= content_for(:title) || "AMID - Atención Médica Integral y Diagnóstica" %></title>
-    <%= favicon_link_tag 'cropped-icono-de-sitioweb.png' %>
+<head>
+  <title><%= content_for(:title) || "AMID - Atención Médica Integral y Diagnóstica" %></title>
+  <%= favicon_link_tag "cropped-icono-de-sitioweb.png" %>
 
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <%= csrf_meta_tags %>
-    <%= csp_meta_tag %>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="description" content="AMID - Atención Médica Integral y Diagnóstica. Servicios médicos, paquetes, cirugías y citas en línea.">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
 
-    <!-- Tailwind CSS -->
-    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer" />
 
-    <!-- Font Awesome (for icons) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.20/index.global.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.20/index.global.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid@6.1.20/index.global.min.css">
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
 
-    <!-- App JavaScript -->
-    <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
-    <script src="https://www.google.com/recaptcha/api.js?render=<%= ENV['RECAPTCHA_SITE_KEY'] %>" async defer></script>
-    <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true %>
-    <%= csrf_meta_tags %>
-    <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true %>
-    <%= stylesheet_link_tag "https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css", "data-turbo-track": "reload" %>
+  <script src="https://www.google.com/recaptcha/api.js?render=<%= ENV.fetch("RECAPTCHA_SITE_KEY", "") %>" async defer></script>
 
+  <style>
+    :root{
+      --amid-primary:#2563eb;
+      --amid-primary-dark:#1d4ed8;
+      --amid-secondary:#06b6d4;
+      --amid-accent:#22c55e;
+      --amid-ink:#0f172a;
+      --amid-muted:#64748b;
+      --amid-bg:#f8fafc;
+      --amid-card:#ffffff;
+      --amid-line:#e2e8f0;
+      --header-height: 92px;
+    }
 
-    <%= yield :head %>
-  </head>
+    html{
+      scroll-behavior:smooth;
+    }
 
-  <body class="bg-gray-100 font-sans antialiased">
+    body{
+      margin:0;
+      background: linear-gradient(180deg, #f8fbff 0%, #f8fafc 36%, #f1f5f9 100%);
+      color: var(--amid-ink);
+      overflow-x: hidden;
+    }
 
-   <header class="text-white shadow-md px-4 py-2" style="background: linear-gradient(to right,rgb(108, 214, 233) 0%, #3b82f6 50%, rgb(108, 214, 233) 100%);">
+    .site-container{
+      width:100%;
+      max-width:1980px;
+      margin:0 auto;
+      padding-left:1rem;
+      padding-right:1rem;
+    }
 
-    <div class="max-w-screen-xl mx-auto px-4 py-2 flex items-center justify-between">
-      <!-- Logo -->
-      <div class="flex items-center space-x-2">
-        <%= link_to root_path do %>
-          <%= image_tag "LOGO.png", alt: "AMID Logo", class: "h-[85px] w-auto" %>
-        <% end %>
+    @media (min-width: 768px){
+      .site-container{
+        padding-left:1.25rem;
+        padding-right:1.25rem;
+      }
+    }
+
+    /* Header fijo */
+    .site-header{
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      z-index: 1100;
+      backdrop-filter: blur(14px);
+      background:
+        linear-gradient(90deg, rgba(108,214,233,.95) 0%, rgba(59,130,246,.98) 50%, rgba(108,214,233,.95) 100%);
+      box-shadow: 0 10px 30px rgba(15,23,42,.10);
+      border-bottom: 1px solid rgba(255,255,255,.18);
+    }
+
+    .header-inner{
+      min-height: var(--header-height);
+    }
+
+    .brand-logo{
+      height: 62px;
+      width: auto;
+      display:block;
+    }
+
+    @media (min-width: 768px){
+      .brand-logo{
+        height: 74px;
+      }
+    }
+
+    .nav-link-main{
+      color:#fff;
+      text-decoration:none;
+      font-weight:700;
+      font-size:.98rem;
+      padding:.55rem .25rem;
+      transition: color .18s ease, opacity .18s ease;
+      opacity:.96;
+    }
+
+    .nav-link-main:hover{
+      color:#d1fae5;
+      opacity:1;
+    }
+
+    .nav-cta{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:.55rem;
+      background:#fff;
+      color:var(--amid-primary-dark);
+      text-decoration:none;
+      font-weight:900;
+      padding:.78rem 1.1rem;
+      border-radius:14px;
+      box-shadow: 0 10px 20px rgba(15,23,42,.10);
+      transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+
+    .nav-cta:hover{
+      transform: translateY(-1px);
+      background:#eff6ff;
+      color:var(--amid-primary-dark);
+    }
+
+    .header-glass-btn {
+      background: rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .header-glass-btn:hover {
+      background: rgba(255, 255, 255, 0.22);
+    }
+
+    .quick-panel-enter {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.98);
+      pointer-events: none;
+    }
+
+    .quick-panel-open {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .quick-panel-transition {
+      transition: opacity .18s ease, transform .18s ease;
+      transform-origin: top right;
+    }
+
+    .quick-link-card {
+      transition: all .18s ease;
+    }
+
+    .quick-link-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+    }
+
+    .quick-panel-overlay {
+      background: rgba(15, 23, 42, 0.18);
+      backdrop-filter: blur(2px);
+    }
+
+    .main-content{
+      padding-top: calc(var(--header-height) + 18px);
+      padding-bottom: 2rem;
+    }
+
+    @media (max-width: 767.98px){
+      :root{
+        --header-height: 84px;
+      }
+
+      .main-content{
+        padding-top: calc(var(--header-height) + 14px);
+      }
+    }
+
+    .map-card{
+      overflow:hidden;
+      border-radius: 24px;
+      background:#fff;
+      border:1px solid var(--amid-line);
+      box-shadow: 0 12px 30px rgba(15,23,42,.06);
+    }
+
+    .map-card-head{
+      padding:1rem 1rem .75rem;
+      border-bottom:1px solid #eef2f7;
+    }
+
+    .map-card-title{
+      margin:0;
+      font-size:1.05rem;
+      font-weight:900;
+      color:var(--amid-ink);
+    }
+
+    .map-card-sub{
+      margin:.2rem 0 0;
+      color:var(--amid-muted);
+      font-size:.94rem;
+    }
+
+    .site-footer{
+      color:#fff;
+      background:
+        linear-gradient(90deg, rgba(108,214,233,.96) 0%, rgba(59,130,246,.98) 50%, rgba(108,214,233,.96) 100%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
+    }
+
+    .footer-title{
+      font-size:1.05rem;
+      font-weight:900;
+      margin-bottom:.85rem;
+    }
+
+    .footer-link{
+      color:#fff;
+      text-decoration:none;
+      opacity:.94;
+    }
+
+    .footer-link:hover{
+      color:#d1fae5;
+      text-decoration:underline;
+      opacity:1;
+    }
+
+    .footer-social{
+      display:inline-flex;
+      align-items:center;
+      gap:.6rem;
+      color:#fff;
+      text-decoration:none;
+      padding:.45rem 0;
+      opacity:.95;
+    }
+
+    .footer-social:hover{
+      color:#d1fae5;
+    }
+
+    .whatsapp-float{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      z-index:1200;
+      display:inline-flex;
+      align-items:center;
+      gap:.7rem;
+      background:#22c55e;
+      color:#06240f;
+      text-decoration:none;
+      font-weight:900;
+      padding:.9rem 1rem;
+      border-radius:999px;
+      box-shadow: 0 18px 32px rgba(34,197,94,.28);
+      transition: transform .18s ease, filter .18s ease;
+    }
+
+    .whatsapp-float:hover{
+      transform: translateY(-2px);
+      filter: brightness(.98);
+      color:#06240f;
+    }
+
+    .whatsapp-float .label{
+      display:none;
+    }
+
+    @media (min-width: 768px){
+      .whatsapp-float .label{
+        display:inline;
+      }
+    }
+
+    .mobile-menu-panel{
+      border-top: 1px solid rgba(255,255,255,.18);
+    }
+  </style>
+
+  <%= yield :head %>
+</head>
+
+<body class="font-sans antialiased">
+  <header class="site-header text-white">
+    <div class="site-container">
+      <div class="header-inner flex items-center justify-between gap-4 relative">
+        <div class="flex items-center shrink-0">
+          <%= link_to root_path, class: "flex items-center" do %>
+            <%= image_tag "LOGO.png", alt: "AMID Logo", class: "brand-logo" %>
+          <% end %>
+        </div>
+
+        <div class="hidden lg:flex items-center gap-5">
+          <nav class="flex items-center gap-6">
+            <%= link_to "Inicio", root_path, class: "nav-link-main" %>
+            <%= link_to "Servicios", services_path, class: "nav-link-main" %>
+            <%= link_to "Paquetes", packages_path, class: "nav-link-main" %>
+            <%= link_to "Cirugías", surgeries_path, class: "nav-link-main" %>
+            <%= link_to "Contacto", (defined?(contact_path) ? contact_path : "#"), class: "nav-link-main" %>
+          </nav>
+
+          <%= link_to new_appointment_path, class: "nav-cta", data: { turbo: false } do %>
+            <i class="fa-solid fa-calendar-check"></i>
+            Agendar cita
+          <% end %>
+
+          <button
+            id="quick-panel-toggle"
+            type="button"
+            class="header-glass-btn inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-white/60"
+            aria-expanded="false"
+            aria-controls="quick-panel">
+            <i class="fa-solid fa-grid-2"></i>
+            Accesos rápidos
+            <i class="fa-solid fa-chevron-down text-xs"></i>
+          </button>
+
+          <% if user_signed_in? %>
+            <%= link_to "Cerrar sesión",
+              destroy_user_session_path,
+              data: { turbo_method: :delete, turbo_confirm: "¿Cerrar sesión?" },
+              class: "bg-white/95 text-blue-700 hover:bg-blue-50 px-4 py-2 rounded-xl font-semibold shadow-sm no-underline" %>
+          <% end %>
+        </div>
+
+        <div class="lg:hidden flex items-center gap-2">
+          <%= link_to new_appointment_path,
+            class: "header-glass-btn inline-flex items-center justify-center rounded-xl w-11 h-11 text-white shadow-sm",
+            data: { turbo: false },
+            title: "Agendar cita" do %>
+            <i class="fa-solid fa-calendar-plus text-lg"></i>
+          <% end %>
+
+          <button
+            id="quick-panel-toggle-mobile"
+            type="button"
+            class="header-glass-btn inline-flex items-center justify-center rounded-xl w-11 h-11 text-white shadow-sm"
+            aria-expanded="false"
+            aria-controls="quick-panel">
+            <i class="fa-solid fa-grid-2 text-lg"></i>
+          </button>
+
+          <button id="menu-toggle" class="header-glass-btn inline-flex items-center justify-center rounded-xl w-11 h-11 text-white shadow-sm border-0" type="button" aria-label="Abrir menú">
+            <i class="fa-solid fa-bars text-lg"></i>
+          </button>
+        </div>
+
+        <div
+          id="quick-panel"
+          class="quick-panel-enter quick-panel-transition absolute right-0 top-full mt-3 z-50 w-[94vw] max-w-4xl">
+          <div class="overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-gray-200">
+            <div class="grid grid-cols-1 lg:grid-cols-[1.05fr_1.35fr]">
+              <div class="bg-gradient-to-br from-sky-50 via-cyan-50 to-blue-100 p-6 border-b lg:border-b-0 lg:border-r border-blue-100">
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="h-12 w-12 rounded-2xl bg-white text-blue-600 flex items-center justify-center shadow-sm">
+                    <i class="fa-solid fa-calendar-check text-xl"></i>
+                  </div>
+                  <div>
+                    <h3 class="text-lg font-bold text-gray-900">Gestión rápida</h3>
+                    <p class="text-sm text-gray-600">Accesos útiles para pacientes y administración.</p>
+                  </div>
+                </div>
+
+                <div class="rounded-2xl bg-white/85 border border-white p-4">
+                  <h4 class="text-sm font-semibold uppercase tracking-wide text-blue-700 mb-3">
+                    Pacientes
+                  </h4>
+
+                  <div class="space-y-3">
+                    <%= link_to new_appointment_path,
+                      class: "quick-link-card flex items-center gap-3 rounded-2xl border border-gray-100 bg-white px-4 py-3 text-gray-800 no-underline hover:border-blue-200",
+                      data: { turbo: false } do %>
+                      <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <i class="fa-solid fa-calendar-plus"></i>
+                      </div>
+                      <div>
+                        <div class="font-semibold">Agendar cita</div>
+                        <div class="text-sm text-gray-500">Reserva tu atención de forma rápida.</div>
+                      </div>
+                    <% end %>
+
+                    <%= link_to find_appointments_path,
+                      class: "quick-link-card flex items-center gap-3 rounded-2xl border border-gray-100 bg-white px-4 py-3 text-gray-800 no-underline hover:border-blue-200" do %>
+                      <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                      </div>
+                      <div>
+                        <div class="font-semibold">Buscar o cancelar cita</div>
+                        <div class="text-sm text-gray-500">Consulta una cita existente fácilmente.</div>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-6">
+                <% if user_signed_in? %>
+                  <div class="flex items-center gap-3 mb-4">
+                    <div class="h-11 w-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                      <i class="fa-solid fa-user-shield"></i>
+                    </div>
+                    <div>
+                      <h3 class="text-lg font-bold text-gray-900">Administración</h3>
+                      <p class="text-sm text-gray-600">Herramientas internas de gestión clínica.</p>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <%= link_to admin_doctors_path,
+                      class: "quick-link-card rounded-2xl border border-gray-200 bg-white p-4 text-gray-800 no-underline hover:border-emerald-300" do %>
+                      <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                          <i class="fa-solid fa-user-doctor"></i>
+                        </div>
+                        <div>
+                          <div class="font-semibold">Panel de Doctores</div>
+                          <div class="text-sm text-gray-500">Horarios y disponibilidad</div>
+                        </div>
+                      </div>
+                    <% end %>
+
+                    <%= link_to admin_packages_path,
+                      class: "quick-link-card rounded-2xl border border-gray-200 bg-white p-4 text-gray-800 no-underline hover:border-emerald-300" do %>
+                      <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                          <i class="fa-solid fa-box-open"></i>
+                        </div>
+                        <div>
+                          <div class="font-semibold">Panel de Paquetes</div>
+                          <div class="text-sm text-gray-500">Catálogo y gestión</div>
+                        </div>
+                      </div>
+                    <% end %>
+
+                    <%= link_to admin_appointments_path,
+                      class: "quick-link-card rounded-2xl border border-gray-200 bg-white p-4 text-gray-800 no-underline hover:border-emerald-300" do %>
+                      <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                          <i class="fa-solid fa-calendar-days"></i>
+                        </div>
+                        <div>
+                          <div class="font-semibold">Panel de Citas</div>
+                          <div class="text-sm text-gray-500">Seguimiento general</div>
+                        </div>
+                      </div>
+                    <% end %>
+
+                    <%= link_to new_admin_appointment_path,
+                      class: "quick-link-card rounded-2xl border border-gray-200 bg-white p-4 text-gray-800 no-underline hover:border-emerald-300" do %>
+                      <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                          <i class="fa-solid fa-calendar-plus"></i>
+                        </div>
+                        <div>
+                          <div class="font-semibold">Crear Cita</div>
+                          <div class="text-sm text-gray-500">Registro manual</div>
+                        </div>
+                      </div>
+                    <% end %>
+
+                    <%= link_to admin_phone_bans_path,
+                      class: "quick-link-card sm:col-span-2 rounded-2xl border border-gray-200 bg-gray-900 p-4 text-white no-underline hover:bg-gray-800" do %>
+                      <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-xl bg-white/10 text-white flex items-center justify-center">
+                          <i class="fa-solid fa-ban"></i>
+                        </div>
+                        <div>
+                          <div class="font-semibold">Baneos</div>
+                          <div class="text-sm text-gray-300">Control de restricciones por teléfono</div>
+                        </div>
+                      </div>
+                    <% end %>
+                  </div>
+                <% else %>
+                  <div class="h-full flex items-center justify-center">
+                    <div class="text-center max-w-md">
+                      <div class="mx-auto mb-4 h-14 w-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <i class="fa-solid fa-circle-info text-xl"></i>
+                      </div>
+                      <h3 class="text-lg font-bold text-gray-900 mb-2">Acceso rápido disponible</h3>
+                      <p class="text-sm text-gray-600">
+                        Desde aquí puedes agendar, consultar o cancelar tu cita fácilmente.
+                      </p>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="quick-panel-overlay" class="quick-panel-overlay hidden fixed inset-0 z-40"></div>
       </div>
 
+      <div id="mobile-menu" class="mobile-menu-panel lg:hidden hidden pb-4">
+        <nav class="flex flex-col space-y-2 pt-3">
+          <%= link_to "Inicio", root_path, class: "text-white hover:text-teal-200 font-semibold py-2 no-underline" %>
+          <%= link_to "Servicios", services_path, class: "text-white hover:text-teal-200 font-semibold py-2 no-underline" %>
+          <%= link_to "Paquetes", packages_path, class: "text-white hover:text-teal-200 font-semibold py-2 no-underline" %>
+          <%= link_to "Cirugías", surgeries_path, class: "text-white hover:text-teal-200 font-semibold py-2 no-underline" %>
+          <%= link_to "Contacto", (defined?(contact_path) ? contact_path : "#"), class: "text-white hover:text-teal-200 font-semibold py-2 no-underline" %>
 
+          <%= link_to new_appointment_path,
+            class: "bg-white text-blue-700 hover:bg-blue-50 px-4 py-3 rounded-xl font-bold text-center no-underline mt-2",
+            data: { turbo: false } do %>
+            Agendar cita
+          <% end %>
 
-
-      <!-- Hamburger (Mobile) -->
-      <div class="md:hidden">
-        <button id="menu-toggle" class="text-white focus:outline-none">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
-          </svg>
-        </button>
+          <% if user_signed_in? %>
+            <%= link_to "Cerrar sesión",
+              destroy_user_session_path,
+              data: { turbo_method: :delete, turbo_confirm: "¿Cerrar sesión?" },
+              class: "bg-white/95 text-emerald-700 hover:bg-emerald-100 px-4 py-3 rounded-xl font-semibold text-center no-underline mt-2" %>
+          <% end %>
+        </nav>
       </div>
-
-      <!-- Desktop Nav -->
-      <nav class="hidden md:flex space-x-6 text-base font-medium items-center">
-        <%= link_to "Servicios", services_path, class: "text-white hover:text-teal-200" %>
-        <%= link_to "Paquetes", packages_path, class: "text-white hover:text-teal-200" %>
-        <%= link_to "Cirugías", surgeries_path, class: "text-white hover:text-teal-200" %>
-        <% if user_signed_in? %>
-          <%= link_to "Cerrar sesión", destroy_user_session_path, method: :delete,
-            class: "bg-white text-blue-700 hover:bg-blue-100 px-4 py-2 rounded font-semibold" %>
-        <% end %>
-      </nav>
-    </div>
-
-    <!-- Mobile Nav Panel -->
-    <div id="mobile-menu" class="md:hidden hidden px-4 pb-4">
-      <nav class="flex flex-col space-y-2 text-base font-medium">
-        <%= link_to "Servicios", services_path, class: "text-white hover:text-teal-200" %>
-        <%= link_to "Paquetes", packages_path, class: "text-white hover:text-teal-200" %>
-        <%= link_to "Cirugías", surgeries_path, class: "text-white hover:text-teal-200" %>
-        <% if user_signed_in? %>
-          <%= link_to "Cerrar sesión", destroy_user_session_path, method: :delete,
-            class: "bg-white text-emerald-700 hover:bg-emerald-100 px-4 py-2 rounded font-semibold" %>
-        <% end %>
-      </nav>
     </div>
   </header>
 
+  <script>
+    document.addEventListener("turbo:load", function () {
+      const mobileToggle = document.getElementById("menu-toggle");
+      const mobileMenu = document.getElementById("mobile-menu");
 
-      <!-- Mobile Nav Toggle Script -->
-      <script>
-        document.addEventListener("DOMContentLoaded", function () {
-          const toggle = document.getElementById("menu-toggle");
-          const menu = document.getElementById("mobile-menu");
-          toggle.addEventListener("click", () => {
-            menu.classList.toggle("hidden");
-          });
-        });
-      </script>
+      if (!mobileToggle || !mobileMenu) return;
 
-      <!-- Image toggle logic (if using data-toggle elements elsewhere) -->
-      <script>
-        document.addEventListener("DOMContentLoaded", function () {
-          document.querySelectorAll("[data-toggle]").forEach(el => {
-            el.addEventListener("click", () => {
-              const targetId = el.getAttribute("data-toggle");
-              const target = document.getElementById(targetId);
-              if (target) {
-                target.classList.toggle("hidden");
-              }
-            });
-          });
-        });
-      </script>
-    </header>
+      mobileToggle.onclick = function () {
+        mobileMenu.classList.toggle("hidden");
+      };
+    });
+  </script>
 
-    <!-- Main layout -->
-    <div class="flex min-h-screen overflow-x-hidden">
-      <% if current_page?(root_path) %>
-        <!-- Sidebar -->
-        <aside class="bg-gray-800 text-white w-64 p-6 space-y-4 hidden lg:block">
-          <h2 class="text-lg font-semibold mb-4">Manejo de tu cita</h2>
-          <%= link_to "Cancela Tu Cita", find_appointments_path, class: "block py-2 px-4 rounded hover:bg-gray-700" %>
-          <% if user_signed_in? %>
-            <%= link_to "Panel de Doctores", admin_doctors_path, class: "block py-2 px-4 rounded hover:bg-gray-700" %>
-            <%= link_to "Panel de Paquetes", admin_packages_path, class: "block py-2 px-4 rounded hover:bg-gray-700" %>
-            <%= link_to "Panel de Citas", admin_appointments_path, class: "block py-2 px-4 rounded hover:bg-gray-700" %>
-            <%= link_to "Crear Cita", new_admin_appointment_path, class: "block py-2 px-4 rounded hover:bg-gray-700" %>
-            
+  <script>
+    document.addEventListener("turbo:load", function () {
+      const panel = document.getElementById("quick-panel");
+      const overlay = document.getElementById("quick-panel-overlay");
+      const toggleDesktop = document.getElementById("quick-panel-toggle");
+      const toggleMobile = document.getElementById("quick-panel-toggle-mobile");
 
-          <% end %>
-        </aside>
-      <% end %>
+      if (!panel || !overlay) return;
 
-      <!-- Page Content -->
-      <main class="flex-1 p-6">
-        <%= yield %>
-      </main>
+      const toggles = [toggleDesktop, toggleMobile].filter(Boolean);
+
+      function openPanel() {
+        panel.classList.remove("quick-panel-enter");
+        panel.classList.add("quick-panel-open");
+        overlay.classList.remove("hidden");
+        toggles.forEach(btn => btn.setAttribute("aria-expanded", "true"));
+      }
+
+      function closePanel() {
+        panel.classList.remove("quick-panel-open");
+        panel.classList.add("quick-panel-enter");
+        overlay.classList.add("hidden");
+        toggles.forEach(btn => btn.setAttribute("aria-expanded", "false"));
+      }
+
+      function togglePanel(event) {
+        if (event) event.stopPropagation();
+
+        if (panel.classList.contains("quick-panel-open")) {
+          closePanel();
+        } else {
+          openPanel();
+        }
+      }
+
+      toggles.forEach(btn => {
+        btn.onclick = togglePanel;
+      });
+
+      overlay.onclick = closePanel;
+
+      document.onclick = function (event) {
+        const clickedInsidePanel = panel.contains(event.target);
+        const clickedToggle = toggles.some(btn => btn.contains(event.target));
+
+        if (!clickedInsidePanel && !clickedToggle && panel.classList.contains("quick-panel-open")) {
+          closePanel();
+        }
+      };
+
+      document.onkeydown = function (event) {
+        if (event.key === "Escape") closePanel();
+      };
+    });
+  </script>
+
+  <main class="main-content">
+    <div class="site-container">
+      <%= yield %>
     </div>
-    <% if current_page?(root_path) %>
-    <!-- Map -->
-      <div class="w-full h-32 rounded overflow-hidden md:col-span-1">
-        <iframe
-          loading="lazy"
-          class="w-full h-full"
-          src="https://maps.google.com/maps?q=Gral.%20Manuel%20de%20la%20Pe%C3%B1a%20y%20Pe%C3%B1a%20Pte.%20%23714%20Col.%20Chapultepec%20Sur.%20C.P.%2058260%20Morelia%2C%20Mich.&amp;t=m&amp;z=13&amp;output=embed&amp;iwloc=near"
-          title="Ubicación de la clínica"
-          allowfullscreen
-          referrerpolicy="no-referrer-when-downgrade"
-        ></iframe>
+  </main>
+
+  <% if current_page?(root_path) %>
+    <section class="pb-8">
+      <div class="site-container">
+        <div class="map-card">
+          <div class="map-card-head">
+            <h3 class="map-card-title">Ubicación de la clínica</h3>
+            <p class="map-card-sub">Estamos en Morelia, Michoacán. Puedes visitarnos o escribirnos por WhatsApp para agendar.</p>
+          </div>
+
+          <div class="w-full h-[280px] md:h-[360px]">
+            <iframe
+              loading="lazy"
+              class="w-full h-full"
+              src="https://maps.google.com/maps?q=Gral.%20Manuel%20de%20la%20Pe%C3%B1a%20y%20Pe%C3%B1a%20Pte.%20%23714%20Col.%20Chapultepec%20Sur.%20C.P.%2058260%20Morelia%2C%20Mich.&amp;t=m&amp;z=13&amp;output=embed&amp;iwloc=near"
+              title="Ubicación de la clínica"
+              allowfullscreen
+              referrerpolicy="no-referrer-when-downgrade"
+            ></iframe>
+          </div>
+        </div>
       </div>
-     <% end %>
-    <!-- Footer -->
-    <footer class="text-white shadow-md px-4 py-2" style="background: linear-gradient(to right,rgb(108, 214, 233) 0%, #3b82f6 50%, rgb(108, 214, 233) 100%);">
-      <div class="max-w-screen-xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-4 gap-8">
+    </section>
+  <% end %>
 
-      
-
-        <!-- Contact Info -->
+  <footer class="site-footer">
+    <div class="site-container py-10">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         <div>
-          <h3 class="text-lg font-semibold mb-2">Clínica AMID</h3>
-          <p>Gral. Manuel de la Peña y Peña Pte. #714<br>
+          <h3 class="footer-title">Clínica AMID</h3>
+          <p class="mb-3 text-white/95 leading-7">
+            Atención Médica Integral y Diagnóstica con enfoque profesional, humano y accesible.
+          </p>
+          <p class="text-white/90">
+            Gral. Manuel de la Peña y Peña Pte. #714<br>
             Col. Chapultepec Sur, C.P. 58260<br>
-            Morelia, Michoacán</p>
+            Morelia, Michoacán
+          </p>
         </div>
 
-        <!-- Links -->
         <div>
-          <h3 class="text-lg font-semibold mb-2">Enlaces</h3>
-          <ul class="space-y-1">
-            <li><%= link_to "Inicio", root_path, class: "hover:underline" %></li>
-            <li><%= link_to "Servicios", services_path, class: "hover:underline" %></li>
-            <li><%= link_to "Paquetes", packages_path, class: "hover:underline" %></li>
-            <li><%= link_to "Cirugías", surgeries_path, class: "hover:underline" %></li>
-            <li><%= link_to "Contacto", contact_path, class: "hover:underline" rescue "#" %></li>
-            <li><%= link_to "Términos", terms_path, class: "hover:underline" rescue "#" %></li>
-            <li><%= link_to "Privacidad", privacy_path, class: "hover:underline" rescue "#" %></li>
+          <h3 class="footer-title">Navegación</h3>
+          <ul class="space-y-2">
+            <li><%= link_to "Inicio", root_path, class: "footer-link" %></li>
+            <li><%= link_to "Servicios", services_path, class: "footer-link" %></li>
+            <li><%= link_to "Paquetes", packages_path, class: "footer-link" %></li>
+            <li><%= link_to "Cirugías", surgeries_path, class: "footer-link" %></li>
+            <li><%= link_to "Contacto", (defined?(contact_path) ? contact_path : "#"), class: "footer-link" %></li>
           </ul>
         </div>
 
-        <!-- Social Media -->
         <div>
-          <h3 class="text-lg font-semibold mb-2">Síguenos</h3>
-          <div class="flex flex-col space-y-2">
-            <%= link_to "https://www.facebook.com/amid.medica", target: "_blank", class: "hover:underline" do %>
-              <i class="fab fa-facebook-f mr-1"></i> Facebook
+          <h3 class="footer-title">Ayuda</h3>
+          <ul class="space-y-2">
+            <li><%= link_to "Agendar cita", new_appointment_path, class: "footer-link", data: { turbo: false } %></li>
+            <li><%= link_to "Buscar o cancelar cita", find_appointments_path, class: "footer-link" %></li>
+            <li><%= link_to "Términos", (defined?(terms_path) ? terms_path : "#"), class: "footer-link" %></li>
+            <li><%= link_to "Privacidad", (defined?(privacy_path) ? privacy_path : "#"), class: "footer-link" %></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="footer-title">Síguenos</h3>
+
+          <div class="flex flex-col">
+            <%= link_to "https://www.facebook.com/amid.medica", target: "_blank", class: "footer-social" do %>
+              <i class="fab fa-facebook-f w-5"></i> Facebook
             <% end %>
-            <%= link_to "https://www.instagram.com/atencion_medica_integral/", target: "_blank", class: "hover:underline" do %>
-              <i class="fab fa-instagram mr-1"></i> Instagram
+
+            <%= link_to "https://www.instagram.com/atencion_medica_integral/", target: "_blank", class: "footer-social" do %>
+              <i class="fab fa-instagram w-5"></i> Instagram
             <% end %>
-            <%= link_to "https://wa.me/524437296999", target: "_blank", class: "hover:underline" do %>
-              <i class="fab fa-whatsapp mr-1"></i> WhatsApp
+
+            <%= link_to "https://wa.me/524437296999", target: "_blank", class: "footer-social" do %>
+              <i class="fab fa-whatsapp w-5"></i> WhatsApp
             <% end %>
-                <%= link_to "https://twitter.com/AtencinMdicaIn1", target: "_blank", class: "hover:underline" do %>
-              <i class="fab fa-twitter fa-lg"></i> Twitter
+
+            <%= link_to "https://twitter.com/AtencinMdicaIn1", target: "_blank", class: "footer-social" do %>
+              <i class="fab fa-twitter w-5"></i> Twitter
             <% end %>
           </div>
         </div>
       </div>
 
-      <div class="text-center text-xs text-white py-4 border-t border-white/20 mt-6">
+      <div class="text-center text-sm text-white/90 pt-8 mt-8 border-t border-white/20">
         &copy; <%= Time.current.year %> Atención Médica Integral y Diagnóstica — Todos los derechos reservados.
       </div>
-    </footer>
+    </div>
+  </footer>
 
+  <%= link_to "https://wa.me/524437296999?text=Hola,%20quiero%20informaci%C3%B3n%20sobre%20una%20cita",
+    target: "_blank",
+    class: "whatsapp-float",
+    rel: "noopener" do %>
+    <i class="fab fa-whatsapp text-xl"></i>
+    <span class="label">WhatsApp</span>
+  <% end %>
 
-    <turbo-frame id="flash">
-      <%= render "shared/flash" %>
-    </turbo-frame>
+  <turbo-frame id="flash">
+    <%= render "shared/flash" %>
+  </turbo-frame>
 
-    <script src="https://www.google.com/recaptcha/api.js?render=<%= ENV.fetch("RECAPTCHA_SITE_KEY") %>"></script>
+  <script nonce="<%= content_security_policy_script_nonce if respond_to?(:content_security_policy_script_nonce) %>">
+    document.addEventListener("turbo:load", function() {
+      var el = document.getElementById("auto-pdf");
+      if (!el) return;
 
+      window.location = el.dataset.url;
 
-    <!-- layouts/application.html.erb, antes de </body> -->
-    <script nonce="<%= content_security_policy_script_nonce if respond_to?(:content_security_policy_script_nonce) %>">
-      document.addEventListener("turbo:load", function() {
-        var el = document.getElementById("auto-pdf");
-        if (!el) return;
-
-        // Navegación real: dispara la descarga
-        window.location = el.dataset.url;
-
-        // Limpia ?download=1 del URL para no repetir en refresh/back
-        try {
-          var u = new URL(window.location.href);
-          u.searchParams.delete("download");
-          history.replaceState({}, document.title, u.toString());
-        } catch(e) {}
-      });
-    </script>
-
-
-
-
-  </body>
+      try {
+        var u = new URL(window.location.href);
+        u.searchParams.delete("download");
+        history.replaceState({}, document.title, u.toString());
+      } catch(e) {}
+    });
+  </script>
+</body>
 </html>

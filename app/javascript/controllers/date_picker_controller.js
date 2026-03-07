@@ -1,77 +1,86 @@
-// app/javascript/controllers/date_picker_controller.js
 import { Controller } from "@hotwired/stimulus"
 import flatpickr from "flatpickr"
 import { Spanish } from "flatpickr/dist/l10n/es.js"
 
 export default class extends Controller {
-  static targets = ["input", "label", "card", "panel", "anchor"]
+  static targets = ["input", "label", "panel", "anchor", "card"]
 
   connect() {
-    this._outside = this._onOutsideClick.bind(this)
-    // Listener en burbujeo (NO en captura) para no interferir con el click de abrir
-    document.addEventListener("click", this._outside)
+    if (!this.hasAnchorTarget || !this.hasInputTarget) return
+
+    this.flatpickr = flatpickr(this.anchorTarget, {
+      inline: true,
+      locale: Spanish,
+      defaultDate: this.inputTarget.value || new Date(),
+      minDate: "today",
+      dateFormat: "Y-m-d",
+      disableMobile: true,
+      clickOpens: false,
+      allowInput: false,
+      monthSelectorType: "static",
+      onChange: this.onChange.bind(this),
+      onReady: () => {
+        this.updateLabel(this.inputTarget.value)
+      }
+    })
+
+    this.boundOutsideClick = this.handleOutsideClick.bind(this)
+    document.addEventListener("click", this.boundOutsideClick)
   }
 
   disconnect() {
-    document.removeEventListener("click", this._outside)
-    this.inputTarget?._flatpickr?.destroy?.()
-  }
-
-  // Abre/cierra el panel del calendario
-  toggle(e) {
-    e?.preventDefault()
-    if (this.panelTarget.classList.contains("hidden")) {
-      this.#ensureCalendar()
-      this.showPanel()
-    } else {
-      this.hidePanel()
+    if (this.flatpickr) this.flatpickr.destroy()
+    if (this.boundOutsideClick) {
+      document.removeEventListener("click", this.boundOutsideClick)
     }
   }
 
-  showPanel() {
-    this.panelTarget.classList.remove("hidden")
-    this.cardTarget.setAttribute("aria-expanded", "true")
-    // opcional scroll
-    // this.panelTarget.scrollIntoView({ behavior: "smooth", block: "nearest" })
+  toggle(event) {
+    event.preventDefault()
+
+    if (this.panelTarget.classList.contains("hidden")) {
+      this.open()
+    } else {
+      this.close()
+    }
   }
 
-  hidePanel() {
+  open() {
+    this.panelTarget.classList.remove("hidden")
+    this.cardTarget.setAttribute("aria-expanded", "true")
+  }
+
+  close() {
     this.panelTarget.classList.add("hidden")
     this.cardTarget.setAttribute("aria-expanded", "false")
   }
 
-  // Al elegir fecha: actualiza label y cierra
-  onChange = (dates) => {
-    const d = dates?.[0]
-    if (d && this.hasLabelTarget) {
-      this.labelTarget.textContent = d.toLocaleDateString("es-MX", {
-        day: "2-digit", month: "2-digit", year: "numeric"
-      })
-    }
-    this.hidePanel()
+  onChange(selectedDates, dateStr) {
+    this.inputTarget.value = dateStr
+    this.updateLabel(dateStr)
+
+    this.inputTarget.dispatchEvent(new Event("input", { bubbles: true }))
+    this.inputTarget.dispatchEvent(new Event("change", { bubbles: true }))
+
+    this.close()
   }
 
-  // Inicializa flatpickr inline solo una vez
-  #ensureCalendar() {
-    if (!this.inputTarget?._flatpickr) {
-      flatpickr(this.inputTarget, {
-        inline: true,
-        appendTo: this.anchorTarget,  // render dentro del contenedor oculto
-        clickOpens: false,
-        dateFormat: "Y-m-d",
-        defaultDate: this.inputTarget.value || undefined,
-        minDate: "today",
-        locale: Spanish,
-        onChange: this.onChange,
-      })
+  updateLabel(value) {
+    if (!value) return
+
+    const parts = value.split("-")
+    if (parts.length !== 3) {
+      this.labelTarget.textContent = value
+      return
     }
+
+    const [year, month, day] = parts
+    this.labelTarget.textContent = `${day}/${month}/${year}`
   }
 
-  // Cierra si hacen click fuera de la barra o del panel
-  _onOutsideClick(evt) {
-    if (!this.element.contains(evt.target)) return
-    const insideCard = this.cardTarget.contains(evt.target)
-    const insidePanel = this.panelTarget.contains(evt.target)
-    if (!insideCard && !insidePanel) this.hidePanel()
+  handleOutsideClick(event) {
+    if (!this.element.contains(event.target)) {
+      this.close()
+    }
   }
 }

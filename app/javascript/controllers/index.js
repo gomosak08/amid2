@@ -1,8 +1,13 @@
-import { Application } from "@hotwired/stimulus"
-const application = Application.start()
+import { application } from "./application"
 
-// registra los controllers que quieras
+import RecaptchaController from "./recaptcha_controller"
+import ToggleDescriptionController from "./toggle_description_controller"
 import DatePickerController from "./date_picker_controller"
-application.register("date-picker", DatePickerController)
+import DoctorCalendarController from "./doctor_calendar_controller"
+import AvailabilityGuardController from "./availability_guard_controller"
 
-// (hello_controller viene por defecto; puedes dejarlo o quitarlo)
+application.register("recaptcha", RecaptchaController)
+application.register("toggle-description", ToggleDescriptionController)
+application.register("date-picker", DatePickerController)
+application.register("doctor-calendar", DoctorCalendarController)
+application.register("availability-guard", AvailabilityGuardController)

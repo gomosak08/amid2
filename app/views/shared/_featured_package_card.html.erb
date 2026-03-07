@@ -1,0 +1,311 @@
+<% description_text =
+     if package.respond_to?(:description) && package.description.present?
+       package.description.to_s
+     else
+       "Consulta los detalles de este servicio para conocer más información."
+     end
+%>
+
+<div class="amid-card" data-controller="toggle-description">
+  <style>
+    .amid-card{
+      display:flex;
+      flex-direction:column;
+      width:100%;
+      max-width:360px;
+      min-height:100%;
+      justify-self:center;
+      background:#fff;
+      border:1px solid #e2e8f0;
+      border-radius:22px;
+      overflow:hidden;
+      box-shadow: 0 12px 28px rgba(15,23,42,.06);
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+
+    .amid-card:hover{
+      transform: translateY(-4px);
+      box-shadow: 0 18px 34px rgba(15,23,42,.10);
+      border-color: rgba(147,197,253,.65);
+    }
+
+    .amid-card-media{
+      position:relative;
+      background:#f8fafc;
+      border-bottom:1px solid #eef2f7;
+    }
+
+    .amid-card-image-stage{
+      width:100%;
+      height:220px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:12px;
+      background:#f8fafc;
+    }
+
+    .amid-card-image{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      object-position:center;
+      border-radius:14px;
+      display:block;
+    }
+
+    .amid-card-empty{
+      width:100%;
+      height:220px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#94a3b8;
+      font-size:.95rem;
+      background:#f1f5f9;
+    }
+
+    .amid-card-price{
+      position:absolute;
+      left:14px;
+      top:14px;
+      display:inline-flex;
+      align-items:center;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.97);
+      color:#1d4ed8;
+      font-size:14px;
+      font-weight:900;
+      box-shadow: 0 10px 20px rgba(15,23,42,.14);
+    }
+
+    .amid-card-body{
+      display:flex;
+      flex-direction:column;
+      flex:1;
+      padding:1rem;
+      gap:.8rem;
+    }
+
+    .amid-card-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:.75rem;
+    }
+
+    .amid-card-type{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#eff6ff;
+      color:#1d4ed8;
+      font-weight:900;
+      white-space:nowrap;
+    }
+
+    .amid-card-detail-btn{
+      appearance:none;
+      border:none;
+      background:#f8fafc;
+      color:#475569;
+      font-size:13px;
+      font-weight:800;
+      border-radius:999px;
+      padding:7px 12px;
+      cursor:pointer;
+      transition: background .18s ease, color .18s ease;
+    }
+
+    .amid-card-detail-btn:hover{
+      background:#eff6ff;
+      color:#1d4ed8;
+    }
+
+    .amid-card-title{
+      margin:0;
+      font-size:1.12rem;
+      line-height:1.2;
+      font-weight:900;
+      color:#0f172a;
+    }
+
+    .amid-card-pills{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .amid-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border-radius:999px;
+      padding:7px 11px;
+      font-size:13px;
+      font-weight:800;
+    }
+
+    .amid-pill-neutral{
+      background:#f1f5f9;
+      color:#475569;
+    }
+
+    .amid-pill-ok{
+      background:#ecfdf5;
+      color:#15803d;
+    }
+
+    .amid-card-desc{
+      display:none;
+    }
+
+    .amid-card-desc.is-open{
+      display:block;
+    }
+
+    .amid-card-desc-box{
+      border:1px solid #e5e7eb;
+      background:#f8fafc;
+      border-radius:16px;
+      padding:.9rem 1rem;
+      color:#334155;
+      line-height:1.6;
+      font-size:.94rem;
+      white-space:pre-line;
+    }
+
+    .amid-card-actions{
+      display:flex;
+      flex-direction:column;
+      gap:.7rem;
+      margin-top:auto;
+    }
+
+    .amid-btn-primary{
+      width:100%;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:.55rem;
+      text-align:center;
+      background:#2563eb;
+      color:#fff;
+      font-weight:900;
+      padding:.85rem 1rem;
+      border-radius:14px;
+      text-decoration:none;
+      transition: filter .18s ease, transform .18s ease;
+    }
+
+    .amid-btn-primary:hover{
+      filter:brightness(.96);
+      transform: translateY(-1px);
+      color:#fff;
+    }
+
+    .amid-btn-secondary{
+      width:100%;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:.55rem;
+      text-align:center;
+      background:#fff;
+      color:#2563eb;
+      border:1px solid #dbeafe;
+      font-weight:800;
+      padding:.75rem 1rem;
+      border-radius:14px;
+      text-decoration:none;
+    }
+
+    .amid-btn-secondary:hover{
+      background:#eff6ff;
+      color:#1d4ed8;
+    }
+  </style>
+
+  <div class="amid-card-media">
+    <% if package.image.attached? %>
+      <div class="amid-card-image-stage">
+        <%= image_tag package.image, alt: package.name, class: "amid-card-image" %>
+      </div>
+    <% else %>
+      <div class="amid-card-empty">
+        Imagen no disponible
+      </div>
+    <% end %>
+
+    <% if package.respond_to?(:price) && package.price.present? %>
+      <div class="amid-card-price">
+        $<%= number_with_precision(package.price, precision: 2, delimiter: ",") %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="amid-card-body">
+    <div class="amid-card-top">
+      <span class="amid-card-type">
+        <i class="fa-solid fa-star text-[11px]"></i>
+        <%= package.kind.to_s.humanize %>
+      </span>
+
+      <button
+        type="button"
+        class="amid-card-detail-btn"
+        data-action="click->toggle-description#toggle">
+        Ver detalles
+      </button>
+    </div>
+
+    <h3 class="amid-card-title"><%= package.name %></h3>
+
+    <div class="amid-card-pills">
+      <% if package.respond_to?(:duration) && package.duration.present? %>
+        <span class="amid-pill amid-pill-neutral">
+          <i class="fa-regular fa-clock"></i>
+          Duración: <%= package.duration %> min
+        </span>
+      <% end %>
+
+      <span class="amid-pill amid-pill-ok">
+        <i class="fa-solid fa-circle-check"></i>
+        Disponible
+      </span>
+    </div>
+
+    <div class="amid-card-desc" data-toggle-description-target="content">
+      <div class="amid-card-desc-box">
+        <%= description_text %>
+      </div>
+    </div>
+
+    <div class="amid-card-actions">
+      <%= link_to new_appointment_path(package_id: package.id), class: "amid-btn-primary", data: { turbo: false } do %>
+        <i class="fa-solid fa-calendar-check"></i>
+        Agendar cita
+      <% end %>
+
+      <% target_path =
+          case package.kind.to_s
+          when "paquete"
+            packages_path
+          when "cirugia"
+            surgeries_path
+          else
+            services_path
+          end
+      %>
+
+      <%= link_to target_path, class: "amid-btn-secondary" do %>
+        <i class="fa-solid fa-arrow-right"></i>
+        Ver más opciones
+      <% end %>
+    </div>
+  </div>
+</div>

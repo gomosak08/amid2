@@ -1,22 +1,29 @@
 # app/models/doctor.rb
 class Doctor < ApplicationRecord
-    has_many :appointments, dependent: :destroy
+  has_many :appointments, dependent: :destroy
 
-    has_many :doctor_packages
-    has_many :packages, through: :doctor_packages
+  has_many :doctor_packages
+  has_many :packages, through: :doctor_packages
 
-    scope :for_package, ->(pkg_id) {
-      joins(:doctor_packages).where(doctor_packages: { package_id: pkg_id })
-    }
+  has_many :doctor_unavailabilities, dependent: :destroy
+  has_many :doctor_time_blocks, dependent: :destroy
+  scope :for_package, ->(pkg_id) {
+    joins(:doctor_packages).where(doctor_packages: { package_id: pkg_id })
+  }
 
-    def available_hours
-      JSON.parse(super || "{}")
-    rescue JSON::ParserError
-      {}
-    end
+  def available_hours
+    JSON.parse(super || "{}")
+  rescue JSON::ParserError
+    {}
+  end
 
-    # Ensure available_hours is converted to a JSON string before saving
-    def available_hours=(value)
-      super(value.is_a?(String) ? value : value.to_json)
-    end
+  def available_hours=(value)
+    super(value.is_a?(String) ? value : value.to_json)
+  end
+
+  # ✅ helper: ¿está bloqueado este día?
+  def unavailable_on?(date)
+    d = date.is_a?(Date) ? date : Date.parse(date.to_s)
+    doctor_unavailabilities.exists?(date: d)
+  end
 end
