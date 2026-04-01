@@ -2,15 +2,29 @@ class AppointmentsController < ApplicationController
   before_action :set_appointment, only: %i[show edit update destroy]
 
   def new
+    @package = Package.find_by(id: params[:package_id] || params.dig(:appointment, :package_id))
+
+    if @package.blank?
+      @packages = Package.order(:kind, :name)
+      render :select_package
+      return
+    end
+
     @ctx = User::Forms::AppointmentFormContext.call(
       params: params,
-      appointment: Appointment.new
+      appointment: Appointment.new(package: @package)
     )
+
+    if params.dig(:appointment, :doctor_id).present? &&
+      params[:appointment_date].present? &&
+      @ctx.available_times.blank?
+      flash.now[:alert] = "No hay disponibilidad para el doctor seleccionado en la fecha elegida."
+    end
   end
 
   def create
     @package = Package.find_by(id: params.dig(:appointment, :package_id))
-    return Responders::Flash422.call(controller: self, msg: "No se encontro el paquete seleccionado.") unless @package
+    return Responders::Flash422.call(controller: self, msg: "No se encontró el paquete seleccionado.") unless @package
 
     phone_e164 = PhoneNormalizer.to_e164(appointment_params[:phone])
     phone_ban  = PhoneBan.active_now.find_by(phone_e164: phone_e164)
@@ -56,7 +70,10 @@ class AppointmentsController < ApplicationController
     else
       redirect_to new_appointment_path(
                     package_id: @package.id,
-                    doctor_id: appointment_params[:doctor_id],
+                    appointment: {
+                      doctor_id: appointment_params[:doctor_id],
+                      package_id: @package.id
+                    },
                     appointment_date: result.start_date&.to_date
                   ),
                   alert: (result.error || "No se pudo crear la cita. Revisa los errores."),

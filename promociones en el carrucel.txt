@@ -1,0 +1,11 @@
+promociones en el carrucel 
+quitar cirugias 
+aviso de privacidad
+dimensiones de las imagenes, tamaño de imagen sugerido al crear paquete 
+al crear doctores, asociar con los paquetes que puede atender
+revisar filtros en citas
+paciente no asistio a cita en el panel de citas admin 
+revisar recordatorios por whatsapp 
+entrega de estudios para pacientes
+
+

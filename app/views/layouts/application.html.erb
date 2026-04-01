@@ -6,7 +6,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#2563eb">
-  <meta name="description" content="AMID - Atención Médica Integral y Diagnóstica. Servicios médicos, paquetes, cirugías y citas en línea.">
+  <meta name="description" content="AMID - Atención Médica Integral y Diagnóstica. Servicios médicos, paquetes y citas en línea.">
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
 
@@ -40,6 +40,8 @@
       --amid-card:#ffffff;
       --amid-line:#e2e8f0;
       --header-height: 92px;
+      --site-max-width: 1900px;
+      --site-pad-x: 22px;
     }
 
     html{
@@ -54,11 +56,8 @@
     }
 
     .site-container{
-      width:100%;
-      max-width:1980px;
-      margin:0 auto;
-      padding-left:1rem;
-      padding-right:1rem;
+      width: min(100% - (var(--site-pad-x) * 2), var(--site-max-width));
+      margin-inline: auto;
     }
 
     @media (min-width: 768px){
@@ -313,14 +312,12 @@
             <%= link_to "Inicio", root_path, class: "nav-link-main" %>
             <%= link_to "Servicios", services_path, class: "nav-link-main" %>
             <%= link_to "Paquetes", packages_path, class: "nav-link-main" %>
-            <%= link_to "Cirugías", surgeries_path, class: "nav-link-main" %>
+            <%#= link_to "Cirugías", surgeries_path, class: "nav-link-main" %>
             <%= link_to "Contacto", (defined?(contact_path) ? contact_path : "#"), class: "nav-link-main" %>
           </nav>
 
-          <%= link_to new_appointment_path, class: "nav-cta", data: { turbo: false } do %>
-            <i class="fa-solid fa-calendar-check"></i>
-            Agendar cita
-          <% end %>
+          <%= link_to "Agendar cita", new_appointment_path %>
+
 
           <button
             id="quick-panel-toggle"
@@ -515,7 +512,7 @@
           <%= link_to "Inicio", root_path, class: "text-white hover:text-teal-200 font-semibold py-2 no-underline" %>
           <%= link_to "Servicios", services_path, class: "text-white hover:text-teal-200 font-semibold py-2 no-underline" %>
           <%= link_to "Paquetes", packages_path, class: "text-white hover:text-teal-200 font-semibold py-2 no-underline" %>
-          <%= link_to "Cirugías", surgeries_path, class: "text-white hover:text-teal-200 font-semibold py-2 no-underline" %>
+          <%#= link_to "Cirugías", surgeries_path, class: "text-white hover:text-teal-200 font-semibold py-2 no-underline" %>
           <%= link_to "Contacto", (defined?(contact_path) ? contact_path : "#"), class: "text-white hover:text-teal-200 font-semibold py-2 no-underline" %>
 
           <%= link_to new_appointment_path,
@@ -604,7 +601,7 @@
     });
   </script>
 
-  <main class="main-content">
+  <main class="main-content pt-6 md:pt-10">
     <div class="site-container">
       <%= yield %>
     </div>
@@ -655,7 +652,7 @@
             <li><%= link_to "Inicio", root_path, class: "footer-link" %></li>
             <li><%= link_to "Servicios", services_path, class: "footer-link" %></li>
             <li><%= link_to "Paquetes", packages_path, class: "footer-link" %></li>
-            <li><%= link_to "Cirugías", surgeries_path, class: "footer-link" %></li>
+            <%# <li><%= link_to "Cirugías", surgeries_path, class: "footer-link" % ><br></li> %>
             <li><%= link_to "Contacto", (defined?(contact_path) ? contact_path : "#"), class: "footer-link" %></li>
           </ul>
         </div>

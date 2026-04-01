@@ -1,7 +1,7 @@
 <div class="min-h-[75vh] bg-gradient-to-b from-sky-50 via-white to-white">
-  <div class="mx-auto w-full max-w-[1600px] px-4 py-10 sm:px-6 lg:px-10">
+  <div class="w-full py-10">
     <div class="overflow-hidden rounded-[28px] border border-gray-200 bg-white shadow-xl shadow-blue-100/40">
-      
+
       <!-- Encabezado -->
       <div class="relative overflow-hidden bg-gradient-to-r from-blue-600 via-cyan-500 to-sky-500 px-6 py-10 text-white sm:px-10">
         <div class="absolute inset-0 opacity-10">
@@ -31,7 +31,7 @@
         <% cirugias = @packages.where(kind: "cirugia") %>
 
         <% if cirugias.any? %>
-          <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+          <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             <% cirugias.each do |package| %>
               <article
                 class="flex h-full flex-col overflow-hidden rounded-[24px] border border-gray-200 bg-white shadow-md shadow-blue-100/20 transition duration-300 hover:-translate-y-1 hover:shadow-xl"
@@ -43,7 +43,7 @@
                     <%= link_to package_path(package), class: "block" do %>
                       <%= image_tag package.image,
                             alt: package.name,
-                            class: "h-64 w-full rounded-2xl object-contain bg-white" %>
+                            class: "h-64 w-full rounded-2xl bg-white object-contain" %>
                     <% end %>
                   </div>
                 <% else %>
@@ -90,7 +90,7 @@
                         </p>
                       </div>
 
-                      <div data-toggle-description-target="description" class="hidden mt-4 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4">
+                      <div data-toggle-description-target="description" class="mt-4 hidden rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4">
                         <div class="text-sm leading-6 text-gray-700">
                           <%= simple_format(package.description, {}, wrapper_tag: "div") %>
                         </div>
@@ -134,7 +134,11 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m2 8H7a2 2 0 01-2-2V7a2 2 0 012-2h3.172a2 2 0 001.414-.586l.828-.828A2 2 0 0113.828 3H17a2 2 0 012 2v14a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <h2 class="text-xl font-semibold text-gray-800">No hay cirugías disponibles</h2>
+
+            <h2 class="text-xl font-semibold text-gray-800">
+              No hay cirugías disponibles
+            </h2>
+
             <p class="mt-2 text-sm text-gray-500">
               Por ahora no se encontraron cirugías para mostrar.
             </p>
