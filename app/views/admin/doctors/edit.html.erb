@@ -17,15 +17,17 @@
       </p>
     </div>
 
-    <div class="flex flex-wrap gap-3">
-      <%= link_to admin_doctors_path,
-        class: "inline-flex items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition" do %>
-        <svg xmlns="http://www.w3.org/2000/svg" class="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-        </svg>
-        Regresar a doctores
-      <% end %>
-    </div>
+    <% unless current_user&.medic? %>
+      <div class="flex flex-wrap gap-3">
+        <%= link_to admin_doctors_path,
+          class: "inline-flex items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition" do %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+          Regresar a doctores
+        <% end %>
+      </div>
+    <% end %>
   </div>
 
   <!-- TABS NAV -->

@@ -6,6 +6,15 @@ module Admin
     before_action :require_admin_or_self_medic
 
     def index
+      if current_user&.medic? && !current_user.admin?
+        if current_user.doctor.present?
+          redirect_to edit_admin_doctor_path(current_user.doctor)
+        else
+          redirect_to root_path, alert: "No tienes un perfil de doctor asignado."
+        end
+        return
+      end
+
       @doctors = Doctor.all
     end
 
@@ -366,8 +375,8 @@ module Admin
       return if current_user&.admin?
 
       if current_user&.medic?
-        # El médico solo puede editar su propio perfil, no puede crear ni borrar doctores ni ver el índice listado
-        if %w[index new create destroy].include?(action_name)
+        # El médico solo puede editar su propio perfil, no puede crear ni borrar doctores
+        if %w[new create destroy].include?(action_name)
           redirect_to root_path, alert: "Acceso denegado a esta sección general."
         elsif @doctor && @doctor.user_id != current_user.id
           redirect_to root_path, alert: "Solo puedes gestionar tu propio perfil médico y calendario."

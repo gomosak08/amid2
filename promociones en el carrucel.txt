@@ -8,4 +8,4 @@ paciente no asistio a cita en el panel de citas admin
 revisar recordatorios por whatsapp 
 entrega de estudios para pacientes
 
-
+bin/rails db:migrate

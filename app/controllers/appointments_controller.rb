@@ -92,7 +92,7 @@ class AppointmentsController < ApplicationController
         send_data pdf,
                   filename: "cita_#{@appointment.token}.pdf",
                   type: "application/pdf",
-                  disposition: "inline"
+                  disposition: "attachment"
       end
     end
   end
