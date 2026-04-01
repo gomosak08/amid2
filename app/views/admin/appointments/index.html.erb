@@ -11,7 +11,11 @@
         <div class="relative flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div class="max-w-3xl">
             <h1 class="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
-              Administrador de Citas
+              <% if current_user&.medic? && current_user.doctor.present? %>
+                Bienvenido, <%= current_user.doctor.name %>
+              <% else %>
+                Administrador de Citas
+              <% end %>
             </h1>
             <p class="mt-3 text-sm leading-6 text-blue-50 sm:text-base">
               Filtra por fecha, varios doctores y varios estados para localizar rápidamente las citas.
@@ -82,111 +86,41 @@
               </p>
             </div>
 
-            <div
-              class="rounded-[28px] border border-gray-200 bg-gradient-to-br from-slate-50 to-white p-4 sm:p-6 shadow-sm"
-              data-controller="date-picker"
-              data-date-picker-initial-value="<%= params[:date] %>"
-            >
-              <div class="grid grid-cols-1 gap-5 xl:grid-cols-[260px_minmax(0,1fr)]">
-                <!-- Resumen de fecha -->
-                <div class="space-y-4">
-                  <div class="overflow-hidden rounded-[24px] bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-500 p-5 text-white shadow-lg shadow-blue-200/50">
-                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100">
-                      Fecha seleccionada
-                    </p>
+            <div class="rounded-2xl border border-gray-200 bg-gray-50 p-5">
+              <%= date_field_tag :date,
+                    params[:date],
+                    class: "block w-full max-w-sm rounded-xl border border-gray-300 px-4 py-3 text-gray-700 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all",
+                    autocomplete: "off",
+                    onchange: "this.form.submit();"
+              %>
+              
+              <div class="mt-4 flex flex-wrap gap-2">
+                <button
+                  type="submit"
+                  name="date"
+                  value="<%= Date.current.to_s %>"
+                  class="inline-flex items-center justify-center rounded-xl bg-blue-50 text-blue-700 px-4 py-2.5 text-sm font-semibold hover:bg-blue-100 transition-colors"
+                >
+                  Hoy
+                </button>
+                
+                <button
+                  type="submit"
+                  name="date"
+                  value="<%= Date.tomorrow.to_s %>"
+                  class="inline-flex items-center justify-center rounded-xl bg-cyan-50 text-cyan-700 px-4 py-2.5 text-sm font-semibold hover:bg-cyan-100 transition-colors"
+                >
+                  Mañana
+                </button>
 
-                    <div class="mt-4 flex items-end gap-3">
-                      <p class="text-5xl font-bold leading-none" data-date-picker-target="dayNumber">
-                        <%= (params[:date].present? ? Date.parse(params[:date]) : Date.current).day rescue Date.current.day %>
-                      </p>
-
-                      <div class="pb-1">
-                        <p class="text-sm font-medium text-blue-100">
-                          <%= (params[:date].present? ? Date.parse(params[:date]) : Date.current).strftime("%B").capitalize rescue Date.current.strftime("%B").capitalize %>
-                        </p>
-                        <p class="text-sm text-blue-50/90">
-                          <%= (params[:date].present? ? Date.parse(params[:date]) : Date.current).year rescue Date.current.year %>
-                        </p>
-                      </div>
-                    </div>
-
-                    <p class="mt-5 text-base font-semibold leading-6 capitalize" data-date-picker-target="fullLabel">
-                      <%= params[:date].present? ? l(Date.parse(params[:date]), format: "%A, %d de %B de %Y") : "Cualquier fecha" rescue "Fecha inválida" %>
-                    </p>
-
-                    <div class="mt-6 rounded-2xl border border-white/20 bg-white/10 px-4 py-3 backdrop-blur-sm">
-                      <p class="text-sm text-blue-50">
-                        Usa el calendario para elegir el día y filtrar las citas rápidamente.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div class="grid grid-cols-1 gap-2 sm:grid-cols-3 xl:grid-cols-1">
-                    <button
-                      type="button"
-                      class="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
-                      data-action="click->date-picker#setToday"
-                    >
-                      Hoy
-                    </button>
-
-                    <button
-                      type="button"
-                      class="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 shadow-sm transition hover:border-cyan-200 hover:bg-cyan-50 hover:text-cyan-700"
-                      data-action="click->date-picker#setTomorrow"
-                    >
-                      Mañana
-                    </button>
-
-                    <button
-                      type="button"
-                      class="inline-flex items-center justify-center rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600 shadow-sm transition hover:bg-red-100"
-                      data-action="click->date-picker#clearDate"
-                    >
-                      Limpiar fecha
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Calendario -->
-                <div class="rounded-[24px] border border-gray-200 bg-white p-4 sm:p-5 shadow-sm">
-                  <div class="mb-4 flex flex-col gap-2 border-b border-gray-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <p class="text-sm font-bold uppercase tracking-wide text-gray-600">
-                        Calendario
-                      </p>
-                      <p class="mt-1 text-sm text-gray-500">
-                        Selecciona un día para aplicar el filtro.
-                      </p>
-                    </div>
-
-                    <% if params[:date].present? %>
-                      <span class="inline-flex w-fit items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
-                        Fecha activa: <%= params[:date] %>
-                      </span>
-                    <% end %>
-                  </div>
-
-                  <%= text_field_tag :date,
-                        params[:date],
-                        class: "sr-only",
-                        data: { date_picker_target: "input" },
-                        autocomplete: "off" %>
-
-                  <div class="rounded-[22px] border border-slate-200 bg-slate-50 p-4 sm:p-5">
-                    <div
-                      data-date-picker-target="anchor"
-                      class="date-picker-inline w-full"
-                    ></div>
-                  </div>
-
-                  <div class="mt-4 flex items-start gap-2 rounded-2xl bg-slate-50 px-4 py-3">
-                    <div class="mt-0.5 h-2.5 w-2.5 rounded-full bg-blue-500"></div>
-                    <p class="text-sm text-gray-600">
-                      Al seleccionar una fecha, se actualizará el valor del filtro para buscar citas de ese día.
-                    </p>
-                  </div>
-                </div>
+                <button
+                  type="submit"
+                  name="date"
+                  value=""
+                  class="inline-flex items-center justify-center rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-100 transition-colors"
+                >
+                  Limpiar fecha
+                </button>
               </div>
             </div>
           </section>
@@ -481,84 +415,3 @@
     </div>
   </div>
 </div>
-
-<style>
-  .date-picker-inline {
-    width: 100%;
-  }
-
-  .date-picker-inline .flatpickr-calendar,
-  [data-date-picker-target="anchor"] .flatpickr-calendar {
-    width: 100% !important;
-    max-width: 720px;
-    margin: 0 auto;
-    box-shadow: none !important;
-    border: 0 !important;
-    background: transparent !important;
-  }
-
-  .date-picker-inline .flatpickr-months,
-  [data-date-picker-target="anchor"] .flatpickr-months {
-    width: 100% !important;
-  }
-
-  .date-picker-inline .flatpickr-weekdays,
-  [data-date-picker-target="anchor"] .flatpickr-weekdays {
-    width: 100% !important;
-  }
-
-  .date-picker-inline .flatpickr-days,
-  [data-date-picker-target="anchor"] .flatpickr-days {
-    width: 100% !important;
-    display: block !important;
-  }
-
-  .date-picker-inline .dayContainer,
-  [data-date-picker-target="anchor"] .dayContainer {
-    width: 100% !important;
-    min-width: 100% !important;
-    max-width: 100% !important;
-    display: flex;
-    flex-wrap: wrap;
-  }
-
-  .date-picker-inline .flatpickr-day,
-  [data-date-picker-target="anchor"] .flatpickr-day {
-    max-width: none !important;
-    flex: 1 0 14.2857%;
-    border-radius: 12px;
-  }
-
-  .date-picker-inline .flatpickr-current-month,
-  [data-date-picker-target="anchor"] .flatpickr-current-month {
-    font-weight: 700;
-    font-size: 1rem;
-  }
-
-  .date-picker-inline .flatpickr-prev-month,
-  .date-picker-inline .flatpickr-next-month,
-  [data-date-picker-target="anchor"] .flatpickr-prev-month,
-  [data-date-picker-target="anchor"] .flatpickr-next-month {
-    top: 8px;
-  }
-
-  .date-picker-inline .flatpickr-weekday,
-  [data-date-picker-target="anchor"] .flatpickr-weekday {
-    font-weight: 600;
-    font-size: 0.85rem;
-  }
-
-  @media (max-width: 1280px) {
-    .date-picker-inline .flatpickr-calendar,
-    [data-date-picker-target="anchor"] .flatpickr-calendar {
-      max-width: 100%;
-    }
-  }
-
-  @media (max-width: 768px) {
-    .date-picker-inline .flatpickr-day,
-    [data-date-picker-target="anchor"] .flatpickr-day {
-      font-size: 0.875rem;
-    }
-  }
-</style>
