@@ -1,0 +1,63 @@
+<%= form_with(model: [:admin, user], local: true, class: "space-y-6") do |f| %>
+  <% if user.errors.any? %>
+    <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 shadow-sm">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <h3 class="text-sm font-semibold text-red-800">
+            Se encontraron <%= pluralize(user.errors.count, "error", "errores") %>
+          </h3>
+          <ul class="mt-2 list-inside list-disc text-sm text-red-700">
+            <% user.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+    <div>
+      <%= f.label :email, "Correo Electrónico", class: "block text-sm font-bold text-gray-700 mb-1" %>
+      <%= f.email_field :email, class: "block w-full rounded-xl border border-gray-300 px-4 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 sm:text-sm", placeholder: "ejemplo@ejemplo.com", required: true %>
+    </div>
+
+    <div>
+      <%= f.label :password, class: "block text-sm font-bold text-gray-700 mb-1" do %>
+        Contraseña
+        <% if user.persisted? %>
+           <span class="text-xs font-normal text-gray-400 ml-1">(Déjalo en blanco para mantener la actual)</span>
+        <% end %>
+      <% end %>
+      <%= f.password_field :password, class: "block w-full rounded-xl border border-gray-300 px-4 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 sm:text-sm", required: !user.persisted? %>
+    </div>
+
+    <div>
+      <%= f.label :role, "Rol en el Sistema", class: "block text-sm font-bold text-gray-700 mb-1" %>
+      <%= f.select :role, [["Secretaria", "secretary"], ["Médico", "medic"]], {}, class: "block w-full rounded-xl border border-gray-300 px-4 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 sm:text-sm" %>
+      <p class="mt-1 text-xs text-gray-500">Solo perfiles limitados pueden ser gestionados aquí.</p>
+    </div>
+  </div>
+
+  <div class="mt-6 border-t border-gray-100 pt-6">
+    <div class="flex items-start">
+      <div class="flex h-6 items-center">
+        <%= f.check_box :can_upload_results, class: "h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 shadow-sm" %>
+      </div>
+      <div class="ml-3">
+        <%= f.label :can_upload_results, "Permitir gestión de resultados médicos", class: "text-sm font-bold text-gray-800" %>
+        <p class="text-sm text-gray-500">Especial para secretarias. Los médicos por defecto ya tienen permiso.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-8 flex items-center justify-end gap-3 border-t border-gray-100 pt-6">
+    <%= link_to "Cancelar", admin_users_path, class: "inline-flex items-center justify-center rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 border border-gray-300 shadow-sm hover:bg-gray-50 transition" %>
+    <%= f.submit user.persisted? ? "Actualizar Usuario" : "Crear Usuario", class: "inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-blue-700 transition" %>
+  </div>
+<% end %>

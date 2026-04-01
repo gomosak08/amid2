@@ -85,7 +85,7 @@
             <div
               class="rounded-[28px] border border-gray-200 bg-gradient-to-br from-slate-50 to-white p-4 sm:p-6 shadow-sm"
               data-controller="date-picker"
-              data-date-picker-initial-value="<%= params[:date].presence || Date.current.to_s %>"
+              data-date-picker-initial-value="<%= params[:date] %>"
             >
               <div class="grid grid-cols-1 gap-5 xl:grid-cols-[260px_minmax(0,1fr)]">
                 <!-- Resumen de fecha -->
@@ -111,7 +111,7 @@
                     </div>
 
                     <p class="mt-5 text-base font-semibold leading-6 capitalize" data-date-picker-target="fullLabel">
-                      <%= l((params[:date].present? ? Date.parse(params[:date]) : Date.current), format: "%A, %d de %B de %Y") rescue "Selecciona una fecha" %>
+                      <%= params[:date].present? ? l(Date.parse(params[:date]), format: "%A, %d de %B de %Y") : "Cualquier fecha" rescue "Fecha inválida" %>
                     </p>
 
                     <div class="mt-6 rounded-2xl border border-white/20 bg-white/10 px-4 py-3 backdrop-blur-sm">
@@ -168,7 +168,7 @@
                   </div>
 
                   <%= text_field_tag :date,
-                        (params[:date].presence || Date.current.to_s),
+                        params[:date],
                         class: "sr-only",
                         data: { date_picker_target: "input" },
                         autocomplete: "off" %>
@@ -191,9 +191,9 @@
             </div>
           </section>
 
-          <!-- Doctores y estados -->
           <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
             <!-- Doctores -->
+            <% unless current_user&.medic? %>
             <section class="rounded-[24px] border border-gray-200 bg-gray-50 p-5">
               <div class="mb-4 flex items-center justify-between">
                 <div>
@@ -231,6 +231,7 @@
                 <% end %>
               </div>
             </section>
+            <% end %>
 
             <!-- Estados -->
             <section class="rounded-[24px] border border-gray-200 bg-gray-50 p-5">
@@ -255,7 +256,8 @@
                 ["Programada", "scheduled"],
                 ["Completada", "completed"],
                 ["Cancelada por admin", "canceled_by_admin"],
-                ["Cancelada por cliente", "canceled_by_client"]
+                ["Cancelada por cliente", "canceled_by_client"],
+                ["No asistió (No show)", "no_show"]
               ] %>
 
               <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -288,6 +290,10 @@
                       <% elsif value == "canceled_by_client" %>
                         <span class="inline-flex w-fit items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700">
                           canceled_by_client
+                        </span>
+                      <% elsif value == "no_show" %>
+                        <span class="inline-flex w-fit items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
+                          no_show
                         </span>
                       <% end %>
                     </div>
@@ -322,12 +328,14 @@
             </span>
           <% end %>
 
-          <% Array(params[:doctor_ids]).reject(&:blank?).each do |doctor_id| %>
-            <% doctor = @doctors.find { |d| d.id.to_s == doctor_id.to_s } %>
-            <% if doctor %>
-              <span class="inline-flex items-center rounded-full bg-gray-200 px-3 py-1 text-xs font-semibold text-gray-700">
-                Doctor: <%= doctor.name %>
-              </span>
+          <% unless current_user&.medic? %>
+            <% Array(params[:doctor_ids]).reject(&:blank?).each do |doctor_id| %>
+              <% doctor = @doctors.find { |d| d.id.to_s == doctor_id.to_s } %>
+              <% if doctor %>
+                <span class="inline-flex items-center rounded-full bg-gray-200 px-3 py-1 text-xs font-semibold text-gray-700">
+                  Doctor: <%= doctor.name %>
+                </span>
+              <% end %>
             <% end %>
           <% end %>
 
@@ -335,7 +343,8 @@
             "scheduled" => "Programada",
             "completed" => "Completada",
             "canceled_by_admin" => "Cancelada por admin",
-            "canceled_by_client" => "Cancelada por cliente"
+            "canceled_by_client" => "Cancelada por cliente",
+            "no_show" => "No asistió"
           } %>
 
           <% Array(params[:statuses]).reject(&:blank?).each do |status| %>
@@ -418,6 +427,10 @@
                       <span class="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">
                         Cancelada por cliente
                       </span>
+                    <% elsif appointment.status == "no_show" %>
+                      <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                        No asistió
+                      </span>
                     <% else %>
                       <span class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-bold text-gray-700">
                         <%= appointment.status %>
@@ -427,11 +440,15 @@
 
                   <td class="px-6 py-4">
                     <div class="flex items-center justify-center gap-2">
+                      <%= link_to "Ver",
+                            admin_appointment_path(appointment),
+                            class: "inline-flex items-center rounded-xl bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100" %>
+
                       <%= link_to "Editar",
                             edit_admin_appointment_path(appointment),
                             class: "inline-flex items-center rounded-xl bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100" %>
 
-                      <% unless appointment.completed? || appointment.canceled_by_admin? || appointment.canceled_by_client? %>
+                      <% unless appointment.completed? || appointment.canceled_by_admin? || appointment.canceled_by_client? || appointment.no_show? %>
                         <%= link_to "Cancelar",
                               cancel_admin_appointment_path(appointment),
                               data: {

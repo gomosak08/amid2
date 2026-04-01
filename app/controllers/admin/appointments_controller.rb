@@ -4,8 +4,9 @@ class Admin::AppointmentsController < ApplicationController
   include User::Concerns::AvailableFields
 
   before_action :authenticate_user!
-  before_action :require_admin_or_secretary
-  before_action :set_appointment, only: [ :show, :edit, :update, :destroy, :cancel ]
+  before_action :require_admin_or_secretary_or_medic
+  before_action :set_appointment, only: [ :show, :edit, :update, :destroy, :cancel, :attach_results, :remove_result ]
+  before_action :require_results_permission, only: [ :attach_results, :remove_result ]
 
   def new
     @ctx      = Admin::Forms::AppointmentAdminFormContext.call(params: params, appointment: Appointment.new)
@@ -18,6 +19,15 @@ class Admin::AppointmentsController < ApplicationController
     scope = Appointment
               .includes(:doctor, :package)
               .order(start_date: :desc)
+
+    # Restricción de permisos para médicos
+    if current_user&.medic?
+      if current_user.doctor.present?
+        scope = scope.where(doctor_id: current_user.doctor.id)
+      else
+        scope = scope.none
+      end
+    end
 
     # Fecha (filtra por el día completo en CDMX)
     if params[:date].present?
@@ -146,6 +156,27 @@ class Admin::AppointmentsController < ApplicationController
     end
   end
 
+  def attach_results
+    if params[:study_results].present?
+      @appointment.study_results.attach(params[:study_results])
+      flash[:notice] = "Resultados adjuntados exitosamente."
+    else
+      flash[:alert] = "Debes seleccionar al menos un archivo."
+    end
+    redirect_to admin_appointment_path(@appointment)
+  end
+
+  def remove_result
+    begin
+      attachment = @appointment.study_results.find(params[:attachment_id])
+      attachment.purge
+      flash[:notice] = "El archivo ha sido eliminado."
+    rescue ActiveRecord::RecordNotFound
+      flash[:alert] = "Archivo no encontrado."
+    end
+    redirect_to admin_appointment_path(@appointment)
+  end
+
   def edit
   end
 
@@ -201,9 +232,15 @@ class Admin::AppointmentsController < ApplicationController
     redirect_to new_admin_appointment_path, alert: "Appointment not found."
   end
 
-  def require_admin_or_secretary
-    unless current_user&.admin? || current_user&.secretary?
+  def require_admin_or_secretary_or_medic
+    unless current_user&.admin? || current_user&.secretary? || current_user&.medic?
       redirect_to root_path, alert: "No tienes permiso para acceder a esta sección."
+    end
+  end
+
+  def require_results_permission
+    unless current_user&.can_manage_results?
+      redirect_to admin_appointment_path(@appointment), alert: "No tienes permiso para gestionar resultados médicos."
     end
   end
 end

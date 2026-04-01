@@ -1,0 +1,10 @@
+if Rails.env.development?
+  Rails.application.routes.default_url_options[:host] = "localhost:3000"
+  Rails.application.routes.default_url_options[:protocol] = "http"
+elsif Rails.env.production?
+  Rails.application.routes.default_url_options[:host] = ENV.fetch("APP_HOST")
+  Rails.application.routes.default_url_options[:protocol] = ENV.fetch("APP_PROTOCOL", "https")
+else
+  Rails.application.routes.default_url_options[:host] = ENV.fetch("APP_HOST", "www.example.com")
+  Rails.application.routes.default_url_options[:protocol] = ENV.fetch("APP_PROTOCOL", "http")
+end

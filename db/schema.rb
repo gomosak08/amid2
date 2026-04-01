@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_03_07_072510) do
+ActiveRecord::Schema[7.2].define(version: 2026_04_01_041223) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -101,6 +101,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_07_072510) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.text "unavailable_dates"
+    t.integer "user_id"
+    t.index ["user_id"], name: "index_doctors_on_user_id"
   end
 
   create_table "packages", force: :cascade do |t|
@@ -141,6 +143,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_07_072510) do
     t.string "reset_password_token"
     t.datetime "reset_password_sent_at"
     t.datetime "remember_created_at"
+    t.boolean "can_upload_results", default: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
@@ -151,5 +154,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_07_072510) do
   add_foreign_key "doctor_packages", "packages"
   add_foreign_key "doctor_time_blocks", "doctors"
   add_foreign_key "doctor_unavailabilities", "doctors"
+  add_foreign_key "doctors", "users"
   add_foreign_key "phone_bans", "users", column: "created_by_id"
 end

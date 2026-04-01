@@ -2,8 +2,8 @@
 module Admin
   class DoctorsController < ApplicationController
     before_action :authenticate_user!
-    before_action :require_admin
     before_action :set_doctor, except: %i[index new create]
+    before_action :require_admin_or_self_medic
 
     def index
       @doctors = Doctor.all
@@ -11,6 +11,7 @@ module Admin
 
     def new
       @doctor = Doctor.new
+      @doctor.build_user
     end
 
     def create
@@ -303,7 +304,21 @@ module Admin
     end
 
     def doctor_params
-      permitted = params.require(:doctor).permit(:name, :specialty, :email, available_hours: {})
+      permitted = params.require(:doctor).permit(
+        :name, :specialty, :email,
+        package_ids: [],
+        user_attributes: [:id, :email, :password, :role],
+        available_hours: {}
+      )
+
+      if permitted[:user_attributes].present?
+        # Ensure role is always medic securely
+        permitted[:user_attributes][:role] = "medic"
+        # Avoid Devise validation if password is not being updated
+        if permitted[:user_attributes][:password].blank?
+          permitted[:user_attributes].delete(:password)
+        end
+      end
 
       if permitted[:available_hours].present?
         permitted[:available_hours] = permitted[:available_hours].to_h.transform_values do |times|
@@ -347,8 +362,19 @@ module Admin
       }
     end
 
-    def require_admin
-      redirect_to(root_path, alert: "You are not authorized to access this page.") unless current_user&.admin?
+    def require_admin_or_self_medic
+      return if current_user&.admin?
+
+      if current_user&.medic?
+        # El médico solo puede editar su propio perfil, no puede crear ni borrar doctores ni ver el índice listado
+        if %w[index new create destroy].include?(action_name)
+          redirect_to root_path, alert: "Acceso denegado a esta sección general."
+        elsif @doctor && @doctor.user_id != current_user.id
+          redirect_to root_path, alert: "Solo puedes gestionar tu propio perfil médico y calendario."
+        end
+      else
+        redirect_to root_path, alert: "No autorizado."
+      end
     end
 
     def authenticate_user!

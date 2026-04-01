@@ -1,0 +1,132 @@
+<div class="min-h-[80vh] bg-gradient-to-b from-blue-50 via-white to-white">
+  <div class="w-full py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    
+    <!-- Encabezado -->
+    <div class="mb-8 overflow-hidden rounded-[28px] border border-gray-200 bg-white shadow-xl shadow-blue-100/40">
+      <div class="relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-8 text-white sm:px-8 sm:py-10">
+        <div class="absolute inset-0 opacity-10">
+          <div class="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white"></div>
+          <div class="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-white"></div>
+        </div>
+
+        <div class="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div class="max-w-2xl">
+            <h1 class="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
+              Panel de Usuarios
+            </h1>
+            <p class="mt-3 text-sm leading-6 text-blue-50 sm:text-base">
+              Administra al personal médico y de secretaría. El rol de Administrador no puede asignarse o editarse desde este panel por medidas de seguridad.
+            </p>
+          </div>
+
+          <div>
+            <%= link_to new_admin_user_path, class: "inline-flex items-center justify-center rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-blue-600 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-4 focus:ring-white/20" do %>
+              <i class="fa-solid fa-plus mr-2"></i> Nuevo Usuario
+            <% end %>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Resumen estadístico simple -->
+      <div class="grid grid-cols-1 gap-4 border-t border-gray-100 bg-white px-6 py-6 md:grid-cols-3 sm:px-8">
+        <div class="rounded-2xl border border-gray-200 bg-gray-50 p-5">
+          <p class="text-sm font-medium text-gray-500">Total Usuarios</p>
+          <p class="mt-2 text-3xl font-bold text-gray-900"><%= @users.size %></p>
+        </div>
+        <div class="rounded-2xl border border-blue-100 bg-blue-50 p-5">
+          <p class="text-sm font-medium text-blue-700">Médicos</p>
+          <p class="mt-2 text-3xl font-bold text-blue-600"><%= @users.count { |u| u.medic? } %></p>
+        </div>
+        <div class="rounded-2xl border border-emerald-100 bg-emerald-50 p-5">
+          <p class="text-sm font-medium text-emerald-700">Secretarias</p>
+          <p class="mt-2 text-3xl font-bold text-emerald-600"><%= @users.count { |u| u.secretary? } %></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mensajes Flash -->
+    <% if flash[:notice].present? %>
+      <div class="mb-6 rounded-2xl border border-green-200 bg-green-50 px-4 py-4 text-sm text-green-700 font-medium">
+        <%= flash[:notice] %>
+      </div>
+    <% end %>
+    <% if flash[:alert].present? %>
+      <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-700 font-medium">
+        <%= flash[:alert] %>
+      </div>
+    <% end %>
+
+    <!-- Tabla de Usuarios -->
+    <div class="overflow-hidden rounded-[28px] border border-gray-200 bg-white shadow-xl shadow-blue-100/30">
+      <div class="overflow-x-auto">
+        <table class="min-w-full">
+          <thead class="border-b border-gray-200 bg-gray-50">
+            <tr>
+              <th scope="col" class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">ID</th>
+              <th scope="col" class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Email</th>
+              <th scope="col" class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Rol</th>
+              <th scope="col" class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-gray-500">Subir Resultados</th>
+              <th scope="col" class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-500">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200 bg-white">
+            <% if @users.any? %>
+              <% @users.each do |user| %>
+                <tr class="transition hover:bg-blue-50/40">
+                  <td class="whitespace-nowrap px-6 py-4">
+                    <span class="inline-flex items-center rounded-lg bg-gray-100 px-3 py-1 text-sm font-semibold text-gray-700">
+                      #<%= user.id %>
+                    </span>
+                  </td>
+                  <td class="whitespace-nowrap px-6 py-4 font-medium text-gray-900">
+                    <%= user.email %>
+                    <% if user == current_user %>
+                      <span class="ml-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
+                        Tú
+                      </span>
+                    <% end %>
+                  </td>
+                  <td class="whitespace-nowrap px-6 py-4">
+                    <% case user.role %>
+                    <% when "admin" %>
+                      <span class="inline-flex items-center rounded-full bg-purple-100 px-3 py-1 text-xs font-bold text-purple-700">Administrador</span>
+                    <% when "medic" %>
+                      <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">Médico</span>
+                    <% when "secretary" %>
+                      <span class="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold text-indigo-700">Secretaria</span>
+                    <% else %>
+                      <span class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-bold text-gray-700"><%= user.role %></span>
+                    <% end %>
+                  </td>
+                  <td class="whitespace-nowrap px-6 py-4 text-center">
+                    <% if user.admin? || user.medic? || user.can_upload_results? %>
+                      <i class="fa-solid fa-check text-green-500 text-lg"></i>
+                    <% else %>
+                      <i class="fa-solid fa-xmark text-gray-300 text-lg"></i>
+                    <% end %>
+                  </td>
+                  <td class="whitespace-nowrap px-6 py-4 text-right">
+                    <div class="flex items-center justify-end gap-2">
+                       <% unless user.admin? %>
+                         <%= link_to "Editar", edit_admin_user_path(user), class: "inline-flex items-center rounded-xl bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700 hover:bg-blue-100 transition" %>
+                         <%= button_to "Eliminar", admin_user_path(user), method: :delete, data: { turbo_confirm: "¿Estás seguro de eliminar a este usuario?" }, class: "inline-flex items-center rounded-xl bg-red-50 px-3 py-1.5 text-sm font-semibold text-red-700 hover:bg-red-100 transition" %>
+                       <% else %>
+                         <span class="text-xs text-gray-400 italic">Protegido</span>
+                       <% end %>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            <% else %>
+              <tr>
+                <td colspan="5" class="px-6 py-12 text-center text-gray-500 text-sm">
+                  No hay usuarios registrados en el sistema.
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

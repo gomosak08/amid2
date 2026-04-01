@@ -39,6 +39,7 @@ Rails.application.routes.draw do
   # ADMIN AREA
   # ================================
   namespace :admin do
+    resources :users, except: [:show]
     resources :appointments do
       collection do
         get :available_fields
@@ -46,6 +47,8 @@ Rails.application.routes.draw do
 
       member do
         patch :cancel
+        post :attach_results
+        delete :remove_result
       end
     end
 

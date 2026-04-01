@@ -5,7 +5,7 @@ module User::Appointments
     class Update
       Result = Struct.new(:success?, :error, keyword_init: true)
 
-      ALLOWED_STATUSES = %w[completed canceled_by_admin].freeze
+      ALLOWED_STATUSES = %w[completed canceled_by_admin no_show].freeze
 
       def self.call(appointment:, status:, by: :admin)
         unless status.present? && ALLOWED_STATUSES.include?(status)

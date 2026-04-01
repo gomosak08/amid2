@@ -1,5 +1,8 @@
 # app/models/doctor.rb
 class Doctor < ApplicationRecord
+  belongs_to :user, optional: true
+  accepts_nested_attributes_for :user, reject_if: ->(attrs) { attrs['email'].blank? }
+
   has_many :appointments, dependent: :destroy
 
   has_many :doctor_packages

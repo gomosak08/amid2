@@ -40,6 +40,52 @@
     <strong class="font-semibold text-gray-700">Teléfono:</strong>
     <span class="text-gray-800"><%= @appointment.phone.presence || "N/A" %></span>
   </p>
+
+  <div class="mt-6 pt-6 border-t border-gray-100">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-xl font-bold text-gray-900">Resultados Médicos</h3>
+      <button type="button" 
+              onclick="navigator.clipboard.writeText('<%= edit_appointment_url(@appointment) %>'); alert('Enlace copiado al portapapeles');"
+              class="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100 transition">
+        <i class="fa-solid fa-link"></i> Copiar enlace para paciente
+      </button>
+    </div>
+
+    <% if @appointment.study_results.attached? %>
+      <ul class="space-y-3 mb-6">
+        <% @appointment.study_results.each do |result| %>
+          <li class="flex items-center justify-between bg-gray-50 rounded-lg p-3 border border-gray-200">
+            <div class="flex items-center gap-3">
+              <i class="fa-solid fa-file-pdf text-red-500 text-xl"></i>
+              <span class="text-sm font-medium text-gray-800"><%= result.filename %></span>
+            </div>
+            <div class="flex items-center gap-2">
+              <%= link_to "Ver", rails_blob_path(result, disposition: "inline"), target: "_blank", class: "text-sm font-semibold text-blue-600 hover:text-blue-800" %>
+              <% if current_user.can_manage_results? %>
+                <%= button_to remove_result_admin_appointment_path(@appointment, attachment_id: result.id), method: :delete, data: { turbo_confirm: "¿Eliminar este resultado?" }, class: "text-sm font-semibold text-red-600 hover:text-red-800 ml-2" do %>
+                  <i class="fa-solid fa-trash"></i>
+                <% end %>
+              <% end %>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <div class="mb-6 rounded-xl border border-dashed border-gray-300 bg-gray-50 p-6 text-center text-sm text-gray-500">
+        No hay resultados adjuntos a esta cita todavía.
+      </div>
+    <% end %>
+
+    <% if current_user.can_manage_results? %>
+      <%= form_with url: attach_results_admin_appointment_path(@appointment), method: :post, multipart: true, class: "flex items-end gap-3" do |f| %>
+        <div class="flex-grow">
+          <%= f.label :study_results, "Subir nuevos resultados (PDF, Imágenes)", class: "block text-sm font-medium text-gray-700 mb-1" %>
+          <%= f.file_field :study_results, multiple: true, accept: "application/pdf, image/*", class: "block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-gray-200 rounded-md" %>
+        </div>
+        <%= f.submit "Subir archivos", class: "rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500" %>
+      <% end %>
+    <% end %>
+  </div>
 </div>
 
 <div class="mt-6 text-center">

@@ -421,30 +421,47 @@
                   </div>
 
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <%= link_to admin_doctors_path,
-                      class: "quick-link-card rounded-2xl border border-gray-200 bg-white p-4 text-gray-800 no-underline hover:border-emerald-300" do %>
-                      <div class="flex items-center gap-3">
-                        <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                          <i class="fa-solid fa-user-doctor"></i>
+                    <% if current_user&.medic? && current_user.doctor.present? %>
+                      <%= link_to edit_admin_doctor_path(current_user.doctor),
+                        class: "quick-link-card rounded-2xl border border-gray-200 bg-white p-4 text-gray-800 no-underline hover:border-emerald-300" do %>
+                        <div class="flex items-center gap-3">
+                          <div class="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                            <i class="fa-solid fa-user-doctor"></i>
+                          </div>
+                          <div>
+                            <div class="font-semibold">Mi Agenda y Horarios</div>
+                            <div class="text-sm text-gray-500">Gestionar perfil</div>
+                          </div>
                         </div>
-                        <div>
-                          <div class="font-semibold">Panel de Doctores</div>
-                          <div class="text-sm text-gray-500">Horarios y disponibilidad</div>
+                      <% end %>
+                    <% else %>
+                      <%= link_to admin_doctors_path,
+                        class: "quick-link-card rounded-2xl border border-gray-200 bg-white p-4 text-gray-800 no-underline hover:border-emerald-300" do %>
+                        <div class="flex items-center gap-3">
+                          <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                            <i class="fa-solid fa-user-doctor"></i>
+                          </div>
+                          <div>
+                            <div class="font-semibold">Panel de Doctores</div>
+                            <div class="text-sm text-gray-500">Horarios y disponibilidad</div>
+                          </div>
                         </div>
-                      </div>
+                      <% end %>
                     <% end %>
 
-                    <%= link_to admin_packages_path,
-                      class: "quick-link-card rounded-2xl border border-gray-200 bg-white p-4 text-gray-800 no-underline hover:border-emerald-300" do %>
-                      <div class="flex items-center gap-3">
-                        <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                          <i class="fa-solid fa-box-open"></i>
+                    <% unless current_user&.medic? %>
+                      <%= link_to admin_packages_path,
+                        class: "quick-link-card rounded-2xl border border-gray-200 bg-white p-4 text-gray-800 no-underline hover:border-emerald-300" do %>
+                        <div class="flex items-center gap-3">
+                          <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                            <i class="fa-solid fa-box-open"></i>
+                          </div>
+                          <div>
+                            <div class="font-semibold">Panel de Paquetes</div>
+                            <div class="text-sm text-gray-500">Catálogo y gestión</div>
+                          </div>
                         </div>
-                        <div>
-                          <div class="font-semibold">Panel de Paquetes</div>
-                          <div class="text-sm text-gray-500">Catálogo y gestión</div>
-                        </div>
-                      </div>
+                      <% end %>
                     <% end %>
 
                     <%= link_to admin_appointments_path,
@@ -460,30 +477,49 @@
                       </div>
                     <% end %>
 
-                    <%= link_to new_admin_appointment_path,
-                      class: "quick-link-card rounded-2xl border border-gray-200 bg-white p-4 text-gray-800 no-underline hover:border-emerald-300" do %>
-                      <div class="flex items-center gap-3">
-                        <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                          <i class="fa-solid fa-calendar-plus"></i>
+                    <% unless current_user&.medic? %>
+                      <%= link_to new_admin_appointment_path,
+                        class: "quick-link-card rounded-2xl border border-gray-200 bg-white p-4 text-gray-800 no-underline hover:border-emerald-300" do %>
+                        <div class="flex items-center gap-3">
+                          <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                            <i class="fa-solid fa-calendar-plus"></i>
+                          </div>
+                          <div>
+                            <div class="font-semibold">Crear Cita</div>
+                            <div class="text-sm text-gray-500">Registro manual</div>
+                          </div>
                         </div>
-                        <div>
-                          <div class="font-semibold">Crear Cita</div>
-                          <div class="text-sm text-gray-500">Registro manual</div>
-                        </div>
-                      </div>
+                      <% end %>
                     <% end %>
 
-                    <%= link_to admin_phone_bans_path,
-                      class: "quick-link-card sm:col-span-2 rounded-2xl border border-gray-200 bg-gray-900 p-4 text-white no-underline hover:bg-gray-800" do %>
-                      <div class="flex items-center gap-3">
-                        <div class="w-11 h-11 rounded-xl bg-white/10 text-white flex items-center justify-center">
-                          <i class="fa-solid fa-ban"></i>
+                    <% if current_user&.admin? %>
+                      <%= link_to admin_users_path,
+                        class: "quick-link-card rounded-2xl border border-gray-200 bg-white p-4 text-gray-800 no-underline hover:border-blue-300" do %>
+                        <div class="flex items-center gap-3">
+                          <div class="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                            <i class="fa-solid fa-users-gear"></i>
+                          </div>
+                          <div>
+                            <div class="font-semibold">Usuarios</div>
+                            <div class="text-sm text-gray-500">Personal interno</div>
+                          </div>
                         </div>
-                        <div>
-                          <div class="font-semibold">Baneos</div>
-                          <div class="text-sm text-gray-300">Control de restricciones por teléfono</div>
+                      <% end %>
+                    <% end %>
+
+                    <% unless current_user&.medic? %>
+                      <%= link_to admin_phone_bans_path,
+                        class: "quick-link-card sm:col-span-2 rounded-2xl border border-gray-200 bg-gray-900 p-4 text-white no-underline hover:bg-gray-800" do %>
+                        <div class="flex items-center gap-3">
+                          <div class="w-11 h-11 rounded-xl bg-white/10 text-white flex items-center justify-center">
+                            <i class="fa-solid fa-ban"></i>
+                          </div>
+                          <div>
+                            <div class="font-semibold">Baneos</div>
+                            <div class="text-sm text-gray-300">Control de restricciones por teléfono</div>
+                          </div>
                         </div>
-                      </div>
+                      <% end %>
                     <% end %>
                   </div>
                 <% else %>

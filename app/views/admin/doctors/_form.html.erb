@@ -57,6 +57,52 @@
       </div>
     </section>
 
+    <!-- Cuenta Operativa (User) -->
+    <section class="space-y-5">
+      <div>
+        <h3 class="text-lg font-semibold text-gray-900">Cuenta de Acceso</h3>
+        <p class="text-sm text-gray-500">Credenciales para que el médico acceda al panel.</p>
+      </div>
+      
+      <%= form.fields_for :user, (@doctor.user || @doctor.build_user) do |uf| %>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 rounded-2xl border border-blue-100 bg-blue-50/50 p-5">
+          <div>
+            <%= uf.label :email, "Correo de Acceso", class: "block text-sm font-semibold text-blue-900 mb-2" %>
+            <%= uf.email_field :email,
+                placeholder: "login@clinica.com",
+                class: "block w-full rounded-xl border border-blue-200 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500" %>
+          </div>
+          <div>
+            <%= uf.label :password, class: "block text-sm font-semibold text-blue-900 mb-2" do %>
+              Contraseña
+              <% if uf.object.persisted? %>
+                <span class="text-xs font-normal text-blue-600 ml-1">(Vacío si no cambia)</span>
+              <% end %>
+            <% end %>
+            <%= uf.password_field :password,
+                class: "block w-full rounded-xl border border-blue-200 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500" %>
+          </div>
+        </div>
+      <% end %>
+    </section>
+
+    <!-- Paquetes Asociados -->
+    <section class="space-y-5">
+      <div>
+        <h3 class="text-lg font-semibold text-gray-900">Paquetes / Especialidades</h3>
+        <p class="text-sm text-gray-500">Selecciona qué atenciones tiene permitido brindar este médico.</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+        <%= form.collection_check_boxes(:package_ids, Package.all, :id, :name) do |b| %>
+          <%= b.label class: "flex cursor-pointer items-start gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 transition hover:border-blue-300 hover:bg-blue-50" do %>
+            <%= b.check_box class: "mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 shadow-sm" %>
+            <div class="text-sm font-semibold text-gray-800"><%= b.text %></div>
+          <% end %>
+        <% end %>
+      </div>
+    </section>
+
     <!-- Disponibilidad -->
     <section class="space-y-5">
       <div>
