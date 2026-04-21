@@ -40,6 +40,7 @@ Rails.application.routes.draw do
   # ================================
   namespace :admin do
     resources :users, except: [:show]
+    resources :statistics, only: [:index]
     resources :appointments do
       collection do
         get :available_fields
@@ -75,6 +76,7 @@ Rails.application.routes.draw do
     end
 
     resources :packages
+    resources :specialties
   end
 
 

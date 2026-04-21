@@ -1,0 +1,646 @@
+# app/models/doctor.rb
+class Doctor < ApplicationRecord
+  belongs_to :user, optional: true
+  accepts_nested_attributes_for :user, reject_if: ->(attrs) { attrs['email'].blank? }
+
+  has_many :appointments, dependent: :destroy
+  belongs_to :specialty, optional: true
+
+  has_many :doctor_packages
+  has_many :packages, through: :doctor_packages
+
+  has_many :doctor_unavailabilities, dependent: :destroy
+  has_many :doctor_time_blocks, dependent: :destroy
+  scope :for_package, ->(pkg_id) {
+    joins(:doctor_packages).where(doctor_packages: { package_id: pkg_id })
+  }
+
+  def available_hours
+    JSON.parse(super || "{}")
+  rescue JSON::ParserError
+    {}
+  end
+
+  def available_hours=(value)
+    super(value.is_a?(String) ? value : value.to_json)
+  end
+
+  # ✅ helper: ¿está bloqueado este día?
+  def unavailable_on?(date)
+    d = date.is_a?(Date) ? date : Date.parse(date.to_s)
+    doctor_unavailabilities.exists?(date: d)
+  end
+end
+class Package < ApplicationRecord
+    has_many :doctor_packages, dependent: :destroy
+    has_many :doctors, through: :doctor_packages
+
+    has_one_attached :image
+    validates :image, presence: true
+    enum kind: {
+    servicios: "servicios",
+    paquete: "paquete",
+    cirugia: "cirugia"
+    }
+end
+class DoctorPackage < ApplicationRecord
+  belongs_to :doctor
+  belongs_to :package
+
+  validates :doctor_id, uniqueness: { scope: :package_id }
+end
+class Appointment < ApplicationRecord
+  belongs_to :package
+  belongs_to :doctor
+  belongs_to :created_by, class_name: "User", optional: true
+  has_many_attached :study_results
+
+  before_validation :ensure_unique_code, on: :create
+  before_validation :ensure_token, on: :create
+  before_validation :normalize_phone_number
+
+  after_create_commit :schedule_whatsapp_notifications
+
+  validates :name, :age, :phone, presence: true
+  validates :token, presence: true, uniqueness: true
+  validates :unique_code, presence: true, uniqueness: true
+  validates :google_calendar_id, uniqueness: true, allow_nil: true
+
+  validate :doctor_can_deliver_package, if: -> { doctor && package }
+  validate :phone_not_banned, on: :create
+  validate :no_double_booking
+  validate :doctor_not_unavailable, if: -> { doctor && start_date }
+
+  enum :scheduled_by, {
+    patient: 0,
+    admin: 1
+  }
+
+  enum :status, {
+    scheduled: 0,
+    canceled_by_admin: 1,
+    canceled_by_client: 2,
+    completed: 3,
+    no_show: 4
+  }
+
+  def to_param
+    token.presence || super
+  end
+
+  def scheduled_by_label
+    case scheduled_by
+    when "patient" then "Paciente"
+    when "admin"   then "Administrador"
+    else scheduled_by.humanize
+    end
+  end
+
+  def status_label
+    case status
+    when "scheduled"          then "Programada"
+    when "canceled_by_admin"  then "Cancelada por Admin"
+    when "canceled_by_client" then "Cancelada por Cliente"
+    when "completed"          then "Completada"
+    when "no_show"            then "No Asistió"
+    else status.humanize
+    end
+  end
+
+  def normalize_phone_number
+    raw_phone =
+      if respond_to?(:phone_number) && phone_number.present?
+        phone_number
+      elsif respond_to?(:phone) && phone.present?
+        phone
+      end
+
+    self.phone_number_e164 = PhoneNormalizer.to_e164(raw_phone) if respond_to?(:phone_number_e164=)
+  end
+
+  def phone_not_banned
+    return unless respond_to?(:phone_number_e164)
+    return if phone_number_e164.blank?
+
+    ban = PhoneBan.active_now.find_by(phone_e164: phone_number_e164)
+    return if ban.blank?
+
+    if ban.hard?
+      errors.add(:base, "Este número no puede agendar ni contactar asistencia.")
+    else
+      errors.add(:base, "Este número no puede agendar en línea. Debe hacerlo con un asistente.")
+    end
+  end
+
+  def doctor_not_unavailable
+    if DoctorUnavailability.exists?(doctor_id: doctor_id, date: start_date.to_date)
+      errors.add(:start_date, "el doctor no está disponible ese día.")
+    end
+  end
+
+  private
+
+  def schedule_whatsapp_notifications
+    raw_phone =
+      if respond_to?(:phone_number) && phone_number.present?
+        phone_number
+      elsif phone.present?
+        phone
+      end
+
+    return if raw_phone.blank?
+    return unless start_date.present?
+
+    target_phone =
+      if respond_to?(:phone_number_e164) && phone_number_e164.present?
+        phone_number_e164
+      else
+        raw_phone
+      end
+
+    now = Time.current
+    time_until_appointment = start_date - now
+
+    Rails.logger.info "[WA SCHEDULER] Appointment ##{id} start_date=#{start_date} now=#{now} diff_seconds=#{time_until_appointment}"
+
+    # 1) Confirmación inmediata
+    SendWhatsappMessageJob.perform_later(
+      to: target_phone,
+      message_type: "confirmation",
+      appointment_id: id
+    )
+
+    # 2) Primer recordatorio
+    # - Si faltan más de 24h: mandar 24h antes
+    # - Si faltan menos de 24h pero más de 2h: mandar inmediato
+    if time_until_appointment > 24.hours
+      reminder_24h_at = start_date - 24.hours
+
+      SendWhatsappMessageJob.set(wait_until: reminder_24h_at).perform_later(
+        to: target_phone,
+        message_type: "reminder_24h",
+        appointment_id: id
+      )
+
+      Rails.logger.info "[WA SCHEDULER] reminder_24h agendado para #{reminder_24h_at} appointment_id=#{id}"
+    elsif time_until_appointment > 2.hours
+      SendWhatsappMessageJob.perform_later(
+        to: target_phone,
+        message_type: "reminder_24h",
+        appointment_id: id
+      )
+
+      Rails.logger.info "[WA SCHEDULER] reminder_24h enviado inmediato appointment_id=#{id}"
+    else
+      Rails.logger.info "[WA SCHEDULER] reminder_24h no aplica appointment_id=#{id}"
+    end
+
+    # 3) Segundo recordatorio 2h antes
+    # Solo si la cita se agenda con más de 2 horas de anticipación
+    if time_until_appointment > 2.hours
+      reminder_2h_at = start_date - 2.hours
+
+      SendWhatsappMessageJob.set(wait_until: reminder_2h_at).perform_later(
+        to: target_phone,
+        message_type: "reminder_2h",
+        appointment_id: id
+      )
+
+      Rails.logger.info "[WA SCHEDULER] reminder_2h agendado para #{reminder_2h_at} appointment_id=#{id}"
+    else
+      Rails.logger.info "[WA SCHEDULER] reminder_2h no aplica appointment_id=#{id}"
+    end
+  end
+
+  def no_double_booking
+    overlapping_appointment = Appointment
+      .where(doctor_id: doctor_id)
+      .where(start_date: start_date)
+      .where.not(id: id)
+
+    if overlapping_appointment.exists?
+      errors.add(:start_date, "ya está ocupado para este doctor.")
+    end
+  end
+
+  def doctor_can_deliver_package
+    unless doctor.packages.exists?(id: package_id)
+      errors.add(:doctor_id, "no puede atender el paquete seleccionado")
+    end
+  end
+
+  def ensure_unique_code
+    return if unique_code.present?
+
+    loop do
+      self.unique_code = SecureRandom.alphanumeric(8).upcase
+      break unless self.class.exists?(unique_code: unique_code)
+    end
+  end
+
+  def ensure_token
+    return if token.present?
+
+    loop do
+      self.token = SecureRandom.hex(16)
+      break unless self.class.exists?(token: token)
+    end
+  end
+end
+class AppointmentsController < ApplicationController
+  before_action :set_appointment, only: %i[show edit update destroy]
+
+  def new
+    @package = Package.find_by(id: params[:package_id] || params.dig(:appointment, :package_id))
+
+    if @package.blank?
+      @packages = Package.order(:kind, :name)
+      render :select_package
+      return
+    end
+
+    @ctx = User::Forms::AppointmentFormContext.call(
+      params: params,
+      appointment: Appointment.new(package: @package)
+    )
+
+    if params.dig(:appointment, :doctor_id).present? &&
+      params[:appointment_date].present? &&
+      @ctx.available_times.blank?
+      flash.now[:alert] = "No hay disponibilidad para el doctor seleccionado en la fecha elegida."
+    end
+  end
+
+  def create
+    @package = Package.find_by(id: params.dig(:appointment, :package_id))
+    return Responders::Flash422.call(controller: self, msg: "No se encontró el paquete seleccionado.") unless @package
+
+    phone_e164 = PhoneNormalizer.to_e164(appointment_params[:phone])
+    phone_ban  = PhoneBan.active_now.find_by(phone_e164: phone_e164)
+
+    if phone_ban.present?
+      msg =
+        if phone_ban.hard?
+          "Este número no puede agendar ni contactar a un asistente."
+        else
+          "Este número no puede agendar en línea. Debe hacerlo con un asistente."
+        end
+
+      return Responders::Flash422.call(
+        controller: self,
+        msg: msg,
+        appointment_params: appointment_params
+      )
+    end
+
+    ok = verify_recaptcha(
+      response: params[:recaptcha_token],
+      action: "appointment_create",
+      minimum_score: 0.0,
+      remote_ip: request.remote_ip
+    )
+
+    return Responders::Flash422.call(
+      controller: self,
+      msg: "No pudimos validar el reCAPTCHA. Intenta de nuevo.",
+      appointment_params: appointment_params
+    ) unless ok
+
+    result = User::Appointments::Create.call(
+      params: appointment_params,
+      package: @package,
+      caller_role: :user
+    )
+
+    if result.success?
+      redirect_to appointment_path(result.appointment),
+                  notice: "La cita se creó correctamente.",
+                  status: :see_other
+    else
+      redirect_to new_appointment_path(
+                    package_id: @package.id,
+                    appointment: {
+                      doctor_id: appointment_params[:doctor_id],
+                      package_id: @package.id
+                    },
+                    appointment_date: result.start_date&.to_date
+                  ),
+                  alert: (result.error || "No se pudo crear la cita. Revisa los errores."),
+                  status: :see_other
+    end
+  end
+
+  def show
+    respond_to do |format|
+      format.html
+      format.turbo_stream { render partial: "appointments/show", locals: { appointment: @appointment } }
+      format.pdf do
+        logo = Rails.root.join("public/logo.png")
+        pdf  = User::Pdf::AppointmentPdf.new(@appointment, logo_path: logo).render
+
+        send_data pdf,
+                  filename: "cita_#{@appointment.token}.pdf",
+                  type: "application/pdf",
+                  disposition: "attachment"
+      end
+    end
+  end
+
+  def edit
+  end
+
+  def update
+    # aquí pones tu lógica de actualización si ya la tienes
+  end
+
+  def destroy
+    User::Appointments::Cancel.call(appointment: @appointment, by: :client)
+    redirect_to root_path, notice: "Cita cancelada correctamente."
+  end
+
+  def find
+  end
+
+  def locate
+    code = params[:unique_code].to_s.strip.upcase
+    @appointment = Appointment.includes(:doctor, :package).find_by(unique_code: code)
+
+    if @appointment.present?
+      redirect_to edit_appointment_path(@appointment),
+                  notice: "Cita encontrada. Puedes editarla.",
+                  status: :see_other
+    else
+      flash.now[:alert] = "Código inválido o cita no encontrada."
+      render :find, status: :not_found
+    end
+  end
+
+  private
+
+  def appointment_params
+    params.require(:appointment).permit(
+      :name,
+      :age,
+      :email,
+      :phone,
+      :sex,
+      :doctor_id,
+      :package_id,
+      :duration,
+      :start_date
+    )
+  end
+
+  def set_appointment
+    @appointment = Appointment.find_by!(token: params[:token])
+  rescue ActiveRecord::RecordNotFound
+    redirect_to find_appointments_path, alert: "Cita no encontrada."
+  end
+end
+# frozen_string_literal: true
+
+class Admin::AppointmentsController < ApplicationController
+  include User::Concerns::AvailableFields
+
+  before_action :authenticate_user!
+  before_action :require_admin_or_assistant_or_doctor
+  before_action :set_appointment, only: [ :show, :edit, :update, :destroy, :cancel, :attach_results, :remove_result ]
+  before_action :require_results_permission, only: [ :attach_results, :remove_result ]
+
+  def new
+    @ctx      = Admin::Forms::AppointmentAdminFormContext.call(params: params, appointment: Appointment.new)
+    @packages = @ctx[:packages]
+  end
+
+  def index
+    @doctors = Doctor.order(:name)
+
+    scope = Appointment
+              .includes(:doctor, :package)
+              .order(start_date: :desc)
+
+    # Restricción de permisos para médicos
+    if current_user&.doctor?
+      if current_user.doctor.present?
+        scope = scope.where(doctor_id: current_user.doctor.id)
+      else
+        scope = scope.none
+      end
+    end
+
+    # Fecha (filtra por el día completo en CDMX)
+    if params[:date].present?
+      begin
+        d  = Date.parse(params[:date])
+        tz = ActiveSupport::TimeZone["America/Mexico_City"]
+
+        from = tz.local(d.year, d.month, d.day).beginning_of_day
+        to   = tz.local(d.year, d.month, d.day).end_of_day
+
+        scope = scope.where(start_date: from..to)
+      rescue ArgumentError
+        # fecha inválida: se ignora
+      end
+    end
+
+    # Doctores múltiples
+    # Soporta la nueva forma: doctor_ids[]
+    # Y mantiene compatibilidad con la vieja: doctor_id
+    doctor_ids = Array(params[:doctor_ids]).reject(&:blank?)
+    doctor_ids << params[:doctor_id] if params[:doctor_id].present?
+    doctor_ids = doctor_ids.flatten.reject(&:blank?).uniq
+
+    if doctor_ids.any?
+      scope = scope.where(doctor_id: doctor_ids)
+    end
+
+    # Estados múltiples
+    # Soporta la nueva forma: statuses[]
+    # Y mantiene compatibilidad con la vieja: status
+    statuses = Array(params[:statuses]).reject(&:blank?)
+    statuses << params[:status] if params[:status].present?
+    statuses = statuses.flatten.reject(&:blank?).uniq
+
+    if statuses.any?
+      if Appointment.respond_to?(:statuses)
+        valid_statuses = statuses.select { |s| Appointment.statuses.key?(s) }
+
+        if valid_statuses.any?
+          scope = scope.where(status: valid_statuses)
+        end
+      else
+        scope = scope.where(status: statuses)
+      end
+    end
+
+    @appointments = scope
+  end
+
+  def cancel
+    id = @appointment.google_calendar_id
+    User::GoogleCalendar::Events::Delete.call(event_id: id) if id.present?
+
+    if @appointment.update(status: "canceled_by_admin", canceled_at: Time.current)
+      flash[:notice] = "Appointment successfully canceled."
+      redirect_to admin_appointments_path
+    else
+      flash[:alert] = "Failed to cancel the appointment. Please try again."
+      redirect_to admin_appointments_path
+    end
+  end
+
+  def create
+    @package = Package.find_by(id: params.dig(:appointment, :package_id))
+    return Responders::Flash422.call(controller: self, msg: "No encontramos el paquete seleccionado.") unless @package
+
+    result = Admin::Appointments::Create.call(
+      params: appointment_params,
+      package: @package,
+      caller_role: (current_user&.role || :admin),
+      caller_user: current_user
+    )
+
+    respond_to do |format|
+      if result.success?
+        format.turbo_stream do
+          redirect_to admin_appointment_path(result.appointment, download: 1, format: :html),
+                      status: :see_other,
+                      notice: "La cita se creó correctamente."
+        end
+
+        format.html do
+          redirect_to admin_appointment_path(result.appointment, download: 1, format: :html),
+                      status: :see_other,
+                      notice: "La cita se creó correctamente."
+        end
+      else
+        msg = (result.error || "No se pudo crear la cita. Revisa los errores.")
+
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.update(
+            "flash",
+            partial: "shared/flash",
+            locals: { alert: msg }
+          ), status: :unprocessable_entity
+        end
+
+        format.html do
+          redirect_to new_admin_appointment_path(
+                        package_id: @package.id,
+                        doctor_id: appointment_params[:doctor_id],
+                        appointment_date: result.start_date&.to_date
+                      ),
+                      alert: msg,
+                      status: :see_other
+        end
+      end
+    end
+  end
+
+  def show
+    # Si viene con ?download=1, la vista disparará la descarga y limpiará la URL
+    @download_once = params[:download].present?
+    @pdf_url = admin_appointment_path(@appointment, format: :pdf) if @download_once
+
+    respond_to do |format|
+      format.html
+      format.pdf do
+        logo_path = Rails.root.join("public/logo.png")
+        pdf = User::Pdf::AppointmentPdf.new(@appointment, logo_path: logo_path).render
+
+        send_data pdf,
+                  filename: "cita_#{@appointment.unique_code || @appointment.id}.pdf",
+                  type: "application/pdf",
+                  disposition: "attachment"
+      end
+    end
+  end
+
+  def attach_results
+    if params[:study_results].present?
+      @appointment.study_results.attach(params[:study_results])
+      flash[:notice] = "Resultados adjuntados exitosamente."
+    else
+      flash[:alert] = "Debes seleccionar al menos un archivo."
+    end
+    redirect_to admin_appointment_path(@appointment)
+  end
+
+  def remove_result
+    begin
+      attachment = @appointment.study_results.find(params[:attachment_id])
+      attachment.purge
+      flash[:notice] = "El archivo ha sido eliminado."
+    rescue ActiveRecord::RecordNotFound
+      flash[:alert] = "Archivo no encontrado."
+    end
+    redirect_to admin_appointment_path(@appointment)
+  end
+
+  def edit
+  end
+
+  def update
+    permitted = params.require(:appointment).permit(:status)
+
+    result = User::Appointments::Update.call(
+      appointment: @appointment,
+      status: permitted[:status],
+      by: (current_user&.role || :admin)
+    )
+
+    if result.success?
+      respond_to do |format|
+        format.html do
+          redirect_to [ :admin, @appointment ],
+                      notice: "Estado actualizado.",
+                      status: :see_other
+        end
+
+        format.turbo_stream do
+          redirect_to [ :admin, @appointment ],
+                      status: :see_other,
+                      flash: { notice: "Estado actualizado." }
+        end
+      end
+    else
+      flash.now[:alert] = result.error || "No se pudo actualizar la cita."
+
+      respond_to do |format|
+        format.html { render :edit, status: :unprocessable_entity }
+        format.turbo_stream { render :edit, status: :unprocessable_entity }
+      end
+    end
+  end
+
+  def destroy
+    Appointments::Cancel.call(appointment: @appointment, by: (current_user&.role || :admin))
+    redirect_to admin_appointments_path, notice: "Cita cancelada correctamente.", status: :see_other
+  end
+
+  private
+
+  def appointment_params
+    params.require(:appointment).permit(
+      :name, :age, :email, :phone, :sex, :doctor_id, :package_id, :duration, :start_date
+    )
+  end
+
+  def set_appointment
+    @appointment = Appointment.find_by!(token: params[:id])
+  rescue ActiveRecord::RecordNotFound
+    redirect_to new_admin_appointment_path, alert: "Appointment not found."
+  end
+
+  def require_admin_or_assistant_or_doctor
+    unless current_user&.admin? || current_user&.assistant? || current_user&.doctor?
+      redirect_to root_path, alert: "No tienes permiso para acceder a esta sección."
+    end
+  end
+
+  def require_results_permission
+    unless current_user&.can_manage_results?
+      redirect_to admin_appointment_path(@appointment), alert: "No tienes permiso para gestionar resultados médicos."
+    end
+  end
+end

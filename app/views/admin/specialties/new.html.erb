@@ -1,0 +1,20 @@
+<div class="min-h-[80vh] bg-gradient-to-b from-violet-50 via-white to-white">
+  <div class="w-full py-10 px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto">
+
+    <div class="mb-6 flex items-center gap-3">
+      <%= link_to admin_specialties_path, class: "inline-flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm border border-gray-200 text-gray-500 hover:text-violet-600 transition hover:-translate-x-0.5" do %>
+        <i class="fa-solid fa-arrow-left"></i>
+      <% end %>
+      <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Nueva Especialidad</h1>
+    </div>
+
+    <div class="overflow-hidden rounded-[24px] border border-gray-200 bg-white p-6 sm:p-8 shadow-xl shadow-violet-100/30">
+      <div class="mb-6 pb-6 border-b border-gray-100 text-center sm:text-left">
+        <h2 class="text-lg font-bold text-gray-800">Registra una nueva especialidad</h2>
+        <p class="mt-1 text-sm text-gray-500">Introduce el nombre de la especialidad médica a agregar al catálogo.</p>
+      </div>
+
+      <%= render "form", specialty: @specialty %>
+    </div>
+  </div>
+</div>

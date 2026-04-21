@@ -11,7 +11,7 @@
         <div class="relative flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div class="max-w-3xl">
             <h1 class="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
-              <% if current_user&.medic? && current_user.doctor.present? %>
+              <% if current_user&.doctor? && current_user.doctor.present? %>
                 Bienvenido, <%= current_user.doctor.name %>
               <% else %>
                 Administrador de Citas
@@ -127,7 +127,7 @@
 
           <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
             <!-- Doctores -->
-            <% unless current_user&.medic? %>
+            <% unless current_user&.doctor? %>
             <section class="rounded-[24px] border border-gray-200 bg-gray-50 p-5">
               <div class="mb-4 flex items-center justify-between">
                 <div>
@@ -262,7 +262,7 @@
             </span>
           <% end %>
 
-          <% unless current_user&.medic? %>
+          <% unless current_user&.doctor? %>
             <% Array(params[:doctor_ids]).reject(&:blank?).each do |doctor_id| %>
               <% doctor = @doctors.find { |d| d.id.to_s == doctor_id.to_s } %>
               <% if doctor %>
@@ -377,6 +377,13 @@
                       <%= link_to "Ver",
                             admin_appointment_path(appointment),
                             class: "inline-flex items-center rounded-xl bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100" %>
+
+                      <% if current_user.can_manage_results? %>
+                        <%= link_to admin_appointment_path(appointment),
+                              class: "inline-flex items-center rounded-xl bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100" do %>
+                          <i class="fa-solid fa-file-medical mr-1.5"></i> Estudios
+                        <% end %>
+                      <% end %>
 
                       <%= link_to "Editar",
                             edit_admin_appointment_path(appointment),

@@ -1,0 +1,49 @@
+<div class="px-5 py-6 sm:px-8 sm:py-8 border-b border-gray-100 bg-white shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900">Estadísticas</h1>
+    <p class="text-gray-500">Métricas de citas agrupadas por Doctor y Asistente.</p>
+  </div>
+  
+  <form action="<%= admin_statistics_path %>" method="GET" class="flex items-center gap-3">
+    <input type="date" name="from" value="<%= params[:from] || Date.current.beginning_of_month.to_s %>" class="rounded-xl border border-gray-300 px-3 py-2 text-sm shadow-sm">
+    <span class="text-gray-500">hasta</span>
+    <input type="date" name="to" value="<%= params[:to] || Date.current.end_of_month.to_s %>" class="rounded-xl border border-gray-300 px-3 py-2 text-sm shadow-sm">
+    <button type="submit" class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700">Filtrar</button>
+  </form>
+</div>
+
+<div class="p-5 sm:p-8 space-y-8 max-w-7xl mx-auto">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+      <h2 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2">Citas por Médico</h2>
+      <% if @appointments_by_doctor.any? %>
+        <ul class="space-y-3">
+          <% @appointments_by_doctor.each do |doctor, count| %>
+            <li class="flex justify-between items-center text-sm">
+              <span class="font-medium text-gray-800"><%= doctor %></span>
+              <span class="bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-full"><%= count %></span>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="text-sm text-gray-500">No hay citas en este rango de fechas.</p>
+      <% end %>
+    </div>
+    
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+      <h2 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2">Citas Generadas (Asistentes)</h2>
+      <% if @appointments_by_creator.any? %>
+        <ul class="space-y-3">
+          <% @appointments_by_creator.each do |creator, count| %>
+            <li class="flex justify-between items-center text-sm">
+              <span class="font-medium text-gray-800"><%= creator %></span>
+              <span class="bg-emerald-100 text-emerald-800 font-bold px-3 py-1 rounded-full"><%= count %></span>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="text-sm text-gray-500">No hay datos en este rango.</p>
+      <% end %>
+    </div>
+  </div>
+</div>

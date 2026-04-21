@@ -9,3 +9,53 @@ revisar recordatorios por whatsapp
 entrega de estudios para pacientes
 
 bin/rails db:migrate
+
+sudo systemctl restart solid_queue_amid
+sudo systemctl restart puma_amid.service
+sudo systemctl status solid_queue_amid
+sudo systemctl status puma_amid.service
+sudo journalctl -u puma_amid.service -f
+
+
+sudo systemctl stop solid_queue_amid
+sudo systemctl stop puma_amid.service
+
+sudo systemctl start solid_queue_amid
+sudo systemctl start puma_amid.service
+RAILS_ENV=production bundle exec puma -C config/puma.rb
+
+
+
+
+
+
+
+
+################
+que tipo de texto quiere chava
+editar el texto que se envia por whatsapp como administrador 
+
+
+User.create!(
+  email: "sdamian@amid.com",
+  password: "amid123",
+  password_confirmation: "amid123",
+  admin: true,
+  role: "secretary"
+)
+amid2(prod)> )
+
+
+en el calendario no se muestran las citas para el doctor correcto
+crear catalogo de especialidades, y dejar que solo se usen las del catalogo 
+
+
+guardar telefono de doctore para notificaciones por whatsapp 
+hard y soft en bloqueos hay que cambiarlo a español 
+hora en el calendario no esta correcta, en el calendario el estado eseta en ingles
+no se crean mas de un bloqueo revisar 
+interfaz mas amenta para horas inahabiles de doctores
+tamaño de las imagenes
+recordatorio pedir emails, numero, nombre, especialidad 
+
+http://[::1]:4000

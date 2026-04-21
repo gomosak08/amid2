@@ -4,7 +4,7 @@ class Admin::AppointmentsController < ApplicationController
   include User::Concerns::AvailableFields
 
   before_action :authenticate_user!
-  before_action :require_admin_or_secretary_or_medic
+  before_action :require_admin_or_assistant_or_doctor
   before_action :set_appointment, only: [ :show, :edit, :update, :destroy, :cancel, :attach_results, :remove_result ]
   before_action :require_results_permission, only: [ :attach_results, :remove_result ]
 
@@ -21,7 +21,7 @@ class Admin::AppointmentsController < ApplicationController
               .order(start_date: :desc)
 
     # Restricción de permisos para médicos
-    if current_user&.medic?
+    if current_user&.doctor?
       if current_user.doctor.present?
         scope = scope.where(doctor_id: current_user.doctor.id)
       else
@@ -97,7 +97,8 @@ class Admin::AppointmentsController < ApplicationController
     result = Admin::Appointments::Create.call(
       params: appointment_params,
       package: @package,
-      caller_role: (current_user&.role || :admin)
+      caller_role: (current_user&.role || :admin),
+      caller_user: current_user
     )
 
     respond_to do |format|
@@ -232,8 +233,8 @@ class Admin::AppointmentsController < ApplicationController
     redirect_to new_admin_appointment_path, alert: "Appointment not found."
   end
 
-  def require_admin_or_secretary_or_medic
-    unless current_user&.admin? || current_user&.secretary? || current_user&.medic?
+  def require_admin_or_assistant_or_doctor
+    unless current_user&.admin? || current_user&.assistant? || current_user&.doctor?
       redirect_to root_path, alert: "No tienes permiso para acceder a esta sección."
     end
   end

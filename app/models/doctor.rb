@@ -4,6 +4,7 @@ class Doctor < ApplicationRecord
   accepts_nested_attributes_for :user, reject_if: ->(attrs) { attrs['email'].blank? }
 
   has_many :appointments, dependent: :destroy
+  belongs_to :specialty, optional: true
 
   has_many :doctor_packages
   has_many :packages, through: :doctor_packages

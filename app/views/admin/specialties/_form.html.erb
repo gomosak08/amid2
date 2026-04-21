@@ -1,0 +1,26 @@
+<%= form_with(model: [:admin, specialty], class: "contents") do |form| %>
+  <% if specialty.errors.any? %>
+    <div id="error_explanation" class="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-700 font-medium">
+      <p class="font-bold mb-2">
+        <%= pluralize(specialty.errors.count, "error") %> impidieron guardar la especialidad:
+      </p>
+      <ul class="list-disc list-inside space-y-1">
+        <% specialty.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="mb-6">
+    <%= form.label :name, "Nombre de la especialidad", class: "block text-sm font-semibold text-gray-700 mb-2" %>
+    <%= form.text_field :name,
+        placeholder: "Ej. Cardiología, Pediatría, Neurología...",
+        class: "block w-full rounded-2xl border border-gray-300 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-200" %>
+  </div>
+
+  <div class="flex items-center justify-end gap-3 pt-2">
+    <%= link_to "Cancelar", admin_specialties_path, class: "inline-flex items-center rounded-2xl border border-gray-200 bg-gray-50 px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-100 transition" %>
+    <%= form.submit "Guardar especialidad", class: "inline-flex items-center rounded-2xl bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-violet-700 transition cursor-pointer" %>
+  </div>
+<% end %>

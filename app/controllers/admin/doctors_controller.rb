@@ -3,10 +3,10 @@ module Admin
   class DoctorsController < ApplicationController
     before_action :authenticate_user!
     before_action :set_doctor, except: %i[index new create]
-    before_action :require_admin_or_self_medic
+    before_action :require_admin_or_self_doctor
 
     def index
-      if current_user&.medic? && !current_user.admin?
+      if current_user&.doctor? && !current_user.admin?
         if current_user.doctor.present?
           redirect_to edit_admin_doctor_path(current_user.doctor)
         else
@@ -20,6 +20,7 @@ module Admin
 
     def new
       @doctor = Doctor.new
+      @doctor.available_hours = default_hours
       @doctor.build_user
     end
 
@@ -125,7 +126,12 @@ module Admin
     # Bloqueos recurrentes por hora
     # ===========================
     def create_time_block
-      days = Array(params[:days_of_week]).map(&:to_i)
+      # Accept either the classic days_of_week[] array or the JSON string from the calendar picker
+      days = if params[:days_of_week_json].present?
+               JSON.parse(params[:days_of_week_json]).map(&:to_i)
+             else
+               Array(params[:days_of_week]).map(&:to_i)
+             end
       reason = params[:reason].presence
 
       Time.use_zone("America/Mexico_City") do
@@ -250,7 +256,7 @@ module Admin
         end
 
         if Appointment.column_names.include?("status")
-          appt_scope = appt_scope.where.not(status: "cancelled")
+          appt_scope = appt_scope.where.not(status: ["canceled_by_admin", "canceled_by_client", "no_show"])
         elsif Appointment.column_names.include?("canceled_at")
           appt_scope = appt_scope.where(canceled_at: nil)
         end
@@ -314,15 +320,15 @@ module Admin
 
     def doctor_params
       permitted = params.require(:doctor).permit(
-        :name, :specialty, :email,
+        :name, :specialty_id, :email,
         package_ids: [],
         user_attributes: [:id, :email, :password, :role],
         available_hours: {}
       )
 
       if permitted[:user_attributes].present?
-        # Ensure role is always medic securely
-        permitted[:user_attributes][:role] = "medic"
+        # Ensure role is always doctor securely
+        permitted[:user_attributes][:role] = "doctor"
         # Avoid Devise validation if password is not being updated
         if permitted[:user_attributes][:password].blank?
           permitted[:user_attributes].delete(:password)
@@ -371,10 +377,10 @@ module Admin
       }
     end
 
-    def require_admin_or_self_medic
+    def require_admin_or_self_doctor
       return if current_user&.admin?
 
-      if current_user&.medic?
+      if current_user&.doctor?
         # El médico solo puede editar su propio perfil, no puede crear ni borrar doctores
         if %w[new create destroy].include?(action_name)
           redirect_to root_path, alert: "Acceso denegado a esta sección general."

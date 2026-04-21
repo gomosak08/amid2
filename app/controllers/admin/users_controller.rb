@@ -17,7 +17,7 @@ class Admin::UsersController < ApplicationController
   def create
     safe_params = user_params
     # Seguridad: nunca permitir crear un administrador desde aquí
-    safe_params[:role] = "secretary" if safe_params[:role] == "admin"
+    safe_params[:role] = "assistant" if safe_params[:role] == "admin"
     
     @user = User.new(safe_params)
 
@@ -38,7 +38,7 @@ class Admin::UsersController < ApplicationController
     safe_params = user_params
     # Seguridad: si tratan de cambiar su rol a admin u otra cosa no permitida
     if safe_params[:role] == "admin" && !@user.admin?
-      safe_params[:role] = "secretary"
+      safe_params[:role] = "assistant"
     end
 
     if @user.update(safe_params)
@@ -66,7 +66,7 @@ class Admin::UsersController < ApplicationController
   end
 
   def user_params
-    params.require(:user).permit(:email, :password, :role, :can_upload_results)
+    params.require(:user).permit(:email, :password, :role, :can_upload_results, :phone)
   end
 
   def require_super_admin

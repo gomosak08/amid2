@@ -4,11 +4,12 @@
 module Admin
   module Appointments
     class Create
-      def self.call(params:, package:, caller_role:)
+      def self.call(params:, package:, caller_role:, caller_user: nil)
         ::User::Appointments::Create.call(
           params: params,
           package: package,
-          caller_role: caller_role
+          caller_role: caller_role,
+          caller_user: caller_user
         )
       end
     end

@@ -1,105 +1,198 @@
 <!-- app/views/admin/appointments/show.html.erb -->
-<h1 class="text-3xl font-bold mb-6 text-center">Detalles de la Cita</h1>
+<div class="min-h-[80vh] bg-gradient-to-b from-blue-50 via-white to-white">
+  <div class="w-full py-10 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
 
-<%= render "shared/flash" %>
+    <%= render "shared/flash" %>
 
-<div class="bg-white shadow-md rounded-lg p-6 space-y-6" id="appointment-show" data-turbo-cache="false">
-  <p class="text-lg">
-    <strong class="font-semibold text-gray-700">Nombre:</strong>
-    <span class="text-gray-800"><%= @appointment.name.presence || "N/A" %></span>
-  </p>
-
-  <p class="text-lg">
-    <strong class="font-semibold text-gray-700">Doctor:</strong>
-    <span class="text-gray-800"><%= @appointment.doctor&.name || "N/A" %></span>
-  </p>
-
-  <p class="text-lg">
-    <strong class="font-semibold text-gray-700">Paquete:</strong>
-    <span class="text-gray-800"><%= @appointment.package&.name || "N/A" %></span>
-  </p>
-
-  <p class="text-lg">
-    <strong class="font-semibold text-gray-700">Fecha de la Cita:</strong>
-    <span class="text-gray-800">
-      <%= I18n.l(@appointment.start_date.in_time_zone("America/Mexico_City"), format: :custom, locale: :es) rescue "N/A" %>
-    </span>
-  </p>
-
-  <p class="text-lg">
-    <strong class="font-semibold text-gray-700">Estado:</strong>
-    <span class="text-gray-800"><%= @appointment&.status_label || "N/A" %></span>
-  </p>
-
-  <p class="text-lg">
-    <strong class="font-semibold text-gray-700">Codigo Unico:</strong>
-    <span class="text-gray-800"><%= @appointment.unique_code.presence || "N/A" %></span>
-  </p>
-
-  <p class="text-lg">
-    <strong class="font-semibold text-gray-700">Teléfono:</strong>
-    <span class="text-gray-800"><%= @appointment.phone.presence || "N/A" %></span>
-  </p>
-
-  <div class="mt-6 pt-6 border-t border-gray-100">
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="text-xl font-bold text-gray-900">Resultados Médicos</h3>
-      <button type="button" 
-              onclick="navigator.clipboard.writeText('<%= edit_appointment_url(@appointment) %>'); alert('Enlace copiado al portapapeles');"
-              class="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100 transition">
-        <i class="fa-solid fa-link"></i> Copiar enlace para paciente
-      </button>
+    <!-- Botón regresar -->
+    <div class="mb-6 flex items-center gap-3">
+      <%= link_to admin_appointments_path,
+            class: "inline-flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm border border-gray-200 text-gray-500 hover:text-blue-600 transition hover:-translate-x-0.5" do %>
+        <i class="fa-solid fa-arrow-left"></i>
+      <% end %>
+      <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Detalle de cita</h1>
     </div>
 
-    <% if @appointment.study_results.attached? %>
-      <ul class="space-y-3 mb-6">
-        <% @appointment.study_results.each do |result| %>
-          <li class="flex items-center justify-between bg-gray-50 rounded-lg p-3 border border-gray-200">
-            <div class="flex items-center gap-3">
-              <i class="fa-solid fa-file-pdf text-red-500 text-xl"></i>
-              <span class="text-sm font-medium text-gray-800"><%= result.filename %></span>
-            </div>
-            <div class="flex items-center gap-2">
-              <%= link_to "Ver", rails_blob_path(result, disposition: "inline"), target: "_blank", class: "text-sm font-semibold text-blue-600 hover:text-blue-800" %>
-              <% if current_user.can_manage_results? %>
-                <%= button_to remove_result_admin_appointment_path(@appointment, attachment_id: result.id), method: :delete, data: { turbo_confirm: "¿Eliminar este resultado?" }, class: "text-sm font-semibold text-red-600 hover:text-red-800 ml-2" do %>
-                  <i class="fa-solid fa-trash"></i>
-                <% end %>
-              <% end %>
-            </div>
-          </li>
-        <% end %>
-      </ul>
-    <% else %>
-      <div class="mb-6 rounded-xl border border-dashed border-gray-300 bg-gray-50 p-6 text-center text-sm text-gray-500">
-        No hay resultados adjuntos a esta cita todavía.
-      </div>
-    <% end %>
-
-    <% if current_user.can_manage_results? %>
-      <%= form_with url: attach_results_admin_appointment_path(@appointment), method: :post, multipart: true, class: "flex items-end gap-3" do |f| %>
-        <div class="flex-grow">
-          <%= f.label :study_results, "Subir nuevos resultados (PDF, Imágenes)", class: "block text-sm font-medium text-gray-700 mb-1" %>
-          <%= f.file_field :study_results, multiple: true, accept: "application/pdf, image/*", class: "block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-gray-200 rounded-md" %>
+    <!-- Encabezado -->
+    <div class="mb-8 overflow-hidden rounded-[28px] border border-gray-200 bg-white shadow-xl shadow-blue-100/40"
+         id="appointment-show" data-turbo-cache="false">
+      <div class="relative overflow-hidden bg-gradient-to-r from-blue-600 to-cyan-500 px-6 py-8 text-white sm:px-8 sm:py-10">
+        <div class="absolute inset-0 opacity-10">
+          <div class="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white"></div>
+          <div class="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-white"></div>
         </div>
-        <%= f.submit "Subir archivos", class: "rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500" %>
-      <% end %>
-    <% end %>
+
+        <div class="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <span class="inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-blue-100 ring-1 ring-white/20">
+              Cita médica
+            </span>
+            <h2 class="mt-3 text-2xl font-bold"><%= @appointment.name.presence || "Sin nombre" %></h2>
+            <p class="mt-1 text-sm text-blue-100">
+              Código único: <span class="font-semibold"><%= @appointment.unique_code.presence || "N/A" %></span>
+            </p>
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            <% if @appointment.status == "scheduled" %>
+              <span class="inline-flex items-center rounded-full bg-white/20 px-4 py-1.5 text-sm font-bold text-white ring-1 ring-white/30">⏳ Programada</span>
+            <% elsif @appointment.status == "completed" %>
+              <span class="inline-flex items-center rounded-full bg-emerald-400/30 px-4 py-1.5 text-sm font-bold text-white ring-1 ring-emerald-300/40">✅ Completada</span>
+            <% elsif @appointment.status&.start_with?("canceled") %>
+              <span class="inline-flex items-center rounded-full bg-rose-400/30 px-4 py-1.5 text-sm font-bold text-white ring-1 ring-rose-300/40">❌ Cancelada</span>
+            <% elsif @appointment.status == "no_show" %>
+              <span class="inline-flex items-center rounded-full bg-slate-400/30 px-4 py-1.5 text-sm font-bold text-white ring-1 ring-slate-300/40">🚫 No asistió</span>
+            <% else %>
+              <span class="inline-flex items-center rounded-full bg-white/20 px-4 py-1.5 text-sm font-bold text-white"><%= @appointment&.status_label || @appointment.status %></span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Datos principales -->
+      <div class="grid grid-cols-1 gap-0 divide-y divide-gray-100 sm:grid-cols-2 sm:divide-x sm:divide-y-0 border-t border-gray-100">
+        <div class="px-6 py-5 sm:px-8">
+          <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Doctor</p>
+          <p class="mt-1 text-base font-semibold text-gray-900"><%= @appointment.doctor&.name || "Sin doctor asignado" %></p>
+        </div>
+        <div class="px-6 py-5 sm:px-8">
+          <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Paquete</p>
+          <p class="mt-1 text-base font-semibold text-gray-900"><%= @appointment.package&.name || "Sin paquete" %></p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 gap-0 divide-y divide-gray-100 sm:grid-cols-2 sm:divide-x sm:divide-y-0 border-t border-gray-100">
+        <div class="px-6 py-5 sm:px-8">
+          <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Fecha de la cita</p>
+          <p class="mt-1 text-base font-semibold text-gray-900">
+            <%= I18n.l(@appointment.start_date.in_time_zone("America/Mexico_City"), format: :custom, locale: :es) rescue "N/A" %>
+          </p>
+        </div>
+        <div class="px-6 py-5 sm:px-8">
+          <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Teléfono</p>
+          <p class="mt-1 text-base font-semibold text-gray-900"><%= @appointment.phone.presence || "N/A" %></p>
+        </div>
+      </div>
+
+      <!-- Acciones rápidas -->
+      <div class="border-t border-gray-100 bg-gray-50/60 px-6 py-4 sm:px-8">
+        <div class="flex flex-wrap items-center gap-3">
+          <%= link_to edit_admin_appointment_path(@appointment),
+                class: "inline-flex items-center rounded-xl border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100 transition" do %>
+            <i class="fa-solid fa-pen mr-2"></i> Editar cita
+          <% end %>
+
+          <button type="button"
+                  onclick="navigator.clipboard.writeText('<%= edit_appointment_url(@appointment) %>'); this.textContent = '✓ Enlace copiado'; setTimeout(() => this.innerHTML = '<i class=\\'fa-solid fa-link mr-2\\'></i> Copiar enlace paciente', 2000)"
+                  class="inline-flex items-center rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-100 transition">
+            <i class="fa-solid fa-link mr-2"></i> Copiar enlace paciente
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SECCIÓN DE ESTUDIOS / RESULTADOS ═══ -->
+    <div class="overflow-hidden rounded-[28px] border border-gray-200 bg-white shadow-xl shadow-blue-100/30">
+      <div class="border-b border-gray-100 px-6 py-5 sm:px-8 bg-gradient-to-r from-emerald-50 to-white">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <span class="inline-flex items-center rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-semibold text-emerald-700">
+              Archivos médicos
+            </span>
+            <h3 class="mt-2 text-xl font-bold text-gray-900">Resultados y estudios</h3>
+            <p class="mt-1 text-sm text-gray-600">
+              Archivos adjuntos a esta cita: PDFs, imágenes o documentos de laboratorio.
+            </p>
+          </div>
+          <span class="inline-flex items-center rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-500">
+            <%= @appointment.study_results.attached? ? "#{@appointment.study_results.count} archivo(s)" : "Sin archivos" %>
+          </span>
+        </div>
+      </div>
+
+      <div class="px-6 py-6 sm:px-8">
+
+        <!-- Lista de archivos adjuntos -->
+        <% if @appointment.study_results.attached? %>
+          <ul class="space-y-3 mb-8">
+            <% @appointment.study_results.each do |result| %>
+              <li class="flex items-center justify-between rounded-2xl border border-gray-200 bg-gray-50 p-4 transition hover:shadow-sm">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-500">
+                    <i class="fa-solid fa-file-pdf text-lg"></i>
+                  </div>
+                  <span class="text-sm font-medium text-gray-800 truncate"><%= result.filename %></span>
+                </div>
+                <div class="flex items-center gap-2 shrink-0 ml-4">
+                  <%= link_to rails_blob_path(result, disposition: "inline"),
+                        target: "_blank",
+                        class: "inline-flex items-center rounded-xl border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition" do %>
+                    <i class="fa-solid fa-eye mr-1"></i> Ver
+                  <% end %>
+                  <% if current_user.can_manage_results? %>
+                    <%= button_to remove_result_admin_appointment_path(@appointment, attachment_id: result.id),
+                          method: :delete,
+                          data: { turbo_confirm: "¿Eliminar este resultado?" },
+                          class: "inline-flex items-center rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 transition" do %>
+                      <i class="fa-solid fa-trash"></i>
+                    <% end %>
+                  <% end %>
+                </div>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <div class="mb-8 rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-6 py-10 text-center">
+            <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white border border-gray-200 text-2xl shadow-sm">
+              📄
+            </div>
+            <p class="mt-4 text-sm font-semibold text-gray-700">No hay resultados adjuntos</p>
+            <p class="mt-1 text-xs text-gray-500">Sube los archivos usando el formulario de abajo.</p>
+          </div>
+        <% end %>
+
+        <!-- Formulario de carga -->
+        <% if current_user.can_manage_results? %>
+          <div class="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
+                <i class="fa-solid fa-cloud-arrow-up text-sm"></i>
+              </div>
+              <h4 class="text-sm font-bold text-emerald-900">Subir nuevos resultados</h4>
+            </div>
+
+            <%= form_with url: attach_results_admin_appointment_path(@appointment),
+                          method: :post,
+                          multipart: true,
+                          class: "space-y-4" do |f| %>
+              <div>
+                <%= f.label :study_results, "Archivos (PDF, imágenes)", class: "block text-sm font-medium text-gray-700 mb-2" %>
+                <%= f.file_field :study_results,
+                      multiple: true,
+                      accept: "application/pdf,image/*",
+                      class: "block w-full text-sm text-gray-600 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-700 file:cursor-pointer border border-gray-200 rounded-xl bg-white px-3 py-2" %>
+                <p class="mt-1 text-xs text-gray-500">Puedes seleccionar varios archivos a la vez.</p>
+              </div>
+              <%= f.submit "Subir archivos",
+                    class: "inline-flex items-center justify-center rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition cursor-pointer" %>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 text-center text-sm text-gray-500">
+            No tienes permisos para subir archivos a esta cita.
+          </div>
+        <% end %>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<div class="mt-6 text-center">
-  <%= link_to "Regresar a las Citas", admin_appointments_path, class: "text-blue-500 hover:text-blue-700 font-medium" %>
-</div>
-
-<%# --- DESCARGA UNA SOLA VEZ Y LIMPIEZA DE URL --- %>
+<%# PDF download once trick %>
 <% if @download_once %>
-  <%# Dispara la descarga sin navegar fuera del show %>
   <iframe src="<%= @pdf_url %>" style="display:none;" aria-hidden="true"></iframe>
-
   <script nonce="<%= content_security_policy_script_nonce if respond_to?(:content_security_policy_script_nonce) %>">
     (function() {
-      // Quita ?download=1 para que Turbo no repita la acción al navegar
       try {
         var url = new URL(window.location.href);
         url.searchParams.delete('download');

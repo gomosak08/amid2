@@ -331,10 +331,16 @@
           </button>
 
           <% if user_signed_in? %>
-            <%= link_to "Cerrar sesión",
-              destroy_user_session_path,
-              data: { turbo_method: :delete, turbo_confirm: "¿Cerrar sesión?" },
-              class: "bg-white/95 text-blue-700 hover:bg-blue-50 px-4 py-2 rounded-xl font-semibold shadow-sm no-underline" %>
+            <div class="flex items-center gap-3 ml-2 border-l border-white/20 pl-4">
+              <div class="hidden md:block text-right leading-tight">
+                <span class="block text-sm font-bold text-white"><%= current_user.name.presence || current_user.email.split('@').first %></span>
+                <span class="block text-xs text-blue-100"><%= current_user.role&.humanize || "Usuario" %></span>
+              </div>
+              <%= link_to "Salir",
+                destroy_user_session_path,
+                data: { turbo_method: :delete, turbo_confirm: "¿Cerrar sesión?" },
+                class: "bg-white/95 text-blue-700 hover:bg-blue-50 px-4 py-2 rounded-xl text-sm font-semibold shadow-sm no-underline transition" %>
+            </div>
           <% end %>
         </div>
 
@@ -421,7 +427,7 @@
                   </div>
 
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <% if current_user&.medic? && current_user.doctor.present? %>
+                    <% if current_user&.doctor? && current_user.doctor.present? %>
                       <%= link_to edit_admin_doctor_path(current_user.doctor),
                         class: "quick-link-card rounded-2xl border border-gray-200 bg-white p-4 text-gray-800 no-underline hover:border-emerald-300" do %>
                         <div class="flex items-center gap-3">
@@ -434,7 +440,7 @@
                           </div>
                         </div>
                       <% end %>
-                    <% else %>
+                    <% elsif current_user&.admin? %>
                       <%= link_to admin_doctors_path,
                         class: "quick-link-card rounded-2xl border border-gray-200 bg-white p-4 text-gray-800 no-underline hover:border-emerald-300" do %>
                         <div class="flex items-center gap-3">
@@ -449,7 +455,7 @@
                       <% end %>
                     <% end %>
 
-                    <% unless current_user&.medic? %>
+                    <% if current_user&.admin? %>
                       <%= link_to admin_packages_path,
                         class: "quick-link-card rounded-2xl border border-gray-200 bg-white p-4 text-gray-800 no-underline hover:border-emerald-300" do %>
                         <div class="flex items-center gap-3">
@@ -459,6 +465,34 @@
                           <div>
                             <div class="font-semibold">Panel de Paquetes</div>
                             <div class="text-sm text-gray-500">Catálogo y gestión</div>
+                          </div>
+                        </div>
+                      <% end %>
+                    <% end %>
+
+                    <% if current_user&.admin? %>
+                      <%= link_to admin_specialties_path,
+                        class: "quick-link-card rounded-2xl border border-gray-200 bg-white p-4 text-gray-800 no-underline hover:border-emerald-300" do %>
+                        <div class="flex items-center gap-3">
+                          <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                            <i class="fa-solid fa-list"></i>
+                          </div>
+                          <div>
+                            <div class="font-semibold">Especialidades</div>
+                            <div class="text-sm text-gray-500">Catálogo médico</div>
+                          </div>
+                        </div>
+                      <% end %>
+                      
+                      <%= link_to admin_statistics_path,
+                        class: "quick-link-card sm:col-span-2 md:col-span-1 rounded-2xl border border-gray-200 bg-white p-4 text-gray-800 no-underline hover:border-purple-300" do %>
+                        <div class="flex items-center gap-3">
+                          <div class="w-11 h-11 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                            <i class="fa-solid fa-chart-bar"></i>
+                          </div>
+                          <div>
+                            <div class="font-semibold">Estadísticas</div>
+                            <div class="text-sm text-gray-500">Rendimiento y agenda</div>
                           </div>
                         </div>
                       <% end %>
@@ -477,7 +511,7 @@
                       </div>
                     <% end %>
 
-                    <% unless current_user&.medic? %>
+                    <% unless current_user&.doctor? %>
                       <%= link_to new_admin_appointment_path,
                         class: "quick-link-card rounded-2xl border border-gray-200 bg-white p-4 text-gray-800 no-underline hover:border-emerald-300" do %>
                         <div class="flex items-center gap-3">
@@ -507,7 +541,7 @@
                       <% end %>
                     <% end %>
 
-                    <% unless current_user&.medic? %>
+                    <% if current_user&.admin? %>
                       <%= link_to admin_phone_bans_path,
                         class: "quick-link-card sm:col-span-2 rounded-2xl border border-gray-200 bg-gray-900 p-4 text-white no-underline hover:bg-gray-800" do %>
                         <div class="flex items-center gap-3">
@@ -558,10 +592,15 @@
           <% end %>
 
           <% if user_signed_in? %>
-            <%= link_to "Cerrar sesión",
-              destroy_user_session_path,
-              data: { turbo_method: :delete, turbo_confirm: "¿Cerrar sesión?" },
-              class: "bg-white/95 text-emerald-700 hover:bg-emerald-100 px-4 py-3 rounded-xl font-semibold text-center no-underline mt-2" %>
+            <div class="mt-4 pt-4 border-t border-white/20 text-center">
+              <p class="text-sm font-bold text-white mb-0"><%= current_user.name.presence || current_user.email.split('@').first %></p>
+              <p class="text-xs text-teal-200 mb-3"><%= current_user.role&.humanize || "Usuario" %></p>
+              
+              <%= link_to "Cerrar sesión",
+                destroy_user_session_path,
+                data: { turbo_method: :delete, turbo_confirm: "¿Cerrar sesión?" },
+                class: "block bg-white/95 text-emerald-700 hover:bg-emerald-100 px-4 py-3 rounded-xl font-semibold text-center no-underline transition" %>
+            </div>
           <% end %>
         </nav>
       </div>

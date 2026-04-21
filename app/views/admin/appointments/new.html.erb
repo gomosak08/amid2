@@ -1,11 +1,22 @@
-<h1 class="text-2xl font-bold mb-6">Nueva Cita</h1>
+<div class="max-w-4xl mx-auto mb-10">
+  <div class="px-5 py-6 sm:px-8 sm:py-8 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white rounded-t-2xl shadow-sm">
+    <h1 class="text-2xl font-bold text-gray-900">Nueva Cita</h1>
+    <p class="mt-1 text-sm text-gray-600">Sigue los pasos para agendar la cita.</p>
+  </div>
 
-<%= turbo_frame_tag "appointment_form" do %>
-  <% if @packages.present? %>
-    <%= render "admin/appointments/package_selector", packages: @packages %>
-  <% end %>
-<% end %>
+  <div class="bg-white border border-t-0 border-gray-200 rounded-b-2xl shadow-sm overflow-hidden p-6 sm:p-8 space-y-10">
+    <div class="space-y-6">
+      <%= turbo_frame_tag "appointment_form" do %>
+        <% if @packages.present? %>
+          <div class="border border-gray-200 rounded-xl p-5 sm:p-6 shadow-sm bg-gray-50/50">
+            <%= render "admin/appointments/package_selector", packages: @packages %>
+          </div>
+        <% end %>
+      <% end %>
 
-<%= turbo_frame_tag "doctor_date_frame" %>
-<%= turbo_frame_tag "available_times_frame" %>
-<%= turbo_frame_tag "client_data_frame" %>
+      <%= turbo_frame_tag "doctor_date_frame" %>
+      <%= turbo_frame_tag "available_times_frame" %>
+      <%= turbo_frame_tag "client_data_frame" %>
+    </div>
+  </div>
+</div>

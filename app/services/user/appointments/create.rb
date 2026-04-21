@@ -4,7 +4,7 @@ module User::Appointments
   Result = Struct.new(:success?, :appointment, :start_date, :error, keyword_init: true)
 
   class Create
-    def self.call(params:, package:, caller_role: :user)
+    def self.call(params:, package:, caller_role: :user, caller_user: nil)
       return Result.new(success?: false, error: "No se encontró el paquete seleccionado.") unless package
 
       # Doctor
@@ -62,7 +62,8 @@ module User::Appointments
           phone: phone_e164,
           start_date: start_date,
           end_date: end_date,
-          status: "scheduled"
+          status: "scheduled",
+          created_by: caller_user
         )
       )
 
@@ -75,7 +76,13 @@ module User::Appointments
         )
 
         appt.update_column(:google_calendar_id, event_id) if event_id.present?
-        appt.update_column(:scheduled_by, (%w[admin secretary].include?(caller_role.to_s) ? :admin : :patient))
+        mapped_role = case caller_role.to_s
+                      when "admin", "assistant" then :admin
+                      when "user" then :general_user
+                      else :patient
+                      end
+
+        appt.update_column(:scheduled_by, mapped_role)
 
         Result.new(success?: true, appointment: appt, start_date: start_date)
       else

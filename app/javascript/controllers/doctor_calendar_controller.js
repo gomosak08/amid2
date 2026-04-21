@@ -116,10 +116,10 @@ export default class extends Controller {
           ${p.patient_name ? `<div><span class="text-xs text-gray-500">Paciente:</span> <span class="ml-1">${this.escapeHtml(p.patient_name)}</span></div>` : ""}
           ${p.package_name ? `<div><span class="text-xs text-gray-500">Paquete:</span> <span class="ml-1">${this.escapeHtml(p.package_name)}</span></div>` : ""}
           <div><span class="text-xs text-gray-500">Agendada por:</span> <span class="ml-1">${this.escapeHtml(p.scheduled_by_label || p.scheduled_by || "N/A")}</span></div>
-          ${p.status ? `<div><span class="text-xs text-gray-500">Estado:</span> <span class="ml-1">${this.escapeHtml(p.status)}</span></div>` : ""}
+          ${p.status ? `<div><span class="text-xs text-gray-500">Estado:</span> <span class="ml-1">${this.escapeHtml(this.translateStatus(p.status))}</span></div>` : ""}
         </div>
       `
-      this.popoverFooterTarget.textContent = `ID: ${p.record_id ?? ""}`
+      this.popoverFooterTarget.textContent = ""
 
     } else if (kind === "bloqueo_horas") {
       this.popoverBodyTarget.innerHTML = `
@@ -128,7 +128,7 @@ export default class extends Controller {
           <div><span class="text-xs text-gray-500">Horario:</span> <span class="ml-1">${this.escapeHtml(p.starts_at || "")}–${this.escapeHtml(p.ends_at || "")}</span></div>
         </div>
       `
-      this.popoverFooterTarget.textContent = `ID: ${p.record_id ?? ""}`
+      this.popoverFooterTarget.textContent = ""
 
     } else if (kind === "bloqueo_dia") {
       this.popoverBodyTarget.innerHTML = `
@@ -136,7 +136,7 @@ export default class extends Controller {
           ${p.reason ? this.escapeHtml(p.reason) : '<span class="text-gray-500">Sin motivo.</span>'}
         </div>
       `
-      this.popoverFooterTarget.textContent = `ID: ${p.record_id ?? ""}`
+      this.popoverFooterTarget.textContent = ""
 
     } else {
       this.popoverBodyTarget.textContent = ""
@@ -173,12 +173,34 @@ export default class extends Controller {
 
   formatDate(d) {
     return new Intl.DateTimeFormat("es-MX", {
-      weekday: "short", year: "numeric", month: "short", day: "2-digit"
+      weekday: "short", year: "numeric", month: "short", day: "2-digit",
+      timeZone: "America/Mexico_City"
     }).format(d)
   }
 
   formatTime(d) {
-    return new Intl.DateTimeFormat("es-MX", { hour: "2-digit", minute: "2-digit" }).format(d)
+    return new Intl.DateTimeFormat("es-MX", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "America/Mexico_City"
+    }).format(d)
+  }
+
+  translateStatus(status) {
+    const map = {
+      scheduled:          "Agendada",
+      confirmed:          "Confirmada",
+      completed:          "Completada",
+      attended:           "Atendida",
+      pending:            "Pendiente",
+      canceled:           "Cancelada",
+      canceled_by_admin:  "Cancelada por admin",
+      canceled_by_client: "Cancelada por cliente",
+      no_show:            "No se presentó",
+      rescheduled:        "Reprogramada",
+      in_progress:        "En progreso"
+    }
+    return map[status] || map[status?.toLowerCase()] || status
   }
 
   escapeHtml(str) {
