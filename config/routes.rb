@@ -39,8 +39,8 @@ Rails.application.routes.draw do
   # ADMIN AREA
   # ================================
   namespace :admin do
-    resources :users, except: [:show]
-    resources :statistics, only: [:index]
+    resources :users, except: [ :show ]
+    resources :statistics, only: [ :index ]
     resources :appointments do
       collection do
         get :available_fields
@@ -93,6 +93,11 @@ Rails.application.routes.draw do
   # ================================
   devise_for :users, skip: :registrations
 
+  # ================================
+  # WHATSAPP WEBHOOK
+  # ================================
+  post "/webhooks/whatsapp", to: "webhooks#whatsapp"
+  get  "/webhooks/whatsapp", to: "webhooks#verify"
 
   # ================================
   # HOMEPAGE
