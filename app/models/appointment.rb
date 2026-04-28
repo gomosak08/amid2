@@ -40,10 +40,25 @@ class Appointment < ApplicationRecord
   end
 
   def scheduled_by_label
-    case scheduled_by
-    when "patient" then "Paciente"
-    when "admin"   then "Administrador"
-    else scheduled_by.humanize
+    if created_by.present?
+      user_name = created_by.name.presence || created_by.email.split('@').first
+      
+      role_str = case created_by.role
+                 when "admin" then "Administrador"
+                 when "assistant" then "Asistente"
+                 when "doctor" then "Médico"
+                 else "Usuario"
+                 end
+                 
+      "#{role_str} - #{user_name}"
+    else
+      case scheduled_by
+      when "patient" then "Paciente"
+      when "admin"   then "Administrador"
+      when "assistant" then "Asistente"
+      when "general_user" then "Usuario General"
+      else (scheduled_by || "No especificado").to_s.humanize
+      end
     end
   end
 
@@ -84,8 +99,14 @@ class Appointment < ApplicationRecord
   end
 
   def doctor_not_unavailable
-    if DoctorUnavailability.exists?(doctor_id: doctor_id, date: start_date.to_date)
-      errors.add(:start_date, "el doctor no está disponible ese día.")
+    # Solo lanza error si hay un bloqueo de DÍA COMPLETO (ignorando bloqueos por horas)
+    # Las superposiciones de horas y bloqueos específicos ya se validan en el Service y con no_double_booking
+    full_day_block = DoctorUnavailability
+                     .where(doctor_id: doctor_id, date: start_date.to_date)
+                     .where(start_time: nil, end_time: nil)
+
+    if full_day_block.exists?
+      errors.add(:start_date, "el doctor no está disponible ese día completo.")
     end
   end
 

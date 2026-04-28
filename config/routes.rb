@@ -58,6 +58,8 @@ Rails.application.routes.draw do
         post   :mark_unavailable_day
         delete :clear_unavailable_day
 
+        post   :create_unified_block
+
         post   :mark_unavailable_range
         delete :clear_unavailable_range
 

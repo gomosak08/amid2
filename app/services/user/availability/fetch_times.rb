@@ -19,9 +19,10 @@ module User::Availability
 
       Time.use_zone(timezone) do
         # =============================
-        # 1) Bloqueo día completo
+        # 1) Bloqueos específicos de día
         # =============================
-        return [] if DoctorUnavailability.exists?(doctor_id: doctor.id, date: day)
+        unavails = DoctorUnavailability.where(doctor_id: doctor.id, date: day)
+        return [] if unavails.any? { |u| u.start_time.blank? || u.end_time.blank? }
 
         # =============================
         # 2) Horario laboral del doctor
@@ -69,6 +70,18 @@ module User::Availability
 
           [ b_start, b_end ]
         end.compact
+
+        # Sumar los bloqueos por horas de excepciones especificas
+        unavails.each do |u|
+          u_start_hhmm = u.start_time.strftime("%H:%M")
+          u_end_hhmm   = u.end_time.strftime("%H:%M")
+          u_start = Time.zone.parse("#{day} #{u_start_hhmm}")
+          u_end   = Time.zone.parse("#{day} #{u_end_hhmm}")
+          if u_start && u_end
+            u_end += 1.day if u_end <= u_start
+            blocked_intervals << [ u_start, u_end ]
+          end
+        end
 
         # =============================
         # 5) Generación de slots

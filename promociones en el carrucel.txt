@@ -59,3 +59,17 @@ tamaño de las imagenes
 recordatorio pedir emails, numero, nombre, especialidad 
 
 http://[::1]:4000
+
+nombre de los usuarios en panel de usuarios, eliminar correo
+calendario doctores, al dar click desglose el dia para ver todas las citas
+si el doctor tiene citas, redirigir con doctores disponibles 
+bloqueo de horas para doctores
+
+
+arreglar lo de primer cita, y paciente recurrente 
+cuando paciente cambie de doctor, lanzar alerta para avisar que cambia de doctor 
+tamaño de las imagenes 
+ver detalles en home no funciona 
+
+
+

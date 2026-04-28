@@ -84,3 +84,5 @@ end
 gem "tailwindcss-rails", "~> 3.0"
 
 gem "solid_queue", "~> 1.4"
+
+gem "rails-i18n", "~> 7.0"

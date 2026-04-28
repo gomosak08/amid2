@@ -73,7 +73,7 @@
 
                 <div class="mb-4 flex flex-wrap items-center gap-2">
                   <span class="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-700">
-                    <%= number_to_currency(package.price) %>
+                    <%= mxn(package.price) %>
                   </span>
 
                   <% if package.duration.present? %>

@@ -7,10 +7,22 @@ module User::Appointments
     def self.call(params:, package:, caller_role: :user, caller_user: nil)
       return Result.new(success?: false, error: "No se encontró el paquete seleccionado.") unless package
 
-      # Doctor
-      doctor_id = params[:doctor_id]
-      doctor    = Doctor.find_by(id: doctor_id)
-      return Result.new(success?: false, error: "No se encontró el médico seleccionado.") unless doctor
+      doctors = if package.respond_to?(:doctors) && package.doctors.exists?
+                  package.doctors
+                else
+                  Doctor.all
+                end
+
+      # Teléfono normalizado
+      phone_e164 = PhoneNormalizer.to_e164(params[:phone])
+
+      # Doctor: respeta selección manual; si no viene, usa médico habitual por teléfono o uno al azar.
+      doctor = resolve_doctor(params[:doctor_id], phone_e164, doctors)
+      return Result.new(success?: false, error: "No se encontró un médico disponible para el paquete seleccionado.") unless doctor
+
+      unless doctors.exists?(id: doctor.id)
+        return Result.new(success?: false, error: "El médico seleccionado no atiende el paquete elegido.")
+      end
 
       # Fecha/hora
       begin
@@ -22,9 +34,6 @@ module User::Appointments
 
       duration = package.duration.to_i
       end_date = start_date + duration.minutes
-
-      # Teléfono normalizado
-      phone_e164 = PhoneNormalizer.to_e164(params[:phone])
 
       # Baneo por teléfono
       phone_ban = PhoneBan.active_now.find_by(phone_e164: phone_e164)
@@ -48,7 +57,7 @@ module User::Appointments
       end
 
       # Disponibilidad
-      unless User::Availability::SlotFree.call(doctor_id: doctor.id, start_date: start_date)
+      unless User::Availability::SlotFree.call(doctor_id: doctor.id, start_date: start_date, duration: duration)
         return Result.new(
           success?: false,
           start_date: start_date,
@@ -60,6 +69,7 @@ module User::Appointments
       appt = Appointment.new(
         params.merge(
           phone: phone_e164,
+          doctor_id: doctor.id,
           start_date: start_date,
           end_date: end_date,
           status: "scheduled",
@@ -75,19 +85,52 @@ module User::Appointments
           caller_role: caller_role
         )
 
-        appt.update_column(:google_calendar_id, event_id) if event_id.present?
-        mapped_role = case caller_role.to_s
-                      when "admin", "assistant" then :admin
-                      when "user" then :general_user
-                      else :patient
-                      end
+        sched_by = if caller_role.to_s == "assistant"
+                     :assistant
+                   elsif caller_role.to_s == "admin"
+                     :admin
+                   elsif caller_role.to_s == "general_user"
+                     :general_user
+                   else
+                     :patient
+                   end
 
-        appt.update_column(:scheduled_by, mapped_role)
+        appt.update_column(:google_calendar_id, event_id) if event_id.present?
+        appt.update_column(:scheduled_by, sched_by)
 
         Result.new(success?: true, appointment: appt, start_date: start_date)
       else
         Result.new(success?: false, start_date: start_date, error: appt.errors.full_messages.to_sentence)
       end
     end
+
+    def self.resolve_doctor(selected_doctor_id, phone_e164, doctors)
+      if selected_doctor_id.present?
+        return doctors.find_by(id: selected_doctor_id)
+      end
+
+      preferred = preferred_doctor_for(phone_e164, doctors)
+      return preferred if preferred
+
+      doctors.to_a.sample
+    end
+    private_class_method :resolve_doctor
+
+    def self.preferred_doctor_for(phone_e164, doctors)
+      return nil if phone_e164.blank?
+
+      scope = Appointment.where.not(doctor_id: nil).order(start_date: :desc, created_at: :desc)
+
+      appointment =
+        if Appointment.column_names.include?("phone_number_e164")
+          scope.find_by(phone_number_e164: phone_e164)
+        end
+
+      appointment ||= scope.find_by(phone: phone_e164)
+      return nil unless appointment
+
+      doctors.find_by(id: appointment.doctor_id)
+    end
+    private_class_method :preferred_doctor_for
   end
 end

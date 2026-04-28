@@ -241,6 +241,7 @@
   }
 
   .search-card{
+    position:relative;
     background:#fff;
     border:1px solid #e2e8f0;
     border-radius: 24px;
@@ -315,6 +316,35 @@
     margin-top: .95rem;
   }
 
+  .search-meta{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:1rem;
+    flex-wrap:wrap;
+    margin-top: .95rem;
+    padding-top: .95rem;
+    border-top:1px solid #eef2f7;
+  }
+
+  .search-meta-copy{
+    color:#475569;
+    font-size:.95rem;
+    line-height:1.6;
+  }
+
+  .search-count-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:.5rem;
+    padding:.75rem 1rem;
+    border-radius:999px;
+    background:#eff6ff;
+    color:#1d4ed8;
+    font-weight:900;
+    white-space:nowrap;
+  }
+
   .quick-chip{
     display:inline-flex;
     align-items:center;
@@ -347,6 +377,80 @@
 
   .section-block{
     margin-top: 1.5rem;
+  }
+
+  .insight-grid,
+  .steps-grid{
+    display:grid;
+    gap:1rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .insight-card,
+  .step-card{
+    position:relative;
+    overflow:hidden;
+    background:#fff;
+    border:1px solid #e2e8f0;
+    border-radius:24px;
+    padding:1.2rem;
+    box-shadow: 0 12px 28px rgba(15,23,42,.05);
+  }
+
+  .insight-card::before,
+  .step-card::before{
+    content:"";
+    position:absolute;
+    inset:0 auto auto 0;
+    width:100%;
+    height:4px;
+    background: linear-gradient(90deg, #22c55e 0%, #2563eb 55%, #06b6d4 100%);
+  }
+
+  .insight-icon,
+  .step-number{
+    width:56px;
+    height:56px;
+    border-radius:18px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:.9rem;
+    font-size:1.15rem;
+  }
+
+  .insight-icon{
+    background:#eff6ff;
+    color:#1d4ed8;
+  }
+
+  .step-number{
+    background:#0f172a;
+    color:#fff;
+    font-weight:950;
+  }
+
+  .insight-card h3,
+  .step-card h3{
+    margin:0 0 .45rem;
+    font-size:1.08rem;
+    font-weight:900;
+    color:#0f172a;
+  }
+
+  .insight-card p,
+  .step-card p{
+    margin:0;
+    color:#64748b;
+    line-height:1.65;
+  }
+
+  .section-panel{
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    border:1px solid #e2e8f0;
+    border-radius:28px;
+    padding:1.15rem;
+    box-shadow: 0 14px 32px rgba(15,23,42,.05);
   }
 
   .section-head{
@@ -508,6 +612,11 @@
       grid-template-columns: 1fr;
     }
 
+    .insight-grid,
+    .steps-grid{
+      grid-template-columns:1fr;
+    }
+
     .cards-grid{
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -545,8 +654,14 @@
       grid-template-columns: 1fr;
     }
 
+    .search-meta{
+      align-items:flex-start;
+    }
+
     .cards-grid,
-    .selection-grid{
+    .selection-grid,
+    .insight-grid,
+    .steps-grid{
       grid-template-columns:1fr;
     }
 
@@ -560,6 +675,7 @@
   featured_services  = @packages.where(kind: "servicios", featured: true)
   featured_packages  = @packages.where(kind: "paquete", featured: true)
   featured_surgeries = @packages.where(kind: "cirugia", featured: true)
+  featured_total = featured_services.count + featured_packages.count + featured_surgeries.count
 %>
 
 <div class="home-wrap">
@@ -698,6 +814,59 @@
             Buscar cita
           <% end %>
         </div>
+
+        <div class="search-meta">
+          <p class="search-meta-copy mb-0">
+            Explora <strong><%= featured_total %> opciones destacadas</strong> entre servicios y paquetes.
+            Usa el buscador para filtrar por nombre, descripción o tipo.
+          </p>
+
+          <div id="home-search-count" class="search-count-badge">
+            <i class="fa-solid fa-layer-group"></i>
+            <span><%= featured_total %> resultados visibles</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-block">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">
+            <i class="fa-solid fa-shield-heart"></i>
+            Experiencia más clara
+          </div>
+          <h2 class="section-title">Todo pensado para elegir y agendar rápido</h2>
+          <p class="section-sub">
+            La portada ahora guía mejor la decisión: primero entiendes tus opciones, luego filtras y finalmente agendas.
+          </p>
+        </div>
+      </div>
+
+      <div class="insight-grid">
+        <article class="insight-card">
+          <span class="insight-icon"><i class="fa-solid fa-filter-circle-dollar"></i></span>
+          <h3>Comparación sencilla</h3>
+          <p>
+            Reúne servicios y paquetes destacados en una sola vista para comparar sin cambiar de página.
+          </p>
+        </article>
+
+        <article class="insight-card">
+          <span class="insight-icon"><i class="fa-solid fa-bolt"></i></span>
+          <h3>Accesos directos útiles</h3>
+          <p>
+            Salta a la categoría que te interesa, limpia la búsqueda al instante o localiza una cita existente.
+          </p>
+        </article>
+
+        <article class="insight-card">
+          <span class="insight-icon"><i class="fa-solid fa-calendar-day"></i></span>
+          <h3>Agenda con contexto</h3>
+          <p>
+            Cada selección te lleva al siguiente paso con la opción correcta ya precargada para evitar confusiones.
+          </p>
+        </article>
       </div>
     </section>
 
@@ -736,6 +905,49 @@
             <p>Procedimientos especializados con información clara y acceso directo.</p>
           </a>
           %>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-block">
+      <div class="section-panel">
+        <div class="section-head">
+          <div>
+            <div class="section-kicker">
+              <i class="fa-solid fa-route"></i>
+              Cómo funciona
+            </div>
+            <h2 class="section-title">Un flujo más simple de principio a fin</h2>
+            <p class="section-sub">
+              Si alguien entra por primera vez, esta guía reduce la fricción y deja claro qué hacer en cada paso.
+            </p>
+          </div>
+        </div>
+
+        <div class="steps-grid">
+          <article class="step-card">
+            <span class="step-number">1</span>
+            <h3>Busca o entra por categoría</h3>
+            <p>
+              Empieza con el buscador o usa los accesos rápidos para ir directo a servicios o paquetes.
+            </p>
+          </article>
+
+          <article class="step-card">
+            <span class="step-number">2</span>
+            <h3>Revisa la opción ideal</h3>
+            <p>
+              Cada tarjeta resume lo importante para que puedas decidir con más confianza antes de avanzar.
+            </p>
+          </article>
+
+          <article class="step-card">
+            <span class="step-number">3</span>
+            <h3>Agenda con la selección lista</h3>
+            <p>
+              Al continuar, el flujo ya conoce tu elección y hace la cita más rápida y menos ambigua.
+            </p>
+          </article>
         </div>
       </div>
     </section>
@@ -856,6 +1068,7 @@
     const clearBtn = document.getElementById("home-search-clear");
     const items = Array.from(document.querySelectorAll(".home-search-item"));
     const empty = document.getElementById("home-search-empty");
+    const count = document.getElementById("home-search-count");
 
     if (!input || !clearBtn || items.length === 0) return;
 
@@ -882,6 +1095,11 @@
 
       if (empty) {
         empty.classList.toggle("is-visible", term.length > 0 && visibleCount === 0);
+      }
+
+      if (count) {
+        const label = visibleCount === 1 ? "resultado visible" : "resultados visibles";
+        count.querySelector("span").textContent = `${visibleCount} ${label}`;
       }
     }
 

@@ -63,7 +63,7 @@
           <thead class="border-b border-gray-200 bg-gray-50">
             <tr>
               <th scope="col" class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">ID</th>
-              <th scope="col" class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Email</th>
+              <th scope="col" class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Nombre</th>
               <th scope="col" class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Rol</th>
               <th scope="col" class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-gray-500">Subir Resultados</th>
               <th scope="col" class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-500">Acciones</th>
@@ -79,7 +79,7 @@
                     </span>
                   </td>
                   <td class="whitespace-nowrap px-6 py-4 font-medium text-gray-900">
-                    <%= user.email %>
+                    <%= user.name.presence || "Sin nombre" %>
                     <% if user == current_user %>
                       <span class="ml-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
                         Tú

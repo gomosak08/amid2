@@ -8,33 +8,49 @@
   <%= hidden_field_tag :package_id, @ctx&.package&.id %>
 
   <div data-controller="date-picker" class="space-y-6">
-    <!-- Doctor -->
-    <div class="w-full">
-      <label class="block text-lg font-semibold text-gray-800 mb-2">
-        Selecciona un doctor
-      </label>
+    <!-- Datos del paciente -->
+    <div class="rounded-2xl border border-blue-100 bg-blue-50/60 p-4">
+      <div class="mb-4 flex items-center gap-2">
+        <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">1</span>
+        <h2 class="text-base font-bold text-gray-900">Datos del paciente</h2>
+      </div>
 
-      <%= select_tag "appointment[doctor_id]",
-            options_from_collection_for_select(@ctx.doctors, :id, :name, @ctx.doctor_id),
-            include_blank: "Selecciona un doctor",
-            class: "block w-full p-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition",
-            data: {
-              action: "change->availability-guard#invalidate"
-            } %>
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div>
+          <%= label_tag "appointment_name", "Nombre completo", class: "block text-sm font-semibold text-gray-700 mb-2" %>
+          <%= text_field_tag "appointment[name]",
+                @ctx.patient_name,
+                required: true,
+                placeholder: "Ej. Juan Pérez",
+                class: "block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500",
+                data: { action: "input->availability-guard#invalidate" } %>
+        </div>
 
-      <% if @ctx.doctor_id.present? %>
-        <p class="mt-2 text-sm text-gray-600">
-          Próxima disponibilidad:
-          <% next_date = (@ctx.appointment_date || @ctx.available_times&.first&.to_date) %>
-          <span class="font-medium">
-            <%= next_date ? next_date.strftime("%d/%m/%Y") : "—" %>
-          </span>
-        </p>
-      <% else %>
-        <p class="mt-2 text-sm text-gray-500">
-          Selecciona un doctor para ver su disponibilidad.
-        </p>
-      <% end %>
+        <div>
+          <%= label_tag "appointment_phone", "Teléfono", class: "block text-sm font-semibold text-gray-700 mb-2" %>
+          <%= telephone_field_tag "appointment[phone]",
+                @ctx.patient_phone,
+                required: true,
+                placeholder: "10 dígitos",
+                class: "block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500",
+                data: { action: "input->availability-guard#invalidate" } %>
+          <p class="mt-2 text-xs text-gray-600">
+            Usaremos este número para reconocer si ya tienes un médico habitual.
+          </p>
+        </div>
+
+        <div>
+          <%= label_tag "appointment_age", "Edad", class: "block text-sm font-semibold text-gray-700 mb-2" %>
+          <%= number_field_tag "appointment[age]",
+                @ctx.patient_age,
+                min: 0,
+                step: 1,
+                required: true,
+                placeholder: "Años",
+                class: "block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500",
+                data: { action: "input->availability-guard#invalidate" } %>
+        </div>
+      </div>
     </div>
 
     <!-- Fecha -->
@@ -100,6 +116,63 @@
         </div>
       </div>
     </div>
+
+    <% if @ctx.week_availability.present? %>
+      <% max_slots = @ctx.week_availability.map { |day| day[:slots_count].to_i }.max.to_i %>
+      <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div class="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h3 class="text-base font-bold text-gray-900">Disponibilidad de la semana</h3>
+            <p class="text-sm text-gray-600">Los días más intensos tienen más médicos y horarios disponibles.</p>
+          </div>
+          <span class="text-xs font-semibold text-gray-500">Mapa de calor</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
+          <% @ctx.week_availability.each do |day| %>
+            <% slots = day[:slots_count].to_i %>
+            <% doctors_count = day[:doctors_count].to_i %>
+            <% visible_times = Array(day[:times]).first(4) %>
+            <% hidden_times_count = [Array(day[:times]).size - visible_times.size, 0].max %>
+            <% intensity =
+                 if slots.zero?
+                   "bg-gray-50 border-gray-200 text-gray-400"
+                 elsif max_slots.positive? && slots >= (max_slots * 0.66)
+                   "bg-green-100 border-green-300 text-green-900"
+                 elsif max_slots.positive? && slots >= (max_slots * 0.33)
+                   "bg-emerald-50 border-emerald-200 text-emerald-800"
+                 else
+                   "bg-amber-50 border-amber-200 text-amber-800"
+                 end %>
+            <%= button_tag type: :submit,
+                name: :appointment_date,
+                value: day[:date].strftime("%Y-%m-%d"),
+                class: "rounded-xl border px-3 py-3 text-left transition hover:shadow-sm #{intensity}" do %>
+              <div class="text-xs font-bold uppercase"><%= l(day[:date], format: "%a") %></div>
+              <div class="mt-1 text-lg font-black"><%= day[:date].strftime("%d") %></div>
+              <div class="mt-2 text-xs font-semibold"><%= doctors_count %> médicos</div>
+              <div class="text-xs"><%= slots %> horarios</div>
+              <% if visible_times.any? %>
+                <div class="mt-3 flex flex-wrap gap-1.5">
+                  <% visible_times.each do |time| %>
+                    <span class="rounded-full bg-white/75 px-2 py-0.5 text-[11px] font-bold shadow-sm">
+                      <%= time.in_time_zone("America/Mexico_City").strftime("%H:%M") %>
+                    </span>
+                  <% end %>
+                  <% if hidden_times_count.positive? %>
+                    <span class="rounded-full bg-white/60 px-2 py-0.5 text-[11px] font-bold">
+                      +<%= hidden_times_count %>
+                    </span>
+                  <% end %>
+                </div>
+              <% else %>
+                <div class="mt-3 text-[11px] font-semibold">Sin horarios</div>
+              <% end %>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
   </div>
 
   <div class="space-y-3">
@@ -112,14 +185,5 @@
             class: "w-full sm:w-auto bg-blue-600 text-white py-3 px-5 rounded-xl font-semibold hover:bg-blue-700 transition-colors",
             data: { turbo_submits_with: "Verificando..." } %>
     </div>
-
-    <% if @ctx.available_times.present? %>
-      <div
-        data-availability-guard-target="notice"
-        class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
-      >
-        Ya se consultó disponibilidad. Si cambias el doctor o la fecha, deberás verificar de nuevo.
-      </div>
-    <% end %>
   </div>
 <% end %>

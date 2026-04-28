@@ -28,7 +28,8 @@ module User::GoogleCalendar::Events
 
       # --- Apariencia ---
       color_id ||= ((appointment.doctor_id.to_i % 11) + 1).to_s
-      emoji    ||= (caller_role.to_s == "admin" ? "💻" : caller_role.to_s == "user" ? "👤" : "🗓")
+      internal_roles = %w[admin assistant doctor]
+      emoji    ||= (internal_roles.include?(caller_role.to_s) ? "💻" : "👤")
       title      = "#{emoji} #{package&.name || 'Consulta'} con #{doctor_name}"
 
       event = Google::Apis::CalendarV3::Event.new(

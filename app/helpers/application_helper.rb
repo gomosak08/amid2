@@ -5,4 +5,11 @@ module ApplicationHelper
         "July" => "julio", "August" => "agosto", "September" => "septiembre",
         "October" => "octubre", "November" => "noviembre", "December" => "diciembre"
       }.freeze
+
+    # Formats money as MXN without locale currency symbols (e.g. "$1234.50").
+    def mxn(amount)
+      return "—" if amount.blank?
+
+      "$#{number_with_precision(amount, precision: 2, separator: ".", delimiter: "")}"
+    end
 end

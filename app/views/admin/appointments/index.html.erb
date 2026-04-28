@@ -125,7 +125,7 @@
             </div>
           </section>
 
-          <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+          <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
             <!-- Doctores -->
             <% unless current_user&.doctor? %>
             <section class="rounded-[24px] border border-gray-200 bg-gray-50 p-5">
@@ -205,31 +205,72 @@
                           class: "mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" %>
 
                     <div class="flex flex-col gap-1">
+                      <% if value == "scheduled" %>
+                        <span class="inline-flex w-fit items-center rounded-full bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-700">
+                          <%= label_text %>
+                        </span>
+                      <% elsif value == "completed" %>
+                        <span class="inline-flex w-fit items-center rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700">
+                          <%= label_text %>
+                        </span>
+                      <% elsif value == "canceled_by_admin" %>
+                        <span class="inline-flex w-fit items-center rounded-full bg-rose-100 px-2.5 py-1 text-xs font-bold text-rose-700">
+                          <%= label_text %>
+                        </span>
+                      <% elsif value == "canceled_by_client" %>
+                        <span class="inline-flex w-fit items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-700">
+                          <%= label_text %>
+                        </span>
+                      <% elsif value == "no_show" %>
+                        <span class="inline-flex w-fit items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700">
+                          <%= label_text %>
+                        </span>
+                      <% end %>
+                    </div>
+                  </label>
+                <% end %>
+              </div>
+            </section>
+
+            <!-- Agendada por -->
+            <section class="rounded-[24px] border border-gray-200 bg-gray-50 p-5">
+              <div class="mb-4 flex items-center justify-between">
+                <div>
+                  <h3 class="text-sm font-bold uppercase tracking-wide text-gray-600">
+                    Agendada por
+                  </h3>
+                  <p class="mt-1 text-xs text-gray-500">
+                    Filtra según quién creó la cita.
+                  </p>
+                </div>
+
+                <% if Array(params[:scheduled_bys]).reject(&:blank?).any? %>
+                  <span class="text-xs font-semibold text-purple-600">
+                    <%= Array(params[:scheduled_bys]).reject(&:blank?).size %> seleccionado(s)
+                  </span>
+                <% end %>
+              </div>
+
+              <% scheduled_options = [
+                ["Paciente", "patient"],
+                ["Administrador", "admin"],
+                ["Asistente", "assistant"]
+              ] %>
+
+              <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <% scheduled_options.each do |label_text, value| %>
+                  <% checked = Array(params[:scheduled_bys]).include?(value) %>
+
+                  <label class="flex cursor-pointer items-start gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 transition hover:border-blue-300 hover:bg-blue-50">
+                    <%= check_box_tag "scheduled_bys[]",
+                          value,
+                          checked,
+                          class: "mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" %>
+
+                    <div class="flex flex-col gap-1">
                       <span class="text-sm font-semibold text-gray-800">
                         <%= label_text %>
                       </span>
-
-                      <% if value == "scheduled" %>
-                        <span class="inline-flex w-fit items-center rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">
-                          scheduled
-                        </span>
-                      <% elsif value == "completed" %>
-                        <span class="inline-flex w-fit items-center rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-                          completed
-                        </span>
-                      <% elsif value == "canceled_by_admin" %>
-                        <span class="inline-flex w-fit items-center rounded-full bg-rose-100 px-2.5 py-1 text-xs font-semibold text-rose-700">
-                          canceled_by_admin
-                        </span>
-                      <% elsif value == "canceled_by_client" %>
-                        <span class="inline-flex w-fit items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700">
-                          canceled_by_client
-                        </span>
-                      <% elsif value == "no_show" %>
-                        <span class="inline-flex w-fit items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
-                          no_show
-                        </span>
-                      <% end %>
                     </div>
                   </label>
                 <% end %>
@@ -287,9 +328,22 @@
             </span>
           <% end %>
 
+          <% scheduled_by_labels = {
+            "patient" => "Paciente",
+            "admin" => "Admin",
+            "assistant" => "Asistente"
+          } %>
+
+          <% Array(params[:scheduled_bys]).reject(&:blank?).each do |sched| %>
+            <span class="inline-flex items-center rounded-full bg-purple-100 px-3 py-1 text-xs font-semibold text-purple-700">
+              Agendada: <%= scheduled_by_labels[sched] || sched %>
+            </span>
+          <% end %>
+
           <% if params[:date].blank? &&
                 Array(params[:doctor_ids]).reject(&:blank?).empty? &&
-                Array(params[:statuses]).reject(&:blank?).empty? %>
+                Array(params[:statuses]).reject(&:blank?).empty? &&
+                Array(params[:scheduled_bys]).reject(&:blank?).empty? %>
             <span class="text-sm text-gray-400">Ninguno</span>
           <% end %>
         </div>
@@ -314,6 +368,7 @@
               <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Fecha</th>
               <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Doctor</th>
               <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Estado</th>
+              <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Agendada por</th>
               <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-gray-500">Acciones</th>
             </tr>
           </thead>
@@ -370,6 +425,10 @@
                         <%= appointment.status %>
                       </span>
                     <% end %>
+                  </td>
+
+                  <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-600">
+                    <%= appointment.scheduled_by_label %>
                   </td>
 
                   <td class="px-6 py-4">

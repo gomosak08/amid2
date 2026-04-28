@@ -129,3 +129,118 @@
     line-height: 38px;
   }
 }
+
+/* =========================================
+   CALENDARIO DE DOCTORES
+========================================= */
+
+.doctor-calendar-shell {
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem;
+  background: #fff;
+}
+
+.doctor-calendar {
+  padding: 1rem;
+  color: #111827;
+}
+
+.doctor-calendar .fc-toolbar {
+  gap: .75rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.doctor-calendar .fc-toolbar-title {
+  color: #111827;
+  font-size: 1.2rem;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
+.doctor-calendar .fc-button {
+  border: 1px solid #d1d5db !important;
+  border-radius: .75rem !important;
+  background: #fff !important;
+  color: #374151 !important;
+  box-shadow: none !important;
+  font-size: .82rem !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+}
+
+.doctor-calendar .fc-button:hover,
+.doctor-calendar .fc-button-primary:not(:disabled).fc-button-active {
+  border-color: #bfdbfe !important;
+  background: #eff6ff !important;
+  color: #1d4ed8 !important;
+}
+
+.doctor-calendar .fc-col-header-cell {
+  background: #f8fafc;
+}
+
+.doctor-calendar .fc-col-header-cell-cushion,
+.doctor-calendar .fc-daygrid-day-number,
+.doctor-calendar .fc-timegrid-slot-label-cushion {
+  color: #4b5563;
+  text-decoration: none;
+}
+
+.doctor-calendar .fc-day-today {
+  background: #eff6ff !important;
+}
+
+.doctor-calendar .fc-daygrid-day {
+  cursor: pointer;
+}
+
+.doctor-calendar .fc-daygrid-day:hover {
+  background: #f8fafc;
+}
+
+.doctor-calendar .fc-event {
+  border: 0 !important;
+  border-radius: .55rem !important;
+  padding: 2px 4px;
+  font-size: .78rem;
+  font-weight: 700;
+}
+
+.doctor-calendar .fc-timegrid-event {
+  padding: 4px 6px;
+}
+
+.doctor-calendar .fc-more-link {
+  color: #2563eb;
+  font-size: .78rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.doctor-calendar-event-pulse {
+  outline: 3px solid rgba(37, 99, 235, .32) !important;
+  outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  .doctor-calendar {
+    padding: .75rem;
+  }
+
+  .doctor-calendar .fc-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .doctor-calendar .fc-toolbar-chunk {
+    display: flex;
+    justify-content: center;
+  }
+
+  .doctor-calendar .fc-toolbar-title {
+    font-size: 1rem;
+    text-align: center;
+  }
+}

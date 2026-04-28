@@ -1,77 +1,127 @@
 <!-- app/views/appointments/_available_fields.html.erb -->
-<%= form_with model: @ctx.appointment,
-              url: appointments_path,
-              method: :post,
-              id: "appointment-create-form",
-              local: true,
-              data: {
-                controller: "recaptcha",
-                "recaptcha-site-key-value": ENV.fetch("RECAPTCHA_SITE_KEY", nil),
-                action: "submit->recaptcha#onSubmit",
-                turbo: false
-              },
-              class: "mt-6 space-y-6" do |form| %>
-
-  <% if @ctx.appointment.errors.any? %>
-    <div class="mb-4 p-4 border border-red-400 rounded-md bg-red-50 text-red-700 shadow-sm">
-      <h3 class="font-semibold">
-        <%= pluralize(@ctx.appointment.errors.count, "error") %> impidieron guardar la cita:
-      </h3>
-      <ul class="list-disc pl-6">
-        <% @ctx.appointment.errors.full_messages.each do |m| %>
-          <li><%= m %></li>
-        <% end %>
-      </ul>
+<div class="mt-6 space-y-6">
+  <div class="rounded-2xl border border-gray-200 bg-white p-4 text-sm text-gray-700 shadow-sm">
+    <div class="font-semibold text-gray-900">Paciente</div>
+    <div class="mt-1"><%= @ctx.patient_name.presence || "Sin nombre" %></div>
+    <div class="mt-1 text-gray-500">
+      Tel. <%= @ctx.patient_phone.presence || "Sin teléfono" %>
+      <% if @ctx.patient_age.present? %>
+        - <%= @ctx.patient_age %> años
+      <% end %>
     </div>
+  </div>
+
+  <% if @ctx.available_times.blank? %>
+    <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+      No hay médicos disponibles para esa fecha. Elige otro día en el calendario o revisa la disponibilidad semanal.
+    </div>
+  <% else %>
+    <% time_options = Array(@ctx.available_times).map { |t|
+         t = t.in_time_zone("America/Mexico_City")
+         [t.strftime("%I:%M %p"), t.iso8601]
+       } %>
+
+    <div class="rounded-2xl border border-green-200 bg-green-50 p-4">
+      <h3 class="text-lg font-semibold text-green-800 mb-1">Horarios disponibles</h3>
+      <p class="text-sm text-green-700">
+        Primero elige una hora. Después verás solo los médicos que pueden atenderte en ese horario.
+      </p>
+    </div>
+
+    <%= form_with url: new_appointment_path,
+                  method: :get,
+                  local: true,
+                  authenticity_token: false,
+                  class: "rounded-2xl border border-gray-200 bg-white p-4 shadow-sm" do |form| %>
+      <%= hidden_field_tag :package_id, @ctx.package&.id %>
+      <%= hidden_field_tag "appointment[name]", @ctx.patient_name %>
+      <%= hidden_field_tag "appointment[age]", @ctx.patient_age %>
+      <%= hidden_field_tag "appointment[phone]", @ctx.patient_phone %>
+      <%= hidden_field_tag :appointment_date, @ctx.appointment_date&.strftime("%Y-%m-%d") %>
+
+      <div>
+        <%= label_tag :time_slot, "Selecciona una hora", class: "block text-lg font-medium text-gray-700 mb-2" %>
+        <%= select_tag :time_slot,
+              options_for_select(time_options, @ctx.time_slot),
+              prompt: "Selecciona una hora",
+              required: true,
+              class: "block w-full rounded-xl border border-gray-300 bg-white p-3 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500",
+              onchange: "this.form.requestSubmit()" %>
+      </div>
+    <% end %>
+
+    <% if @ctx.time_slot.present? %>
+      <% if @ctx.available_doctors.blank? %>
+        <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          No hay médicos disponibles para ese horario. Elige otra hora u otra fecha.
+        </div>
+      <% else %>
+        <% preferred_doctor = @ctx.available_doctors.find_by(id: @ctx.preferred_doctor_id) if @ctx.preferred_doctor_id.present? %>
+
+        <%= form_with model: @ctx.appointment,
+                      url: appointments_path,
+                      method: :post,
+                      id: "appointment-create-form",
+                      local: true,
+                      data: {
+                        controller: "recaptcha patient-doctor-warning",
+                        "recaptcha-site-key-value": ENV.fetch("RECAPTCHA_SITE_KEY", nil),
+                        action: "submit->recaptcha#onSubmit",
+                        turbo: false
+                      },
+                      class: "space-y-6 rounded-2xl border border-blue-100 bg-blue-50/50 p-4 shadow-sm" do |form| %>
+
+          <% if @ctx.appointment.errors.any? %>
+            <div class="mb-4 rounded-md border border-red-400 bg-red-50 p-4 text-red-700 shadow-sm">
+              <h3 class="font-semibold">
+                <%= pluralize(@ctx.appointment.errors.count, "error") %> impidieron guardar la cita:
+              </h3>
+              <ul class="list-disc pl-6">
+                <% @ctx.appointment.errors.full_messages.each do |m| %>
+                  <li><%= m %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <%= form.hidden_field :package_id, value: @ctx.package&.id %>
+          <%= form.hidden_field :duration, value: @ctx.duration %>
+          <%= form.hidden_field :name, value: @ctx.patient_name %>
+          <%= form.hidden_field :age, value: @ctx.patient_age %>
+          <%= form.hidden_field :phone, value: @ctx.patient_phone %>
+          <%= form.hidden_field :start_date, value: @ctx.time_slot %>
+          <input type="hidden" name="recaptcha_token" />
+
+          <div>
+            <%= form.label :doctor_id, "Médico disponible para este horario", class: "block text-lg font-medium text-gray-700 mb-2" %>
+            <%= form.collection_select :doctor_id,
+                  @ctx.available_doctors, :id, :name,
+                  { prompt: "Selecciona un médico", selected: @ctx.doctor_id },
+                  {
+                    required: true,
+                    class: "block w-full rounded-xl border border-gray-300 bg-white p-3 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500",
+                    data: {
+                      action: "change->patient-doctor-warning#confirmChange",
+                      "patient-doctor-warning-preferred-doctor-id-value": @ctx.preferred_doctor_id
+                    }
+                  } %>
+
+            <% if preferred_doctor.present? %>
+              <p class="mt-2 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+                Tu médico habitual está disponible en este horario: <strong><%= preferred_doctor.name %></strong>.
+              </p>
+            <% elsif @ctx.preferred_doctor_id.present? %>
+              <p class="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                Tu médico habitual no está disponible en este horario. Puedes elegir otro médico o cambiar de hora.
+              </p>
+            <% end %>
+          </div>
+
+          <%= form.submit "Agendar cita",
+                class: "w-full rounded-xl bg-green-600 px-5 py-3 font-semibold text-white transition-colors hover:bg-green-700 sm:w-auto",
+                data: { disable_with: "Agendando..." } %>
+        <% end %>
+      <% end %>
+    <% end %>
   <% end %>
-
-  <%= form.hidden_field :package_id, value: @ctx.package&.id %>
-  <%= form.hidden_field :doctor_id,  value: @ctx.doctor_id %>
-  <%= form.hidden_field :duration,   value: @ctx.duration %>
-  <%= hidden_field_tag :appointment_date, @ctx.appointment_date %>
-
-  <% time_options = Array(@ctx.available_times).map { |t|
-       t = t.in_time_zone("America/Mexico_City")
-       [t.strftime("%I:%M %p"), t.iso8601]
-     } %>
-
-  <div class="rounded-2xl border border-green-200 bg-green-50 p-4">
-    <h3 class="text-lg font-semibold text-green-800 mb-1">Horarios disponibles</h3>
-    <p class="text-sm text-green-700">
-      Completa tus datos para apartar una cita con el horario seleccionado.
-    </p>
-  </div>
-
-  <div>
-    <%= form.label :start_date, "Selecciona una Hora", class: "block text-lg font-medium text-gray-700 mb-2" %>
-    <%= form.select :start_date,
-          options_for_select(time_options, @ctx.appointment.start_date&.iso8601),
-          { prompt: "Selecciona una Hora" },
-          required: true,
-          class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm" %>
-  </div>
-
-  <div>
-    <%= form.label :name, "Nombre", class: "block text-lg font-medium text-gray-700 mb-2" %>
-    <%= form.text_field :name, required: true,
-          class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm" %>
-  </div>
-
-  <div>
-    <%= form.label :age, "Edad", class: "block text-lg font-medium text-gray-700 mb-2" %>
-    <%= form.number_field :age, required: true,
-          class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm" %>
-  </div>
-
-  <div>
-    <%= form.label :phone, "Número de Teléfono", class: "block text-lg font-medium text-gray-700 mb-2" %>
-    <%= form.telephone_field :phone, required: true,
-          class: "block w-full p-2 border border-gray-300 rounded-md shadow-sm" %>
-  </div>
-
-  <input type="hidden" name="recaptcha_token" />
-
-  <%= form.submit "Agendar Cita",
-        class: "bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition-colors duration-200",
-        data: { disable_with: "Agendando…" } %>
-<% end %>
+</div>

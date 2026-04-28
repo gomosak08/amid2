@@ -15,11 +15,8 @@ class AppointmentsController < ApplicationController
       appointment: Appointment.new(package: @package)
     )
 
-    if params.dig(:appointment, :doctor_id).present? &&
-      params[:appointment_date].present? &&
-      @ctx.available_times.blank?
-      flash.now[:alert] = "No hay disponibilidad para el doctor seleccionado en la fecha elegida."
-    end
+    flash.now[:alert] = "No hay médicos disponibles en esa fecha. Elige otra fecha u horario." if
+      params[:appointment_date].present? && @ctx.available_times.blank?
   end
 
   def create
@@ -44,23 +41,28 @@ class AppointmentsController < ApplicationController
       )
     end
 
-    ok = verify_recaptcha(
-      response: params[:recaptcha_token],
-      action: "appointment_create",
-      minimum_score: 0.0,
-      remote_ip: request.remote_ip
-    )
+    unless current_user.present?
+      ok = verify_recaptcha(
+        response: params[:recaptcha_token],
+        action: "appointment_create",
+        minimum_score: 0.0,
+        remote_ip: request.remote_ip
+      )
 
-    return Responders::Flash422.call(
-      controller: self,
-      msg: "No pudimos validar el reCAPTCHA. Intenta de nuevo.",
-      appointment_params: appointment_params
-    ) unless ok
+      return Responders::Flash422.call(
+        controller: self,
+        msg: "No pudimos validar el reCAPTCHA. Intenta de nuevo.",
+        appointment_params: appointment_params
+      ) unless ok
+    end
+
+    caller_role = current_user&.role.presence || :user
 
     result = User::Appointments::Create.call(
       params: appointment_params,
       package: @package,
-      caller_role: :user
+      caller_role: caller_role,
+      caller_user: current_user
     )
 
     if result.success?
@@ -72,7 +74,10 @@ class AppointmentsController < ApplicationController
                     package_id: @package.id,
                     appointment: {
                       doctor_id: appointment_params[:doctor_id],
-                      package_id: @package.id
+                      package_id: @package.id,
+                      name: appointment_params[:name],
+                      age: appointment_params[:age],
+                      phone: appointment_params[:phone]
                     },
                     appointment_date: result.start_date&.to_date
                   ),

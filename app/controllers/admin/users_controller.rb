@@ -66,7 +66,7 @@ class Admin::UsersController < ApplicationController
   end
 
   def user_params
-    params.require(:user).permit(:email, :password, :role, :can_upload_results, :phone)
+    params.require(:user).permit(:name, :email, :password, :role, :can_upload_results, :phone)
   end
 
   def require_super_admin

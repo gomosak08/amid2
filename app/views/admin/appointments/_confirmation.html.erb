@@ -61,7 +61,7 @@
         </p>
         <p class="text-lg">
           <strong class="font-semibold text-gray-700">Precio:</strong>
-          <span class="text-gray-800">$<%= @appointment.package.price %></span>
+          <span class="text-gray-800"><%= mxn(@appointment.package.price) %></span>
         </p>
       <% else %>
         <p class="text-lg text-red-500">

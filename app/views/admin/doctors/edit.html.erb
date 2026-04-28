@@ -40,10 +40,6 @@
       <button type="button" onclick="openTab('tab-calendario', this)" class="tab-btn inactive-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition">
         Calendario
       </button>
-
-      <button type="button" onclick="openTab('tab-bloqueos', this)" class="tab-btn inactive-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition">
-        Excepciones y Bloqueos
-      </button>
     </nav>
   </div>
 
@@ -95,306 +91,185 @@
   </div>
 
   <!-- TAB 2: CALENDARIO -->
-  <div id="tab-calendario" class="tab-content mt-4">
-  <!-- Calendario -->
-  <section class="mt-10 rounded-3xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-    <div class="border-b border-gray-100 bg-gray-50/70 px-6 py-5">
-      <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h3 class="text-2xl font-semibold text-gray-900">Calendario de citas</h3>
-          <p class="mt-1 text-sm text-gray-600">
-            Pasa el cursor sobre un evento para ver más detalles.
-          </p>
-        </div>
-
-        <span class="inline-flex rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-500">
-          Vista general de agenda
-        </span>
-      </div>
-    </div>
-
-    <div class="p-6"
-         data-controller="doctor-calendar"
-         data-doctor-calendar-events-url-value="<%= calendar_events_admin_doctor_path(@doctor) %>">
-
-      <div class="overflow-hidden rounded-3xl border border-gray-200 bg-white">
-        <div class="flex flex-col gap-2 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+  <div id="tab-calendario" class="tab-content mt-8">
+    <section class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+      <div class="border-b border-gray-100 bg-slate-50 px-5 py-5 sm:px-6">
+        <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div>
-            <div class="text-sm font-semibold text-gray-800">Vista calendario</div>
-            <div class="text-xs text-gray-500">Consulta citas, horarios ocupados y detalles del evento.</div>
+            <h3 class="text-2xl font-semibold text-gray-900">Agenda y Excepciones</h3>
+            <p class="mt-1 text-sm text-gray-600">
+              Haz clic o arrastra sobre el calendario para bloquear fechas/horas, o haz clic en una cita para ver detalles.
+            </p>
           </div>
 
-          <div class="text-xs text-gray-500">
-            Tip: coloca el cursor sobre una cita
+          <div class="flex flex-wrap gap-2 text-xs font-medium">
+            <span class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-blue-700">
+              <span class="h-2.5 w-2.5 rounded-full bg-blue-500"></span>
+              Citas
+            </span>
+            <span class="inline-flex items-center gap-2 rounded-full border border-red-100 bg-red-50 px-3 py-1 text-red-700">
+              <span class="h-2.5 w-2.5 rounded-full bg-red-500"></span>
+              Día bloqueado
+            </span>
+            <span class="inline-flex items-center gap-2 rounded-full border border-orange-100 bg-orange-50 px-3 py-1 text-orange-700">
+              <span class="h-2.5 w-2.5 rounded-full bg-orange-500"></span>
+              Horario bloqueado
+            </span>
           </div>
-        </div>
-
-        <div class="p-4 sm:p-5">
-          <div data-doctor-calendar-target="calendar" class="min-h-[850px] rounded-2xl bg-white"></div>
         </div>
       </div>
 
-      <!-- Popover -->
-      <div data-doctor-calendar-target="popover"
-           class="fixed z-[9999] hidden max-w-sm rounded-2xl border border-gray-200 bg-white shadow-2xl">
-        <div class="p-4">
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <div data-doctor-calendar-target="popoverTitle" class="text-sm font-semibold text-gray-900"></div>
-              <div data-doctor-calendar-target="popoverMeta" class="mt-1 text-xs text-gray-600"></div>
+      <div class="grid gap-0 xl:grid-cols-[minmax(0,1fr)_360px]"
+           data-controller="doctor-calendar"
+           data-doctor-calendar-events-url-value="<%= calendar_events_admin_doctor_path(@doctor) %>">
+
+        <div class="min-w-0 border-b border-gray-200 p-3 sm:p-5 xl:border-b-0 xl:border-r relative">
+          <div class="doctor-calendar-shell">
+            <div data-doctor-calendar-target="calendar" class="doctor-calendar min-h-[680px]"></div>
+          </div>
+          
+          <!-- Modal Flotante de Creación de Bloqueo -->
+          <div data-doctor-calendar-target="blockModal"
+               class="absolute z-[40] hidden w-[320px] rounded-2xl border border-gray-200 bg-white shadow-2xl transition-all"
+               style="top: 50%; left: 50%; transform: translate(-50%, -50%);">
+            <div class="px-4 py-3 border-b border-gray-100 bg-slate-50 rounded-t-2xl flex justify-between items-center">
+              <h4 class="font-semibold text-gray-900 text-sm">Añadir Bloqueo</h4>
+              <button type="button" data-action="click->doctor-calendar#hideBlockModal" class="text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+            <div class="p-4">
+              <%= form_with url: create_unified_block_admin_doctor_path(@doctor), method: :post, local: true, class: "space-y-3" do |form| %>
+                <div class="grid grid-cols-2 gap-3 mb-2">
+                  <div>
+                    <label class="text-xs font-medium text-gray-500 mb-1 block">Fecha de inicio</label>
+                    <input type="date" name="start_date" data-doctor-calendar-target="blockStartDate" class="w-full text-sm rounded-lg border-gray-300 px-2 py-1.5 shadow-sm focus:border-red-400 focus:ring-1 focus:ring-red-200" required>
+                  </div>
+                  <div>
+                    <label class="text-xs font-medium text-gray-500 mb-1 block">Fecha de fin</label>
+                    <input type="date" name="end_date" data-doctor-calendar-target="blockEndDate" class="w-full text-sm rounded-lg border-gray-300 px-2 py-1.5 shadow-sm focus:border-red-400 focus:ring-1 focus:ring-red-200" required>
+                  </div>
+                  <div>
+                    <label class="text-xs font-medium text-gray-500 mb-1 block">Hora inicio</label>
+                    <input type="time" name="start_time" data-doctor-calendar-target="blockStartTime" class="w-full text-sm rounded-lg border-gray-300 px-2 py-1.5 shadow-sm focus:border-red-400 focus:ring-1 focus:ring-red-200">
+                  </div>
+                  <div>
+                    <label class="text-xs font-medium text-gray-500 mb-1 block">Hora fin</label>
+                    <input type="time" name="end_time" data-doctor-calendar-target="blockEndTime" class="w-full text-sm rounded-lg border-gray-300 px-2 py-1.5 shadow-sm focus:border-red-400 focus:ring-1 focus:ring-red-200">
+                  </div>
+                </div>
+
+                <div class="hidden">
+                  <span data-doctor-calendar-target="blockDisplay"></span>
+                </div>
+                
+                <label class="flex items-start gap-2 pt-2 cursor-pointer">
+                  <%= form.check_box :is_recurring, class: "mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" %>
+                  <span class="text-sm text-gray-700">Crear bloqueo semanal recurrente (sobre aplicar a los días seleccionados)</span>
+                </label>
+                
+                <div>
+                  <%= form.text_field :reason, placeholder: "Motivo (opcional)", class: "w-full text-sm rounded-lg border-gray-300 px-3 py-2 shadow-sm focus:border-red-400 focus:ring-1 focus:ring-red-200" %>
+                </div>
+
+                <div class="pt-2">
+                  <button type="submit" class="w-full justify-center inline-flex items-center rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 transition">
+                    Crear bloqueo
+                  </button>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+
+        <aside class="bg-slate-50/70 p-5 hidden xl:flex xl:flex-col overflow-y-auto max-h-[850px]">
+          
+          <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm mb-6 shrink-0">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <p class="text-xs font-semibold uppercase text-gray-500">Día seleccionado</p>
+                <h4 data-doctor-calendar-target="selectedDate" class="mt-1 text-lg font-semibold text-gray-900"></h4>
+              </div>
+              <span data-doctor-calendar-target="dayCount" class="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600"></span>
             </div>
 
-            <button type="button"
-                    data-action="click->doctor-calendar#hidePopover"
-                    class="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition">
-              ✕
-            </button>
+            <div data-doctor-calendar-target="daySummary" class="mt-4 space-y-3"></div>
+
+            <div data-doctor-calendar-target="dayEmpty" class="mt-4 rounded-xl border border-dashed border-gray-300 bg-gray-50 px-4 py-6 text-center">
+              <p class="text-sm font-medium text-gray-700">Sin eventos en este día</p>
+            </div>
           </div>
 
-          <div data-doctor-calendar-target="popoverBody" class="mt-3 text-sm text-gray-700"></div>
-          <div data-doctor-calendar-target="popoverFooter" class="mt-3 text-xs text-gray-500"></div>
-        </div>
-      </div>
-    </div>
-  </section>
-</div>
-  </div>
-
-  <!-- TAB 3: BLOQUEOS -->
-  <div id="tab-bloqueos" class="tab-content mt-8">
-
-  <!-- Resumen -->
-  <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-    <div class="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-5 shadow-sm">
-      <div class="flex items-center justify-between">
-        <div>
-          <p class="text-sm font-medium text-blue-700">Doctor</p>
-          <p class="mt-1 text-lg font-semibold text-gray-900"><%= @doctor.name %></p>
-        </div>
-        <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-blue-600 shadow-sm border border-blue-100">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A9 9 0 1118.88 17.804M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-          </svg>
-        </div>
-      </div>
-    </div>
-
-    <div class="rounded-2xl border border-red-100 bg-gradient-to-br from-red-50 to-white p-5 shadow-sm">
-      <div class="flex items-center justify-between">
-        <div>
-          <p class="text-sm font-medium text-red-700">Bloqueos por día</p>
-          <p class="mt-1 text-2xl font-bold text-gray-900"><%= @unavailabilities.size %></p>
-        </div>
-        <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-red-600 shadow-sm border border-red-100">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-12.728 12.728M5.636 5.636l12.728 12.728"/>
-          </svg>
-        </div>
-      </div>
-    </div>
-
-    <div class="rounded-2xl border border-orange-100 bg-gradient-to-br from-orange-50 to-white p-5 shadow-sm">
-      <div class="flex items-center justify-between">
-        <div>
-          <p class="text-sm font-medium text-orange-700">Bloqueos recurrentes</p>
-          <p class="mt-1 text-2xl font-bold text-gray-900"><%= @time_blocks.size %></p>
-        </div>
-        <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-orange-600 shadow-sm border border-orange-100">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3M12 22a10 10 0 100-20 10 10 0 000 20z"/>
-          </svg>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════════ BLOQUEO POR DÍA ═══════════ -->
-  <div class="mt-10 grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
-
-    <section class="xl:col-span-7 rounded-3xl border border-gray-200 bg-white shadow-sm overflow-hidden"
-             data-controller="block-picker">
-
-      <div class="border-b border-gray-100 px-6 py-5 bg-gradient-to-r from-red-50 to-white">
-        <div class="inline-flex rounded-full border border-red-200 bg-white px-3 py-1 text-xs font-semibold text-red-700">Día completo</div>
-        <h3 class="mt-3 text-xl font-semibold text-gray-900">Bloquear días</h3>
-        <p class="mt-1 text-sm text-gray-600">Haz clic en un día o arrastra para seleccionar un rango. Úsalo para vacaciones, congresos o días no laborables.</p>
-      </div>
-
-      <div class="p-6">
-        <div class="overflow-hidden rounded-2xl border border-gray-100 bg-gray-50 p-3">
-          <div data-block-picker-target="dayCalendar" class="min-h-[340px]"></div>
-        </div>
-
-        <div class="mt-4 flex items-center gap-3 rounded-2xl border border-dashed border-red-200 bg-red-50/50 px-4 py-3">
-          <span class="text-lg">📅</span>
-          <span data-block-picker-target="dayDisplay" class="text-sm font-medium text-red-700">Ningún día seleccionado</span>
-        </div>
-
-        <%= form_with url: mark_unavailable_range_admin_doctor_path(@doctor), method: :post, local: true, class: "mt-5 space-y-4" do |form| %>
-          <input type="hidden" name="start_date" data-block-picker-target="startDate">
-          <input type="hidden" name="end_date"   data-block-picker-target="endDate">
-
-          <div>
-            <%= form.label :reason, "Motivo (opcional)", class: "mb-2 block text-sm font-medium text-gray-700" %>
-            <%= form.text_field :reason, placeholder: "Vacaciones / Congreso / Permiso / etc.",
-                  class: "block w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm focus:border-red-400 focus:ring-2 focus:ring-red-200" %>
-          </div>
-
-          <div class="flex items-center gap-3">
-            <button type="submit"
-                    data-block-picker-target="daySubmit"
-                    disabled
-                    class="inline-flex items-center justify-center rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-red-700 transition disabled:opacity-40 disabled:cursor-not-allowed">
-              Bloquear días seleccionados
-            </button>
-            <button type="button"
-                    data-action="click->block-picker#clearDaySelection"
-                    class="text-sm text-gray-500 hover:text-gray-700 transition">
-              Limpiar selección
-            </button>
-          </div>
-        <% end %>
-      </div>
-    </section>
-
-    <aside class="xl:col-span-5 rounded-3xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-      <div class="border-b border-gray-100 px-6 py-5 bg-red-50/50">
-        <h4 class="text-lg font-semibold text-gray-900">Bloqueos por día activos</h4>
-        <p class="mt-1 text-sm text-gray-600">Haz clic en "Eliminar" para quitar uno.</p>
-      </div>
-      <div class="p-6">
-        <% if @unavailabilities.present? %>
-          <div class="max-h-[480px] overflow-y-auto pr-1 space-y-3">
-            <% @unavailabilities.each do |u| %>
-              <div class="flex items-start justify-between gap-4 rounded-2xl border border-gray-200 bg-white p-4">
-                <div class="min-w-0">
-                  <div class="text-sm font-semibold text-gray-900"><%= I18n.l(u.date) %></div>
-                  <% if u.reason.present? %>
-                    <p class="mt-1 text-sm text-gray-600 break-words"><%= u.reason %></p>
-                  <% else %>
-                    <p class="mt-1 text-xs text-gray-400">Sin motivo registrado</p>
-                  <% end %>
-                </div>
-                <%= button_to "Eliminar",
-                      destroy_unavailability_admin_doctor_path(@doctor),
-                      method: :delete,
-                      params: { unavailability_id: u.id },
-                      data: { turbo_confirm: "¿Eliminar el bloqueo del #{I18n.l(u.date)}?" },
-                      class: "shrink-0 inline-flex items-center rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 transition" %>
-              </div>
-            <% end %>
-          </div>
-        <% else %>
-          <div class="rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-6 py-10 text-center">
-            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-gray-200 text-gray-400 text-xl">📅</div>
-            <p class="mt-4 text-sm font-medium text-gray-700">No hay bloqueos por día</p>
-            <p class="mt-1 text-xs text-gray-500">Selecciona días en el calendario para crear uno.</p>
-          </div>
-        <% end %>
-      </div>
-    </aside>
-  </div>
-
-  <!-- ═══════════ BLOQUEO RECURRENTE ═══════════ -->
-  <div class="mt-10 grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
-
-    <section class="xl:col-span-7 rounded-3xl border border-gray-200 bg-white shadow-sm overflow-hidden"
-             data-controller="block-picker">
-
-      <div class="border-b border-gray-100 px-6 py-5 bg-gradient-to-r from-orange-50 to-white">
-        <div class="inline-flex rounded-full border border-orange-200 bg-white px-3 py-1 text-xs font-semibold text-orange-700">Horario recurrente</div>
-        <h3 class="mt-3 text-xl font-semibold text-gray-900">Bloquear horas semanales</h3>
-        <p class="mt-1 text-sm text-gray-600">Arrastra un bloque de tiempo sobre el día de la semana que deseas bloquear. Puedes agregar varios días arrastrando uno por uno.</p>
-      </div>
-
-      <div class="p-6">
-        <div class="mb-4 flex items-start gap-3 rounded-2xl border border-orange-100 bg-orange-50/60 px-4 py-3 text-sm text-orange-800">
-          <span class="mt-0.5">💡</span>
-          <span>Arrastra sobre una columna de día para seleccionar el horario bloqueado. Arrastra en otros días para acumular selecciones con el mismo horario.</span>
-        </div>
-
-        <div class="overflow-hidden rounded-2xl border border-gray-100 bg-gray-50 p-3">
-          <div data-block-picker-target="weekCalendar" class="min-h-[520px]"></div>
-        </div>
-
-        <div class="mt-4 flex items-center gap-3 rounded-2xl border border-dashed border-orange-200 bg-orange-50/50 px-4 py-3">
-          <span class="text-lg">🕐</span>
-          <span data-block-picker-target="timeDisplay" class="text-sm font-medium text-orange-700">Ningún horario seleccionado</span>
-        </div>
-
-        <%= form_with url: create_time_block_admin_doctor_path(@doctor), method: :post, local: true, class: "mt-5 space-y-4" do |form| %>
-          <input type="hidden" name="starts_at"    data-block-picker-target="startsAt">
-          <input type="hidden" name="ends_at"      data-block-picker-target="endsAt">
-          <input type="hidden" name="days_of_week_json" data-block-picker-target="daysOfWeek" value="[]">
-
-          <div>
-            <%= form.label :reason, "Etiqueta o motivo (opcional)", class: "mb-2 block text-sm font-medium text-gray-700" %>
-            <%= form.text_field :reason, placeholder: "Comida / Junta / Clase / Procedimiento / etc.",
-                  class: "block w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200" %>
-          </div>
-
-          <div class="flex items-center gap-3 flex-wrap">
-            <button type="submit"
-                    data-block-picker-target="timeSubmit"
-                    disabled
-                    class="inline-flex items-center justify-center rounded-xl bg-orange-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-orange-700 transition disabled:opacity-40 disabled:cursor-not-allowed">
-              Crear bloqueo recurrente
-            </button>
-            <button type="button"
-                    data-action="click->block-picker#clearWeekSelection"
-                    class="text-sm text-gray-500 hover:text-gray-700 transition">
-              Limpiar selección
-            </button>
-          </div>
-        <% end %>
-      </div>
-    </section>
-
-    <aside class="xl:col-span-5 rounded-3xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-      <div class="border-b border-gray-100 px-6 py-5 bg-orange-50/50">
-        <h4 class="text-lg font-semibold text-gray-900">Bloqueos recurrentes activos</h4>
-        <p class="mt-1 text-sm text-gray-600">Haz clic en "Eliminar" para quitar uno.</p>
-      </div>
-      <div class="p-6">
-        <% if @time_blocks.present? %>
-          <div class="max-h-[520px] overflow-y-auto pr-1 space-y-3">
-            <% day_names = %w[Dom Lun Mar Mié Jue Vie Sáb] %>
-            <% @time_blocks.each do |b| %>
-              <div class="flex items-start justify-between gap-4 rounded-2xl border border-gray-200 bg-white p-4">
-                <div class="min-w-0">
-                  <div class="text-sm font-semibold text-gray-900">
-                    <%= b.starts_at.strftime("%H:%M") %> – <%= b.ends_at.strftime("%H:%M") %>
+          <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm shrink-0">
+            <p class="text-xs font-semibold uppercase text-gray-500 mb-3">Mis Bloqueos Activos</p>
+            
+            <% if @unavailabilities.present? || @time_blocks.present? %>
+              <div class="space-y-4">
+                <% if @unavailabilities.present? %>
+                  <div class="text-[10px] font-bold uppercase text-red-600 tracking-wider">Fechas Específicas</div>
+                  <div class="space-y-2">
+                    <% @unavailabilities.each do |u| %>
+                      <div class="flex items-center justify-between gap-2 border-b border-gray-100 pb-2 last:border-0 last:pb-0">
+                        <div class="min-w-0 flex-1">
+                          <p class="text-xs font-semibold text-gray-800"><%= I18n.l(u.date, format: :short) %></p>
+                          <p class="text-[10px] text-gray-500 truncate"><%= u.start_time.present? ? "#{u.start_time.strftime('%H:%M')} - #{u.end_time.strftime('%H:%M')}" : "Todo el día" %> <%= "- #{u.reason}" if u.reason.present? %></p>
+                        </div>
+                        <%= button_to destroy_unavailability_admin_doctor_path(@doctor), method: :delete, params: { unavailability_id: u.id }, title: "Eliminar", class: "text-gray-400 hover:text-red-600 p-1" do %>
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        <% end %>
+                      </div>
+                    <% end %>
                   </div>
-                  <p class="mt-1 text-xs text-gray-600">
-                    Días: <%= Array(b.days_of_week).map { |d| day_names[d.to_i] }.join(", ") %>
-                  </p>
-                  <% if b.reason.present? %>
-                    <p class="mt-1 text-sm text-gray-600 break-words"><%= b.reason %></p>
-                  <% else %>
-                    <p class="mt-1 text-xs text-gray-400">Sin etiqueta</p>
-                  <% end %>
-                </div>
-                <%= button_to "Eliminar",
-                      destroy_time_block_admin_doctor_path(@doctor),
-                      method: :delete,
-                      params: { time_block_id: b.id },
-                      data: { turbo_confirm: "¿Eliminar este bloqueo recurrente?" },
-                      class: "shrink-0 inline-flex items-center rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 transition" %>
+                <% end %>
+
+                <% if @time_blocks.present? %>
+                  <div class="text-[10px] font-bold uppercase text-orange-600 tracking-wider pt-2">Recurrentes</div>
+                  <div class="space-y-2">
+                    <% day_names = %w[D L M X J V S] %>
+                    <% @time_blocks.each do |b| %>
+                      <div class="flex items-center justify-between gap-2 border-b border-gray-100 pb-2 last:border-0 last:pb-0">
+                        <div class="min-w-0 flex-1">
+                          <p class="text-xs font-semibold text-gray-800"><%= Array(b.days_of_week).map { |d| day_names[d.to_i] }.join(",") %> | <%= b.starts_at.strftime("%H:%M") %>-<%= b.ends_at.strftime("%H:%M") %></p>
+                          <p class="text-[10px] text-gray-500 truncate"><%= b.reason.presence || "Sin motivo" %></p>
+                        </div>
+                        <%= button_to destroy_time_block_admin_doctor_path(@doctor), method: :delete, params: { time_block_id: b.id }, title: "Eliminar", class: "text-gray-400 hover:text-red-600 p-1" do %>
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        <% end %>
+                      </div>
+                    <% end %>
+                  </div>
+                <% end %>
               </div>
+            <% else %>
+              <p class="text-xs text-gray-400 italic">No hay bloqueos activos.</p>
             <% end %>
           </div>
-        <% else %>
-          <div class="rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-6 py-10 text-center">
-            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-gray-200 text-gray-400 text-xl">🕐</div>
-            <p class="mt-4 text-sm font-medium text-gray-700">No hay bloqueos recurrentes</p>
-            <p class="mt-1 text-xs text-gray-500">Arrastra en el calendario semanal para crear uno.</p>
-          </div>
-        <% end %>
-      </div>
-    </aside>
-  </div>
 
-  </div><!-- /tab-bloqueos -->
+        </aside>
+
+        <!-- Popover -->
+        <div data-doctor-calendar-target="popover"
+             class="fixed z-[9999] hidden max-w-sm rounded-2xl border border-gray-200 bg-white shadow-2xl">
+          <div class="p-4">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <div data-doctor-calendar-target="popoverTitle" class="text-sm font-semibold text-gray-900"></div>
+                <div data-doctor-calendar-target="popoverMeta" class="mt-1 text-xs text-gray-600"></div>
+              </div>
+
+              <button type="button"
+                      data-action="click->doctor-calendar#hidePopover"
+                      class="rounded-lg p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
+                      aria-label="Cerrar detalles">
+                x
+              </button>
+            </div>
+
+            <div data-doctor-calendar-target="popoverBody" class="mt-3 text-sm text-gray-700"></div>
+            <div data-doctor-calendar-target="popoverFooter" class="mt-3 text-xs text-gray-500"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
 </div><!-- /mx-auto max-w container -->
 
 <script>

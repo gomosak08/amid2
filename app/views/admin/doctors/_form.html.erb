@@ -73,6 +73,12 @@
                 class: "block w-full rounded-xl border border-blue-200 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500" %>
           </div>
           <div>
+            <%= uf.label :phone, "Teléfono (Obligatorio)", class: "block text-sm font-semibold text-blue-900 mb-2" %>
+            <%= uf.telephone_field :phone,
+                placeholder: "10 dígitos",
+                class: "block w-full rounded-xl border border-blue-200 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500" %>
+          </div>
+          <div>
             <%= uf.label :password, class: "block text-sm font-semibold text-blue-900 mb-2" do %>
               Contraseña
               <% if uf.object.persisted? %>

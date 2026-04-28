@@ -9,15 +9,14 @@ class Admin::AppointmentsController < ApplicationController
   before_action :require_results_permission, only: [ :attach_results, :remove_result ]
 
   def new
-    @ctx      = Admin::Forms::AppointmentAdminFormContext.call(params: params, appointment: Appointment.new)
-    @packages = @ctx[:packages]
+    redirect_to new_appointment_path(package_id: params[:package_id]), status: :see_other
   end
 
   def index
     @doctors = Doctor.order(:name)
 
     scope = Appointment
-              .includes(:doctor, :package)
+              .includes(:doctor, :package, :created_by)
               .order(start_date: :desc)
 
     # Restricción de permisos para médicos
@@ -72,6 +71,15 @@ class Admin::AppointmentsController < ApplicationController
       else
         scope = scope.where(status: statuses)
       end
+    end
+
+    # Agendada por (scheduled_by)
+    scheduled_bys = Array(params[:scheduled_bys]).reject(&:blank?)
+    scheduled_bys << params[:scheduled_by] if params[:scheduled_by].present?
+    scheduled_bys = scheduled_bys.flatten.reject(&:blank?).uniq
+
+    if scheduled_bys.any?
+      scope = scope.where(scheduled_by: scheduled_bys)
     end
 
     @appointments = scope

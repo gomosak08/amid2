@@ -241,7 +241,7 @@
 
     <% if package.respond_to?(:price) && package.price.present? %>
       <div class="amid-card-price">
-        $<%= number_with_precision(package.price, precision: 2, delimiter: ",") %>
+        <%= mxn(package.price) %>
       </div>
     <% end %>
   </div>
@@ -277,7 +277,7 @@
       </span>
     </div>
 
-    <div class="amid-card-desc" data-toggle-description-target="content">
+    <div class="amid-card-desc" data-toggle-description-target="description">
       <div class="amid-card-desc-box">
         <%= description_text %>
       </div>
