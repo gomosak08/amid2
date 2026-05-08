@@ -188,6 +188,7 @@ class Appointment < ApplicationRecord
     overlapping_appointment = Appointment
       .where(doctor_id: doctor_id)
       .where(start_date: start_date)
+      .where(status: :scheduled)
       .where.not(id: id)
 
     if overlapping_appointment.exists?

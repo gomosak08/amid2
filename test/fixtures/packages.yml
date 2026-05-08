@@ -3,13 +3,11 @@
 one:
   name: MyString
   description: MyText
-  image: MyString
   price: 9.99
   duration: 1
 
 two:
   name: MyString
   description: MyText
-  image: MyString
   price: 9.99
   duration: 1

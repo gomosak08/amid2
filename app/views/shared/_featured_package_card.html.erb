@@ -35,7 +35,7 @@
 
     .amid-card-image-stage{
       width:100%;
-      height:220px;
+      aspect-ratio: 3 / 2;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -46,7 +46,7 @@
     .amid-card-image{
       width:100%;
       height:100%;
-      object-fit:cover;
+      object-fit:contain;
       object-position:center;
       border-radius:14px;
       display:block;
@@ -130,6 +130,18 @@
       line-height:1.2;
       font-weight:900;
       color:#0f172a;
+    }
+
+    .amid-card-title-link{
+      color:inherit;
+      text-decoration:none;
+      transition: color .18s ease;
+    }
+
+    .amid-card-title-link:hover{
+      color:#2563eb;
+      text-decoration:underline;
+      text-underline-offset:3px;
     }
 
     .amid-card-pills{
@@ -261,7 +273,9 @@
       </button>
     </div>
 
-    <h3 class="amid-card-title"><%= package.name %></h3>
+    <h3 class="amid-card-title">
+      <%= link_to package.name, package_path(package), class: "amid-card-title-link" %>
+    </h3>
 
     <div class="amid-card-pills">
       <% if package.respond_to?(:duration) && package.duration.present? %>

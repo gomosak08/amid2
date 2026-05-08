@@ -39,7 +39,7 @@ export default class extends Controller {
       slotMinTime: "07:00:00",
       slotMaxTime: "21:00:00",
       slotDuration: "00:30:00",
-      selectable: true,
+      selectable: false,
       unselectAuto: false,
       eventTimeFormat: {
         hour: "2-digit",
@@ -62,9 +62,6 @@ export default class extends Controller {
       navLinkDayClick: "timeGridDay",
       dateClick: (info) => {
         this.openDay(info.date)
-      },
-      select: (info) => {
-        this.showBlockModal(info)
       },
 
       events: (info, success, failure) => {
@@ -133,6 +130,19 @@ export default class extends Controller {
     this._selectedDate = this.toDateKey(date)
     this.calendar.changeView("timeGridDay", date)
     this.renderDaySummary()
+  }
+
+  openBlockModalForSelectedDate() {
+    const dateKey = this._selectedDate || this.toDateKey(new Date())
+    const endDate = this.dateKeyToLocalDate(dateKey)
+    endDate.setDate(endDate.getDate() + 1)
+
+    this.showBlockModal({
+      start: this.dateKeyToLocalDate(dateKey),
+      end: endDate,
+      startStr: dateKey,
+      allDay: true
+    })
   }
 
   renderDaySummary() {

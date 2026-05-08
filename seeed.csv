@@ -1,0 +1,50 @@
+nombre,precio,descripcion,duracion_minutos
+Ultrasonido Abdominal,399,"Incluye revisión de Hígado, Vesícula Biliar, Riñones, Bazo y Páncreas. Se requiere ayuno de por lo menos 6Hrs. Duración 30 Minutos.",30
+Ultrasonido de Próstata,399,"Valoración de próstata y vejiga. Se requiere ingerir 2 litros de Agua 1.5hrs antes del estudio. Duración 30 minutos.",30
+Ultrasonido de Tiroides,399,"Valoración de Tiroides. No se requiere preparación. Duración 30 minutos.",30
+Ultrasonido Renal,399,"Valoración de riñones y vejiga. Se requiere ingerir 2 litros de Agua 1.5hrs antes del estudio. Duración 30 minutos.",30
+Ultrasonido de Embarazo,499,"– Ultrasonido – DVD en la primera – Consulta – Tiempo estimado de duración: 40 minutos * No se requiere preparación a partir de la 5 semana de embarazo.",40
+Ultrasonido de Abdomen,399,"– Hígado, vía Biliar, ambos Riñones, Bazo y Páncreas – Consulta – Tiempo estimado de estudio 40 minutos * Se requiere no estar en su periodo menstrual y abstinencia sexual de 24 horas",40
+Ultrasonido de Riñón,399,"– Ambos Riñones – Tiempo estimado de estudio 30 minutos * Se requiere no estar en su periodo menstrual y abstinencia sexual de 24 horas.",30
+Ultrasonido de Mama,399,"– Ultrasonido Mamario Bilateral – Tiempo estimado de estudio 30 minutos * No se requiere preparación.",30
+Ultrasonido de Hígado,399,"– Hígado y vía Biliar – Consulta – Tiempo estimado de duración: 30 minutos * Se requiere ayuno de 6 horas.",30
+Ultrasonido Testicular,599,"– Testicular Bilateral – Tiempo estimado de estudio: 30 minutos * No requiere preparación",30
+Ultrasonido 4D y 5D,999,"– Ultrasonido enfocado a la detección de la cara de tu bebé – DVD del estudio – Tiempo estimado de estudio 1 hora * Se sugiere realizar el ultrasonido de la 22 a 32 semanas de gestación.",60
+Ultrasonido 11 a 14 semanas,999,"Presentarse entre las 11 a 14 semanas de gestación. Duración 40 minutos.",40
+Ultrasonido de Rodilla,699,"Valoración de ligamentos de la rodilla. No se requiere preparación. Duración 30 minutos.",30
+Ultrasonido de Hombro,699,"Revisión de manguito rotador. No se requiere preparación. Duración 30 minutos.",30
+Ultrasonido Doppler,1000,"– Ultrasonido Doppler con impresión de resultados – Tiempo estimado de estudio 1 hora * No requiere preparación",60
+Ultrasonido Estructural,999,"Presentarse a partir de las 22 semanas de gestación. No se requiere preparación. Duración 60 minutos.",60
+Ultrasonido de Partes Blandas,699,"Revisión de lesiones en área de la piel y músculos No se requiere preparación. Duración 30 minutos.",30
+Ultrasonido de Vesícula Biliar,399,"Valoración de Vesícula Biliar. Se requiere ayuno de 6hrs. Duración 30minutos.",30
+Ultrasonido Arterial o Venoso,999,"Revisión de Arterias o venas por Doppler. No se requiere preparación. Duración 60 min.",60
+Blanqueamiento íntimo,2000,"",60
+Histeroscopia,3500,"",60
+Láser para incontinencia,4000,"",60
+Láser para cicatrices,1000,"",60
+Láser para estrías,2000,"",60
+Láser para VPH,6000,"",60
+Láser para rejuvenecimiento vaginal,4000,"",60
+Láser para verrugas genitales,4000,"",60
+Paquete Ginecológico,599,"– Papanicolau – Ultrasonido útero y ovarios – Consulta",60
+Paquete Mujer,999,"– Colposcopia – Vulvoscopia – Papanicolaou – Ultrasonido de útero o mamas – Consulta – Tiempo estimado de duración: 50 minutos * Se requiere que la paciente no esté en su periodo menstrual, 24 horas de abstinencia sexual y acudir con ropa cómoda.",60
+Paquete Colposcopia,699,"– Papanicolaou – Vaginoscopía – Vulvoscopía – Colposcopía – Consulta",60
+Parto y Cesárea,18000,"– Atención de trabajo de parto/cesárea incluye honorarios ginecológicos, pediatra, anestesiólogo – Tiempo de estudio 30 minutos * Honorarios de hospitalización se cubren por separado.",60
+Vacuna para VPH,3500,"",60
+Biopsia de Cérvix,3500,"",60
+Biopsia de Endometrio,3500,"",60
+Atención Psicológica,350,"",60
+OTB Laparoscópica,20000,"Se requiere consulta de valoración. honorarios hospitalarios se cubren por separado.",60
+OTB Abierta,18000,"Se requiere consulta de valoración. honorarios hospitalarios se cubren por separado.",60
+Retiro de Quiste Laparoscópica (Cistectomía),25000,"Se requiere consulta de valoración. honorarios hospitalarios se cubren por separado.",60
+Retiro de Quistes Abierta (Cistectomía),20000,"Se requiere consulta de valoración. honorarios hospitalarios se cubren por separado.",60
+Miomectomía Laparoscópica,25000,"Se requiere consulta de valoración. honorarios hospitalarios se cubren por separado.",60
+Miomectomía Abierta,20000,"Se requiere consulta de valoración. honorarios hospitalarios se cubren por separado.",60
+Histerectomía Laparoscópica,30000,"Se requiere consulta de valoración. honorarios hospitalarios se cubren por separado.",60
+Histerectomía Abierta,27000,"Se requiere consulta de valoración. honorarios hospitalarios se cubren por separado.",60
+Parto,18000,"Se requiere consulta de valoración. honorarios hospitalarios se cubren por separado.",60
+Cesárea,18000,"Se requiere consulta de valoración. honorarios hospitalarios se cubren por separado.",60
+Histeroscopia Diagnostica,3500,"Se requiere consulta de valoración. honorarios hospitalarios se cubren por separado.",60
+Histeroscopia Quirúrgica,15000,"Se requiere consulta de valoración. honorarios hospitalarios se cubren por separado.",60
+Retiro de Verrugas,2000,"Dependiendo extensión de área afectada, se requiere consulta de valoración.",60
+Retiro de Lesión del VPH con láser,7000,"Dependiendo extensión de área afectada, se requiere consulta de valoración.",60

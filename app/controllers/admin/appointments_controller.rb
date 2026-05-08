@@ -86,16 +86,15 @@ class Admin::AppointmentsController < ApplicationController
   end
 
   def cancel
-    id = @appointment.google_calendar_id
-    User::GoogleCalendar::Events::Delete.call(event_id: id) if id.present?
-
-    if @appointment.update(status: "canceled_by_admin", canceled_at: Time.current)
-      flash[:notice] = "Appointment successfully canceled."
-      redirect_to admin_appointments_path
-    else
-      flash[:alert] = "Failed to cancel the appointment. Please try again."
+    User::Appointments::Cancel.call(appointment: @appointment, by: :admin)
+    if @appointment.reload.canceled_by_admin?
+      flash[:notice] = "Cita cancelada correctamente."
       redirect_to admin_appointments_path
     end
+  rescue => e
+    Rails.logger.warn("Admin cancel failed appt=#{@appointment&.id}: #{e.class} - #{e.message}")
+    flash[:alert] = "No se pudo cancelar la cita. Intenta de nuevo."
+    redirect_to admin_appointments_path
   end
 
   def create
@@ -154,7 +153,7 @@ class Admin::AppointmentsController < ApplicationController
     respond_to do |format|
       format.html
       format.pdf do
-        logo_path = Rails.root.join("public/logo.png")
+        logo_path = Rails.root.join("app/assets/images/logo.png")
         pdf = User::Pdf::AppointmentPdf.new(@appointment, logo_path: logo_path).render
 
         send_data pdf,
@@ -223,7 +222,7 @@ class Admin::AppointmentsController < ApplicationController
   end
 
   def destroy
-    Appointments::Cancel.call(appointment: @appointment, by: (current_user&.role || :admin))
+    User::Appointments::Cancel.call(appointment: @appointment, by: (current_user&.role || :admin))
     redirect_to admin_appointments_path, notice: "Cita cancelada correctamente.", status: :see_other
   end
 

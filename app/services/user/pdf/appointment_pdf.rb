@@ -9,9 +9,8 @@ module User::Pdf
     end
 
     def render
-      Prawn::Document.new(page_size: "A4", margin: [ 90, 36, 36, 36 ]) do |pdf|
+      Prawn::Document.new(page_size: "A4", margin: [ 42, 42, 50, 42 ]) do |pdf|
         setup_fonts(pdf)
-        draw_header_band(pdf)   # <- ahora existe
         draw_header(pdf)
         draw_main_card(pdf)
         draw_instructions(pdf)
@@ -28,9 +27,14 @@ module User::Pdf
     def palette
       @palette ||= {
         brand:     @brand_hex,
-        light_bg:  hex("F5F7FB"),
-        border:    hex("DDDEE3"),
-        text_gray: hex("4A4A4A")
+        brand_dark: hex("1D4ED8"),
+        light_bg:  hex("F8FAFC"),
+        soft_blue: hex("EFF6FF"),
+        border:    hex("DDE7F3"),
+        text:      hex("0F172A"),
+        text_gray: hex("475569"),
+        muted:     hex("64748B"),
+        success_bg: hex("DCFCE7")
       }
     end
 
@@ -61,135 +65,215 @@ module User::Pdf
 
     # ---------- secciones ----------
     def setup_fonts(pdf)
-      begin
-        pdf.font_families.update(
-          "Inter" => {
-            normal: Rails.root.join("app/assets/fonts/Inter-Regular.ttf"),
-            bold:   Rails.root.join("app/assets/fonts/Inter-Bold.ttf"),
-            medium: Rails.root.join("app/assets/fonts/Inter-Medium.ttf")
-          }
-        )
-        pdf.font "Inter"
-      rescue
-        # usa default si no hay fuentes
-      end
+      font = pdf_font_paths
+      return if font.blank?
+
+      pdf.font_families.update(
+        "AmidSans" => {
+          normal: font[:normal],
+          bold: font[:bold]
+        }
+      )
+      pdf.font "AmidSans"
+    rescue
+      # Usa la fuente default si el entorno no tiene fuentes TrueType disponibles.
     end
 
-    # <- ESTA ES LA QUE FALTABA
-    def draw_header_band(pdf)
-      header_offset = 24
-      with_g(pdf) do
-        pdf.fill_color palette[:light_bg]
-        pdf.fill_rounded_rectangle [ pdf.bounds.left, pdf.cursor + 50 - header_offset ],
-                                   pdf.bounds.width, 80, 10
-      end
-      pdf.move_down header_offset
+    def pdf_font_paths
+      candidates = [
+        {
+          normal: Rails.root.join("app/assets/fonts/Inter-Regular.ttf"),
+          bold: Rails.root.join("app/assets/fonts/Inter-Bold.ttf")
+        },
+        {
+          normal: Pathname.new("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"),
+          bold: Pathname.new("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf")
+        },
+        {
+          normal: Pathname.new("/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf"),
+          bold: Pathname.new("/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf")
+        }
+      ]
+
+      candidates.find { |paths| paths.values.all? { |path| File.exist?(path.to_s) } }
     end
 
     def draw_header(pdf)
-      generated_at = I18n.l(Time.zone.now, format: :custom, locale: :es)
+      generated_at = format_datetime(Time.zone.now)
+      header_h = 126
+      start_y = pdf.cursor
 
-      pdf.bounding_box([ pdf.bounds.left + 12, pdf.cursor + 60 ],
-                       width: pdf.bounds.width - 24, height: 80) do
-        if @logo_path.present? && File.exist?(@logo_path.to_s)
-          pdf.bounding_box([ 0, pdf.bounds.top ], width: 140, height: 60) do
-            with_g(pdf) { pdf.image @logo_path.to_s, fit: [ 120, 60 ] }
-          end
+      with_g(pdf) do
+        pdf.fill_color palette[:soft_blue]
+        pdf.fill_rounded_rectangle [ pdf.bounds.left, start_y ], pdf.bounds.width, header_h, 14
+        pdf.stroke_color palette[:border]
+        pdf.stroke_rounded_rectangle [ pdf.bounds.left, start_y ], pdf.bounds.width, header_h, 14
+      end
+
+      pdf.bounding_box([ pdf.bounds.left + 20, start_y - 20 ],
+                       width: pdf.bounds.width - 40, height: 90) do
+        if logo_available?
+          pdf.image @logo_path.to_s, fit: [ 112, 52 ], at: [ 0, 82 ]
+        else
+          pdf.fill_color palette[:brand]
+          pdf.text "AMID", size: 22, style: :bold
         end
 
-        pdf.fill_color palette[:brand]
-        pdf.text_box "Detalles de la Cita", size: 22, style: :bold, at: [ 160, 58 ], width: 340
-        pdf.fill_color palette[:text_gray]
-        pdf.text_box "Generado el #{generated_at}", size: 10, at: [ 160, 34 ], width: 340
+        pdf.fill_color palette[:brand_dark]
+        pdf.text_box "Confirmación\nde cita", size: 16, style: :bold, leading: 1, at: [ 132, 78 ], width: 178, height: 44
+        pdf.fill_color palette[:muted]
+        pdf.text_box "Generado el #{generated_at}", size: 8.5, at: [ 132, 28 ], width: 190
 
-        # badge de estado
-        badge_w = 120
-        bx      = pdf.bounds.width - badge_w
-        by      = 58
+        badge_w = 142
+        bx = pdf.bounds.width - badge_w
+        by = 78
         with_g(pdf) do
           pdf.fill_color status_color
-          pdf.fill_rounded_rectangle [ bx, by ], badge_w, 22, 6
+          pdf.fill_rounded_rectangle [ bx, by ], badge_w, 24, 7
           pdf.fill_color "FFFFFF"
-          pdf.bounding_box([ bx, by ], width: badge_w, height: 22) do
-            pdf.text @a.status_label.upcase, size: 10, style: :bold, align: :center, valign: :center
+          pdf.bounding_box([ bx, by ], width: badge_w, height: 24) do
+            pdf.text @a.status_label.upcase, size: 8.5, style: :bold, align: :center, valign: :center
           end
         end
+
+        pdf.fill_color palette[:text_gray]
+        pdf.text_box "Código: #{safe_text(@a.unique_code)}", size: 10.5, at: [ bx, 42 ], width: badge_w, align: :center
         pdf.fill_color "000000"
       end
 
-      pdf.move_down 28
+      pdf.move_cursor_to(start_y - header_h - 16)
     end
 
     def draw_main_card(pdf)
+      card_h = 244
+      start_y = pdf.cursor
+
       with_g(pdf) do
-        pdf.fill_color palette[:light_bg]
+        pdf.fill_color "FFFFFF"
         pdf.stroke_color palette[:border]
-        pdf.fill_rounded_rectangle [ pdf.bounds.left, pdf.cursor ], pdf.bounds.width, 160, 10
-        pdf.stroke_rounded_rectangle [ pdf.bounds.left, pdf.cursor ], pdf.bounds.width, 160, 10
-      end
-      pdf.move_down 12
-
-      col_w = (pdf.bounds.width - 24) / 2.0
-
-      # izquierda
-      pdf.bounding_box([ pdf.bounds.left + 12, pdf.cursor ], width: col_w, height: 140) do
-        text_pair(pdf, "Paciente",  @a.name, bold_value: true, value_size: 14)
-        text_pair(pdf, "Doctor(a)", @a.doctor&.name)
-        text_pair(pdf, "Paquete",   @a.package&.name)
+        pdf.fill_rounded_rectangle [ pdf.bounds.left, start_y ], pdf.bounds.width, card_h, 12
+        pdf.stroke_rounded_rectangle [ pdf.bounds.left, start_y ], pdf.bounds.width, card_h, 12
       end
 
-      # derecha
-      start_time_str = begin
-        I18n.l(@a.start_date.in_time_zone("America/Mexico_City"), format: :custom, locale: :es)
-      rescue
-        "N/A"
+      pdf.bounding_box([ pdf.bounds.left + 20, start_y - 18 ],
+                       width: pdf.bounds.width - 40, height: card_h - 30) do
+        pdf.fill_color palette[:brand_dark]
+        pdf.text "Datos de la cita", size: 14, style: :bold
+        pdf.move_down 12
+
+        package_box_y = pdf.cursor
+        with_g(pdf) do
+          pdf.fill_color palette[:soft_blue]
+          pdf.fill_rounded_rectangle [ 0, package_box_y ], pdf.bounds.width, 56, 8
+        end
+
+        pdf.bounding_box([ 14, package_box_y - 10 ], width: pdf.bounds.width - 28, height: 38) do
+          pdf.fill_color palette[:muted]
+          pdf.text "PAQUETE / ESTUDIO", size: 8.5, style: :bold
+          pdf.move_down 3
+          pdf.fill_color palette[:text]
+          pdf.text safe_text(@a.package&.name), size: 12.5, style: :bold, leading: 1
+        end
+
+        col_w = (pdf.bounds.width - 20) / 2.0
+        row_y = package_box_y - 82
+
+        pdf.bounding_box([ 0, row_y ], width: col_w, height: 102) do
+          text_pair(pdf, "Paciente", @a.name, bold_value: true, value_size: 14)
+          text_pair(pdf, "Doctor(a)", @a.doctor&.name)
+        end
+
+        pdf.bounding_box([ col_w + 20, row_y ], width: col_w, height: 102) do
+          text_pair(pdf, "Fecha y hora", appointment_start_text, bold_value: true)
+          text_pair(pdf, "Teléfono", @a.phone)
+        end
       end
 
-      pdf.bounding_box([ pdf.bounds.left + 24 + col_w, pdf.cursor + 140 ], width: col_w, height: 140) do
-        text_pair(pdf, "Fecha y hora", start_time_str)
-        text_pair(pdf, "Teléfono",     @a.phone)
-        text_pair(pdf, "Código único", @a.unique_code, bold_value: true)
-      end
-
-      pdf.move_down 22
+      pdf.move_cursor_to(start_y - card_h - 16)
     end
 
     def text_pair(pdf, label, value, label_size: 10, value_size: 12, bold_value: false)
-      pdf.fill_color palette[:text_gray]
-      pdf.text label, size: label_size
-      pdf.fill_color "000000"
-      pdf.text((value.presence || "N/A"), size: value_size, style: (bold_value ? :bold : :normal))
-      pdf.move_down 10
+      pdf.fill_color palette[:muted]
+      pdf.text label.to_s.upcase, size: label_size, style: :bold
+      pdf.move_down 2
+      pdf.fill_color palette[:text]
+      pdf.text safe_text(value), size: value_size, style: (bold_value ? :bold : :normal), leading: 1
+      pdf.move_down 11
     end
 
     def draw_instructions(pdf)
-      pdf.fill_color palette[:brand]
-      pdf.text "Indicaciones", size: 12, style: :bold
-      pdf.fill_color "000000"
-      pdf.move_down 6
-      pdf.text "• Presentarse 10 minutos antes de la hora programada."
-      pdf.text "• Llevar una identificación oficial y esta confirmación."
-      pdf.text "• El código único puede utilizarse para cancelar o reprogramar su cita (24 h de anticipación)."
-      pdf.text "• Si presenta síntomas el día de su cita, comuníquese para reprogramar."
-      pdf.move_down 18
+      box_h = 108
+      start_y = pdf.cursor
+      with_g(pdf) do
+        pdf.fill_color palette[:light_bg]
+        pdf.stroke_color palette[:border]
+        pdf.fill_rounded_rectangle [ pdf.bounds.left, start_y ], pdf.bounds.width, box_h, 12
+        pdf.stroke_rounded_rectangle [ pdf.bounds.left, start_y ], pdf.bounds.width, box_h, 12
+      end
+
+      pdf.bounding_box([ pdf.bounds.left + 20, start_y - 16 ],
+                       width: pdf.bounds.width - 40, height: box_h - 26) do
+        pdf.fill_color palette[:brand_dark]
+        pdf.text "Indicaciones", size: 13, style: :bold
+        pdf.move_down 8
+        pdf.fill_color palette[:text_gray]
+        [
+          "Presentarse 10 minutos antes de la hora programada.",
+          "Llevar una identificación oficial y esta confirmación.",
+          "Conserva tu código único para cualquier aclaración.",
+          "Usa el enlace o el QR para acceder a los detalles de esta cita."
+        ].each do |item|
+          pdf.text "- #{item}", size: 10, leading: 1.5
+        end
+      end
+
+      pdf.move_cursor_to(start_y - box_h - 16)
     end
 
     def draw_link_and_qr(pdf)
-      host  = Rails.application.routes.default_url_options[:host]
-      host  = host.to_s
-      host  = "https://#{host}" unless host.start_with?("http://", "https://")
-      token = @a.token.to_s
+      token = appointment_token
 
       if token.present?
-        url = "#{host}/appointments/#{token}/edit"
-        pdf.text "Para cancelar o reprogramar su cita, use:"
-        pdf.formatted_text [ { text: url, link: url, styles: [ :underline ] } ]
-        pdf.move_down 12
+        url = appointment_url(token)
+        box_h = 136
+        start_y = pdf.cursor
 
-        pdf.fill_color palette[:brand]
-        pdf.text "QR de confirmación", size: 12, style: :bold
-        pdf.fill_color "000000"
-        draw_qr(pdf, url, fg_hex: palette[:brand], module_size: 3)
+        if start_y - box_h < 54
+          pdf.start_new_page
+          start_y = pdf.cursor
+        end
+
+        with_g(pdf) do
+          pdf.fill_color "FFFFFF"
+          pdf.stroke_color palette[:border]
+          pdf.fill_rounded_rectangle [ pdf.bounds.left, start_y ], pdf.bounds.width, box_h, 12
+          pdf.stroke_rounded_rectangle [ pdf.bounds.left, start_y ], pdf.bounds.width, box_h, 12
+        end
+
+        pdf.bounding_box([ pdf.bounds.left + 20, start_y - 18 ],
+                         width: pdf.bounds.width - 40, height: box_h - 28) do
+          qr_size = 96
+
+          pdf.bounding_box([ 0, pdf.bounds.top ], width: pdf.bounds.width - qr_size - 28, height: 102) do
+            pdf.fill_color palette[:brand_dark]
+            pdf.text "Acceso a esta cita", size: 13, style: :bold
+            pdf.move_down 8
+            pdf.fill_color palette[:text_gray]
+            pdf.text "Escanea el QR o abre la liga para consultar, cancelar o reprogramar esta cita.", size: 10.5, leading: 2
+            pdf.move_down 8
+            pdf.fill_color palette[:muted]
+            pdf.text "Liga directa:", size: 8.5, style: :bold
+            pdf.move_down 2
+            pdf.formatted_text [ { text: url, link: url, styles: [ :underline ], color: palette[:brand_dark] } ],
+                               size: 9
+          end
+
+          pdf.bounding_box([ pdf.bounds.right - qr_size, pdf.bounds.top ], width: qr_size, height: qr_size) do
+            draw_qr(pdf, url, fg_hex: palette[:brand_dark], module_size: 2, quiet_zone: 3, move_after: false)
+          end
+        end
+
+        pdf.move_cursor_to(start_y - box_h - 8)
       else
         pdf.fill_color "E63946"
         pdf.text "No se pudo generar el QR ni el enlace: falta token de la cita.", size: 9
@@ -197,12 +281,12 @@ module User::Pdf
       end
     end
 
-    def draw_qr(pdf, payload, fg_hex:, module_size: 3, quiet_zone: 2)
+    def draw_qr(pdf, payload, fg_hex:, module_size: 3, quiet_zone: 2, move_after: true)
       begin
         require "rqrcode"
       rescue LoadError
         pdf.fill_color "E63946"
-        pdf.text "⚠︎ Instala la gema `rqrcode` para generar el QR.", size: 9
+        pdf.text "Instala la gema `rqrcode` para generar el QR.", size: 9
         pdf.fill_color "000000"
         return
       end
@@ -242,11 +326,11 @@ module User::Pdf
         end
       end
 
-      pdf.move_down px + 6
+      pdf.move_down px + 6 if move_after
       pdf.fill_color "000000"
     rescue => e
       pdf.fill_color "E63946"
-      pdf.text "Error al generar QR: #{e.class} — #{e.message}", size: 9
+      pdf.text "Error al generar QR: #{e.class} - #{e.message}", size: 9
       pdf.fill_color "000000"
     end
 
@@ -259,11 +343,55 @@ module User::Pdf
           pdf.stroke_horizontal_rule
           pdf.move_down 6
           pdf.fill_color palette[:text_gray]
-          pdf.text "Centro Médico — Tel. (55) 0000 0000 — soporte@centromedico.mx", size: 9, align: :center
-          pdf.text "Dirección: Avenida Salud 123, CDMX — www.centromedico.mx",       size: 9, align: :center
+          pdf.text "AMID - Comprobante de cita", size: 9, align: :center
+          pdf.text "Presenta este documento al llegar a tu consulta.", size: 9, align: :center
           pdf.fill_color "000000"
         end
       end
+    end
+
+    def logo_available?
+      @logo_path.present? && File.exist?(@logo_path.to_s)
+    end
+
+    def appointment_token
+      return @a.token if @a.token.present?
+      return unless @a.persisted?
+
+      token = SecureRandom.hex(16)
+      token = SecureRandom.hex(16) while Appointment.exists?(token: token)
+      @a.update_column(:token, token)
+      @a.token = token
+    rescue
+      nil
+    end
+
+    def appointment_start_text
+      format_datetime(@a.start_date&.in_time_zone("America/Mexico_City"))
+    rescue
+      "N/A"
+    end
+
+    def format_datetime(value)
+      return "N/A" if value.blank?
+
+      I18n.l(value, format: :custom, locale: :es)
+    rescue
+      value.to_s
+    end
+
+    def appointment_url(token)
+      defaults = Rails.application.routes.default_url_options
+      host = defaults[:host].to_s
+      protocol = defaults[:protocol].presence || "https"
+      host = "localhost:3000" if host.blank?
+      host = "#{protocol}://#{host}" unless host.start_with?("http://", "https://")
+
+      "#{host}/appointments/#{token}/edit"
+    end
+
+    def safe_text(value)
+      value.to_s.presence || "N/A"
     end
   end
 end

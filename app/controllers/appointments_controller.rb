@@ -91,7 +91,7 @@ class AppointmentsController < ApplicationController
       format.html
       format.turbo_stream { render partial: "appointments/show", locals: { appointment: @appointment } }
       format.pdf do
-        logo = Rails.root.join("public/logo.png")
+        logo = Rails.root.join("app/assets/images/logo.png")
         pdf  = User::Pdf::AppointmentPdf.new(@appointment, logo_path: logo).render
 
         send_data pdf,

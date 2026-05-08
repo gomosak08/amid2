@@ -25,7 +25,11 @@ sudo systemctl start puma_amid.service
 RAILS_ENV=production bundle exec puma -C config/puma.rb
 
 
-
+SendWhatsappMessageJob.perform_now(
+  to: "524433467251",
+  message_type: "confirmation",
+  appointment_id: 1
+)
 
 
 
@@ -76,4 +80,8 @@ ver detalles en home no funciona
 dondes esta hosteado 
 
 
+"#####################
+calendario de medicos añadir boton de añadir bloqueo 
+mejorar aspecto de pdf al generar cita 
 
+el cancelar citas no esta liberando la base de datos
