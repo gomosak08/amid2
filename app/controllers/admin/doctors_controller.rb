@@ -68,8 +68,8 @@ module Admin
         reason: reason
       )
 
-      redirect_to edit_admin_doctor_path(@doctor),
-                  notice: "Doctor marcado como no disponible para #{I18n.l(date)}."
+      failed_count = reassign_appointments_for_range(@doctor, date.beginning_of_day, (date + 1).beginning_of_day)
+      redirect_with_reassignment_feedback("Doctor marcado como no disponible para #{I18n.l(date)}.", failed_count)
     rescue ActiveRecord::RecordNotUnique
       redirect_to edit_admin_doctor_path(@doctor),
                   alert: "Ese día ya estaba marcado como no disponible."
@@ -91,7 +91,7 @@ module Admin
       is_recurring = params[:is_recurring] == "1" || params[:is_recurring] == "true"
 
       if end_date < start_date
-        redirect_to edit_admin_doctor_path(@doctor), alert: "El rengo es inválido."
+        redirect_to edit_admin_doctor_path(@doctor), alert: "El rango es inválido."
         return
       end
 
@@ -117,8 +117,7 @@ module Admin
           if block.save
             failed_count += reassign_appointments_for_recurring_block(@doctor, block)
             msg = "Bloqueo recurrente creado exitosamente para #{days.count} día(s) de la semana."
-            msg += " Atención: #{failed_count} cita(s) no pudieron ser reasignadas." if failed_count > 0
-            redirect_to edit_admin_doctor_path(@doctor), notice: msg
+            redirect_with_reassignment_feedback(msg, failed_count)
           else
             redirect_to edit_admin_doctor_path(@doctor), alert: "Error: #{block.errors.full_messages.to_sentence}"
           end
@@ -134,16 +133,14 @@ module Admin
             ) { |u| u.reason = reason }
             
             range_start = s_time ? Time.zone.local(date.year, date.month, date.day, s_time.hour, s_time.min) : date.beginning_of_day
-            range_end   = e_time ? Time.zone.local(date.year, date.month, date.day, e_time.hour, e_time.min) : date.end_of_day
+            range_end   = e_time ? Time.zone.local(date.year, date.month, date.day, e_time.hour, e_time.min) : (date + 1).beginning_of_day
             range_end += 1.day if range_end <= range_start
             
             failed_count += reassign_appointments_for_range(@doctor, range_start, range_end)
           end
 
           msg = "Bloqueo creado para el rango #{I18n.l(start_date)} al #{I18n.l(end_date)}."
-          msg += " Atención: #{failed_count} cita(s) no pudieron reasignarse y bloquearon este horario obligando a manejo manual." if failed_count > 0
-
-          redirect_to edit_admin_doctor_path(@doctor), notice: msg
+          redirect_with_reassignment_feedback(msg, failed_count)
         end
       end
     rescue ArgumentError
@@ -177,7 +174,7 @@ module Admin
           
           # Reassignment Logic
           range_start = s_time ? Time.zone.local(date.year, date.month, date.day, s_time.hour, s_time.min) : date.beginning_of_day
-          range_end   = e_time ? Time.zone.local(date.year, date.month, date.day, e_time.hour, e_time.min) : date.end_of_day
+          range_end   = e_time ? Time.zone.local(date.year, date.month, date.day, e_time.hour, e_time.min) : (date + 1).beginning_of_day
           range_end += 1.day if range_end <= range_start
           
           failed_count += reassign_appointments_for_range(@doctor, range_start, range_end)
@@ -185,10 +182,7 @@ module Admin
       end
 
       msg = "Bloqueado del #{I18n.l(start_date)} al #{I18n.l(end_date)}."
-      msg += " Atención: #{failed_count} cita(s) no pudieron ser reasignadas y su horario ahora está bloqueado. Favor de ajustarlas manualmente." if failed_count > 0
-
-      redirect_to edit_admin_doctor_path(@doctor),
-                  notice: msg
+      redirect_with_reassignment_feedback(msg, failed_count)
     rescue ArgumentError
       redirect_to edit_admin_doctor_path(@doctor),
                   alert: "Fechas inválidas."
@@ -217,6 +211,7 @@ module Admin
     # ===========================
     def create_time_block
       reason = params[:reason].presence
+      failed_count = 0
 
       Time.use_zone("America/Mexico_City") do
         if params[:blocks_json].present?
@@ -244,13 +239,10 @@ module Admin
             end
           end
 
-          msg = ""
-          msg = "Atención: #{failed_count} cita(s) no pudieron ser reasignadas. " if failed_count > 0
-
           if saved_any && errors.empty?
-            redirect_to edit_admin_doctor_path(@doctor), notice: "Bloqueos recurrentes creados exitosamente. #{msg}"
+            redirect_with_reassignment_feedback("Bloqueos recurrentes creados exitosamente.", failed_count)
           elsif saved_any
-            redirect_to edit_admin_doctor_path(@doctor), notice: "Algunos bloqueos se crearon, pero hubo errores: #{errors.uniq.join('. ')}. #{msg}"
+            redirect_with_reassignment_feedback("Algunos bloqueos se crearon, pero hubo errores: #{errors.uniq.join('. ')}.", failed_count)
           else
             redirect_to edit_admin_doctor_path(@doctor), alert: "Error al crear bloqueos: #{errors.uniq.join('. ')}"
           end
@@ -273,7 +265,8 @@ module Admin
           )
 
           if block.save
-            redirect_to edit_admin_doctor_path(@doctor), notice: "Bloqueo recurrente creado."
+            failed_count += reassign_appointments_for_recurring_block(@doctor, block)
+            redirect_with_reassignment_feedback("Bloqueo recurrente creado.", failed_count)
           else
             redirect_to edit_admin_doctor_path(@doctor), alert: block.errors.full_messages.to_sentence
           end
@@ -531,10 +524,11 @@ module Admin
     def reassign_appointments_for_range(doctor, start_dt, end_dt)
       failed = 0
       appts = Appointment.where(doctor_id: doctor.id)
-                         .where.not(status: ["canceled_by_admin", "canceled_by_client", "no_show", "completed"])
-                         .where("start_date >= ? AND start_date < ?", start_dt, end_dt)
+                         .where(status: :scheduled)
+                         .where(start_date: (start_dt.to_date - 1.day).beginning_of_day..end_dt.to_date.end_of_day)
+                         .select { |appt| appointment_overlaps_range?(appt, start_dt, end_dt) }
 
-      appts.find_each do |appt|
+      appts.each do |appt|
         failed += reassign_single_appointment(appt) ? 0 : 1
       end
       failed
@@ -544,22 +538,18 @@ module Admin
       failed = 0
       # Find all future appointments
       appts = Appointment.where(doctor_id: doctor.id)
-                         .where.not(status: ["canceled_by_admin", "canceled_by_client", "no_show", "completed"])
+                         .where(status: :scheduled)
                          .where("start_date >= ?", Time.zone.now)
 
       appts.find_each do |appt|
         wday = appt.start_date.wday
         next unless Array(block.days_of_week).include?(wday)
         
-        # Check time overlap
-        appt_start_hm = appt.start_date.strftime("%H:%M")
-        appt_end_hm = appt.end_date ? appt.end_date.strftime("%H:%M") : (appt.start_date + appt.duration.to_i.minutes).strftime("%H:%M")
-        
-        block_s = block.starts_at.strftime("%H:%M")
-        block_e = block.ends_at.strftime("%H:%M")
+        block_start = time_on_date(appt.start_date.to_date, block.starts_at)
+        block_end = time_on_date(appt.start_date.to_date, block.ends_at)
+        block_end += 1.day if block_end <= block_start
 
-        # overlap logic on HH:MM
-        if appt_start_hm < block_e && appt_end_hm > block_s
+        if appointment_overlaps_range?(appt, block_start, block_end)
           failed += reassign_single_appointment(appt) ? 0 : 1
         end
       end
@@ -571,45 +561,109 @@ module Admin
       doctors = Doctor.for_package(appt.package_id).where.not(id: appt.doctor_id)
       
       Time.use_zone("America/Mexico_City") do
+        target_start = appt.start_date.in_time_zone
+        duration = appointment_duration(appt)
+
         valid_doctor = doctors.find do |doc|
           # Check if this doctor is available exactly at `appt.start_date`
           times = User::Availability::FetchTimes.call(
             doctor: doc,
-            date: appt.start_date.to_date,
-            duration: appt.duration
+            date: target_start.to_date,
+            duration: duration
           )
-          times.include?(appt.start_date)
+          times.any? { |slot| slot.to_i == target_start.to_i }
         end
 
         if valid_doctor
-          # Clonar todos los atributos excepto los de identidad principal
-          new_attributes = appt.attributes.except(
-            "id", "created_at", "updated_at", 
-            "unique_code", "token", "google_calendar_id"
-          )
-          
-          # Asignar nuevo doctor y asegurar el status
-          new_attributes["doctor_id"] = valid_doctor.id
-          new_attributes["status"] = "scheduled"
+          old_google_calendar_id = appt.google_calendar_id
 
-          # 1. Crear nueva cita clonada
-          new_appt = Appointment.new(new_attributes)
-          
-          # Forzar a saltarnos validaciones de disponibilidad extra por si es necesario
-          # pero con new_appt.save(validate: false) nos arriesgamos a fallos silenciosos.
-          # Lo ideal es que save dispare el after_create
-          if new_appt.save
-            # 2. Cancelar la vieja cita
-            appt.update!(status: :canceled_by_admin)
+          if appt.update(doctor: valid_doctor)
+            unless sync_google_calendar_after_reassignment(appt, old_google_calendar_id)
+              @google_calendar_sync_failed_count = @google_calendar_sync_failed_count.to_i + 1
+            end
+
             return true
           else
-            Rails.logger.error "[Reasignación] Error al clonar cita #{appt.id}: #{new_appt.errors.full_messages}"
+            Rails.logger.error "[Reasignación] Error al mover cita #{appt.id}: #{appt.errors.full_messages}"
             return false
           end
         end
       end
       
       false
+    end
+
+    def appointment_duration(appt)
+      return appt.duration.to_i if appt.duration.to_i.positive?
+      return ((appt.end_date - appt.start_date) / 60).to_i if appt.start_date.present? && appt.end_date.present? && appt.end_date > appt.start_date
+
+      30
+    end
+
+    def appointment_end(appt)
+      return appt.end_date if appt.end_date.present? && appt.end_date > appt.start_date
+
+      appt.start_date + appointment_duration(appt).minutes
+    end
+
+    def appointment_overlaps_range?(appt, range_start, range_end)
+      return false if appt.start_date.blank?
+
+      appt_start = appt.start_date.in_time_zone
+      appt_end = appointment_end(appt).in_time_zone
+      range_start = range_start.in_time_zone
+      range_end = range_end.in_time_zone
+
+      appt_start < range_end && appt_end > range_start
+    end
+
+    def time_on_date(date, time)
+      Time.zone.local(date.year, date.month, date.day, time.hour, time.min, time.sec)
+    end
+
+    def sync_google_calendar_after_reassignment(appt, old_google_calendar_id)
+      return true unless ENV["GOOGLE_CALENDAR_ENABLED"] == "1"
+
+      new_event_id = User::GoogleCalendar::Events::Create.call(
+        appointment: appt,
+        package: appt.package,
+        doctor_name: appt.doctor.name,
+        caller_role: appt.scheduled_by.presence || :admin
+      )
+
+      if new_event_id.present?
+        User::GoogleCalendar::Events::Delete.call(event_id: old_google_calendar_id) if old_google_calendar_id.present?
+        appt.update_column(:google_calendar_id, new_event_id)
+        true
+      else
+        Rails.logger.error "[Reasignación] Google Calendar no devolvió evento nuevo para cita #{appt.id}"
+        false
+      end
+    rescue StandardError => e
+      Rails.logger.error "[Reasignación] Error al sincronizar Google Calendar para cita #{appt.id}: #{e.class} #{e.message}"
+      false
+    end
+
+    def redirect_with_reassignment_feedback(notice, failed_count)
+      alert_messages = []
+
+      if failed_count.positive?
+        alert_messages << "No hay médico disponible para #{failed_count} cita(s) dentro del bloqueo. Comunícate con administración para reagendar esas citas con los pacientes."
+      end
+
+      if @google_calendar_sync_failed_count.to_i.positive?
+        alert_messages << "#{@google_calendar_sync_failed_count} cita(s) fueron reasignadas, pero no pudieron sincronizarse con Google Calendar. Revisa el calendario externo o contacta a administración."
+      end
+
+      if alert_messages.any?
+        redirect_to edit_admin_doctor_path(@doctor),
+                    flash: {
+                      notice: notice,
+                      alert: alert_messages.join(" ")
+                    }
+      else
+        redirect_to edit_admin_doctor_path(@doctor), notice: notice
+      end
     end
   end
 end

@@ -254,7 +254,9 @@ export default class extends Controller {
     const start = event.start
     const end = event.end
     const day = start ? this.formatDate(start) : ""
-    const range = (start && end) ? `${this.formatTime(start)}–${this.formatTime(end)}` : ""
+    const range =
+      kind === "bloqueo_dia" ? "Todo el día" :
+      (start && end) ? `${this.formatTime(start)}–${this.formatTime(end)}` : ""
     this.popoverMetaTarget.textContent = [day, range].filter(Boolean).join(" · ")
 
     // Body

@@ -1,3 +1,5 @@
+sudo systemctl restart puma_gomosak.service
+
 promociones en el carrucel 
 quitar cirugias 
 aviso de privacidad
@@ -30,9 +32,6 @@ SendWhatsappMessageJob.perform_now(
   message_type: "confirmation",
   appointment_id: 1
 )
-
-
-
 
 
 ################

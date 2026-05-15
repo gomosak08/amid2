@@ -29,88 +29,22 @@
 
       <!-- Grid de paquetes -->
       <div class="px-6 py-10 sm:px-10">
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-          
-          <% @packages.where(kind: "paquete").each do |package| %>
-            <article
-              class="group flex h-full flex-col overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl"
-              data-controller="toggle-description"
-            >
+        <% paquetes = @packages.where(kind: "paquete") %>
 
-              <% if package.image.present? %>
-                <div
-                  data-action="click->toggle-description#toggle"
-                  class="cursor-pointer overflow-hidden bg-gray-100"
-                >
-                  <%= image_tag package.image,
-                        alt: package.name,
-                        class: "h-60 w-full object-cover transition duration-500 group-hover:scale-105" %>
-                </div>
-              <% else %>
-                <div class="flex h-60 items-center justify-center bg-gray-50 text-sm text-gray-400">
-                  Sin imagen disponible
-                </div>
-              <% end %>
-
-              <div class="flex flex-1 flex-col p-6">
-                <div class="mb-3 flex items-start justify-between gap-3">
-                  <div class="min-w-0 flex-1">
-                    <h3 class="text-lg font-bold leading-tight text-gray-900">
-                      <%= link_to package.name,
-                            package_path(package),
-                            class: "block break-words transition hover:text-blue-600" %>
-                    </h3>
-                  </div>
-
-                  <button
-                    type="button"
-                    data-action="click->toggle-description#toggle"
-                    class="shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold text-gray-500 transition hover:bg-blue-50 hover:text-blue-600"
-                  >
-                    Detalles
-                  </button>
-                </div>
-
-                <div class="mb-4 flex flex-wrap items-center gap-2">
-                  <span class="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-700">
-                    <%= mxn(package.price) %>
-                  </span>
-
-                  <% if package.duration.present? %>
-                    <span class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700">
-                      <%= package.duration %>
-                    </span>
-                  <% end %>
-                </div>
-
-                <p class="mb-4 text-sm leading-6 text-gray-600">
-                  <%= truncate(package.description.presence || "Sin descripción disponible.", length: 110) %>
-                </p>
-
-                <div
-                  data-toggle-description-target="description"
-                  class="hidden mb-4 rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm leading-relaxed text-gray-700"
-                >
-                  <%= simple_format(
-                        package.description.presence || "Sin descripción disponible.",
-                        {},
-                        wrapper_tag: "p",
-                        class: "m-0"
-                      ) %>
-                </div>
-
-                <div class="mt-auto pt-2">
-                  <%= link_to "Agendar cita",
-                      new_appointment_path(package_id: package.id),
-                      class: "inline-flex w-full items-center justify-center rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700",
-                      data: { turbo: false } %>
-                </div>
-              </div>
-            </article>
-
-          <% end %>
-
-        </div>
+        <% if paquetes.any? %>
+          <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+            <% paquetes.each do |package| %>
+              <%= render "shared/featured_package_card", package: package %>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="rounded-[24px] border border-dashed border-gray-300 bg-gray-50 px-6 py-12 text-center">
+            <h2 class="text-xl font-semibold text-gray-800">No hay paquetes disponibles</h2>
+            <p class="mt-2 text-sm text-gray-500">
+              Por ahora no se encontraron paquetes para mostrar.
+            </p>
+          </div>
+        <% end %>
       </div>
     </div>
   </div>

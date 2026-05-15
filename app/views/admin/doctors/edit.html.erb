@@ -1,6 +1,22 @@
 <!-- app/views/admin/doctors/edit.html.erb -->
 
 <div class="mx-auto max-w-[1800px] px-4 sm:px-6 lg:px-8 py-8">
+  <% if flash[:notice].present? || flash[:alert].present? %>
+    <div class="mb-5 space-y-3">
+      <% if flash[:notice].present? %>
+        <div class="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-semibold text-green-800">
+          <%= flash[:notice] %>
+        </div>
+      <% end %>
+
+      <% if flash[:alert].present? %>
+        <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
+          <%= flash[:alert] %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
   <!-- Header -->
   <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
     <div>
@@ -145,7 +161,7 @@
               <button type="button" data-action="click->doctor-calendar#hideBlockModal" class="text-gray-400 hover:text-gray-600">&times;</button>
             </div>
             <div class="p-4">
-              <%= form_with url: create_unified_block_admin_doctor_path(@doctor), method: :post, local: true, class: "space-y-3" do |form| %>
+              <%= form_with url: create_unified_block_admin_doctor_path(@doctor), method: :post, local: true, data: { turbo: false }, class: "space-y-3" do |form| %>
                 <div class="grid grid-cols-2 gap-3 mb-2">
                   <div>
                     <label class="text-xs font-medium text-gray-500 mb-1 block">Fecha de inicio</label>

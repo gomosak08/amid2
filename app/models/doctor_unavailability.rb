@@ -3,5 +3,5 @@ class DoctorUnavailability < ApplicationRecord
   belongs_to :doctor
 
   validates :date, presence: true
-  validates :date, uniqueness: { scope: :doctor_id }
+  validates :date, uniqueness: { scope: [ :doctor_id, :start_time, :end_time ] }
 end
