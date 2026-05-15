@@ -17,10 +17,8 @@ Rails.application.configure do
   config.action_controller.perform_caching = true
   config.action_controller.default_url_options = { host: "amid.mx", protocol: "https" }
   config.hosts << "amid.mx"
-  config.hosts << "gomosak.com"
-
-  config.hosts << "localhost"
-  config.hosts << "127.0.0.1"
+  config.hosts << "www.amid.mx"
+  config.hosts << "216.108.227.69"
   config.action_controller.default_url_options = {
     host: ENV.fetch("APP_HOST"),
     protocol: ENV.fetch("APP_PROTOCOL", "https")
