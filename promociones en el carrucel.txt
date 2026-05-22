@@ -84,3 +84,12 @@ calendario de medicos añadir boton de añadir bloqueo
 mejorar aspecto de pdf al generar cita 
 
 el cancelar citas no esta liberando la base de datos
+
+
+###################
+buscador de paquetes admin, hacerlo por nombre solamente 
+agregar especialidades en el panel de doctor
+facilitar la asignacion de horarios al crear un doctor
+al crear doctor toma los datos de admin como da
+cambiar los botones headers a verde del logo 
+

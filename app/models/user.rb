@@ -5,6 +5,16 @@ class User < ApplicationRecord
 
   enum role: { admin: "admin", assistant: "assistant", doctor: "doctor" }
   has_one :doctor, dependent: :nullify
+  has_many :created_appointments,
+           class_name: "Appointment",
+           foreign_key: :created_by_id,
+           dependent: :nullify,
+           inverse_of: :created_by
+  has_many :created_phone_bans,
+           class_name: "PhoneBan",
+           foreign_key: :created_by_id,
+           dependent: :nullify,
+           inverse_of: :created_by
   
   validates :phone, presence: true
 

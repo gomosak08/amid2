@@ -8,11 +8,11 @@ module Admin
     def index
       packages = Package.all
 
-      # Buscador por nombre y descripción
+      # Buscador por nombre
       if params[:q].present?
         query = "%#{params[:q].to_s.strip.downcase}%"
         packages = packages.where(
-          "LOWER(name) LIKE :q OR LOWER(description) LIKE :q",
+          "LOWER(name) LIKE :q",
           q: query
         )
       end
