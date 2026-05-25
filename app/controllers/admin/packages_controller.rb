@@ -71,12 +71,8 @@ module Admin
     end
 
     def update
-      if params[:package][:image].present?
-        @package.image.attach(params[:package][:image])
-      end
-
       if @package.update(package_params)
-        redirect_to admin_package_path(@package), notice: "Package updated successfully."
+        redirect_to admin_packages_path, notice: "Package updated successfully."
       else
         flash.now[:alert] = "Failed to update package. Please check the form for errors."
         render :edit, status: :unprocessable_entity
