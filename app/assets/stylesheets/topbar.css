@@ -1,0 +1,84 @@
+/* ==========================================================
+   topbar.css – Barra superior fija (header + nav + quick panel)
+   ========================================================== */
+
+/* ── Header contenedor ──────────────────────────────────── */
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 1100;
+  backdrop-filter: blur(14px);
+  background:
+    linear-gradient(
+      90deg,
+      rgba(108, 214, 233, .95) 0%,
+      rgba(59,  130, 246, .98) 50%,
+      rgba(108, 214, 233, .95) 100%
+    );
+  box-shadow: 0 10px 30px rgba(15, 23, 42, .10);
+  border-bottom: 1px solid rgba(255, 255, 255, .18);
+}
+
+.header-inner {
+  min-height: var(--header-height);
+}
+
+/* ── Logo ───────────────────────────────────────────────── */
+.brand-logo {
+  height: 62px;
+  width: auto;
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .brand-logo {
+    height: 74px;
+  }
+}
+
+/* ── Nav links ──────────────────────────────────────────── */
+.nav-link-main {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: .98rem;
+  padding: .55rem .25rem;
+  transition: color .18s ease, opacity .18s ease;
+  opacity: .96;
+}
+
+.nav-link-main:hover {
+  color: #d1fae5;
+  opacity: 1;
+}
+
+/* ── Quick panel animación ──────────────────────────────── */
+.quick-panel-enter {
+  opacity: 0;
+  transform: translateY(-8px) scale(.98);
+  pointer-events: none;
+}
+
+.quick-panel-open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.quick-panel-transition {
+  transition: opacity .18s ease, transform .18s ease;
+  transform-origin: top right;
+}
+
+.quick-panel-overlay {
+  background: rgba(15, 23, 42, .18);
+  backdrop-filter: blur(2px);
+}
+
+/* ── Menú móvil ─────────────────────────────────────────── */
+.mobile-menu-panel {
+  border-top: 1px solid rgba(255, 255, 255, .18);
+}

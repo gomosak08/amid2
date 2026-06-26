@@ -1,0 +1,24 @@
+<section class="hp-cta-banner">
+  <div>
+    <h2>¿Listo para cuidar tu salud?</h2>
+
+    <p>
+      Agenda tu cita en minutos o escríbenos por WhatsApp. Estamos aquí para ayudarte.
+    </p>
+  </div>
+
+  <div class="hp-cta-banner-actions">
+    <%= link_to new_appointment_path, class: "hp-btn-cta", data: { turbo: false } do %>
+      <i class="fa-solid fa-calendar-check"></i>
+      Agendar cita ahora
+    <% end %>
+
+    <%= link_to "https://wa.me/524437296999?text=Hola,%20quiero%20informaci%C3%B3n%20sobre%20una%20cita",
+          target: "_blank",
+          rel: "noopener",
+          class: "hp-btn-ghost" do %>
+      <i class="fab fa-whatsapp"></i>
+      Escribir por WhatsApp
+    <% end %>
+  </div>
+</section>

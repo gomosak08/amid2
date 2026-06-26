@@ -1,0 +1,96 @@
+<section class="hp-hero">
+  <div class="hp-hero-inner">
+    <div class="hp-hero-copy">
+      <span class="hp-hero-badge">
+        <i class="fa-solid fa-shield-heart"></i>
+        Atención Médica Integral y Diagnóstica
+      </span>
+
+      <h1 class="hp-hero-h1">
+        Tu salud en<br>
+        <span>las mejores manos</span>
+      </h1>
+
+      <p class="hp-hero-sub">
+        En Clínica AMID te ofrecemos servicios médicos de alta calidad,
+        paquetes personalizados y la facilidad de agendar tu cita en minutos.
+        Estamos en Morelia, Michoacán.
+      </p>
+
+      <div class="hp-hero-btns">
+        <%= link_to new_appointment_path, class: "hp-btn-cta", data: { turbo: false } do %>
+          <i class="fa-solid fa-calendar-check"></i>
+          Agendar mi cita
+        <% end %>
+
+        <%= link_to services_path, class: "hp-btn-ghost" do %>
+          <i class="fa-solid fa-stethoscope"></i>
+          Ver servicios
+        <% end %>
+      </div>
+
+      <div class="hp-hero-stats">
+        <div class="hp-stat">
+          <span class="hp-stat-num">+<%= featured_total %></span>
+          <span class="hp-stat-lbl">Servicios disponibles</span>
+        </div>
+
+        <div class="hp-stat hp-stat-bordered">
+          <span class="hp-stat-num">100%</span>
+          <span class="hp-stat-lbl">Atención profesional</span>
+        </div>
+
+        <div class="hp-stat hp-stat-bordered">
+          <span class="hp-stat-num">Fácil</span>
+          <span class="hp-stat-lbl">Agenda en línea</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hp-hero-visual">
+      <div class="hp-hero-carousel">
+        <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="4200">
+          <div class="carousel-inner">
+            <% ["slider1.jpg", "slider2.jpg", "slider3.jpg", "slider4.jpg", "slider5.jpg"].each_with_index do |img, idx| %>
+              <div class="carousel-item <%= 'active' if idx == 0 %>">
+                <%= image_tag img, alt: "AMID clínica", loading: "lazy" %>
+              </div>
+            <% end %>
+          </div>
+
+          <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+            <span class="visually-hidden">Anterior</span>
+          </button>
+
+          <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+            <span class="visually-hidden">Siguiente</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="hp-hero-features">
+        <div class="hp-feat">
+          <div class="hp-feat-icon"><i class="fa-solid fa-user-doctor"></i></div>
+          <span class="hp-feat-text">Médicos especializados</span>
+        </div>
+
+        <div class="hp-feat">
+          <div class="hp-feat-icon"><i class="fa-solid fa-calendar-check"></i></div>
+          <span class="hp-feat-text">Citas en minutos</span>
+        </div>
+
+        <div class="hp-feat">
+          <div class="hp-feat-icon"><i class="fa-solid fa-file-medical"></i></div>
+          <span class="hp-feat-text">Resultados rápidos</span>
+        </div>
+
+        <div class="hp-feat">
+          <div class="hp-feat-icon"><i class="fa-solid fa-location-dot"></i></div>
+          <span class="hp-feat-text">Morelia, Michoacán</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

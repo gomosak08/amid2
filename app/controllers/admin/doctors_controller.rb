@@ -20,7 +20,7 @@ module Admin
 
     def new
       @doctor = Doctor.new
-      @doctor.available_hours = default_hours
+      @doctor.available_hours = {}
       @doctor.build_user
     end
 
@@ -35,8 +35,7 @@ module Admin
     end
 
     def edit
-      @doctor.available_hours ||= default_hours
-      @doctor.available_hours = normalize_hours(@doctor.available_hours)
+      @doctor.available_hours = normalize_hours(@doctor.available_hours || {})
 
       @unavailabilities = @doctor.doctor_unavailabilities.order(:date)
       @time_blocks = @doctor.doctor_time_blocks.order(:starts_at)

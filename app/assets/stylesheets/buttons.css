@@ -1,0 +1,48 @@
+/* ==========================================================
+   buttons.css – Botones globales del layout AMID
+   (CTA principal, glass buttons del header, quick-link cards)
+   ========================================================== */
+
+/* ── Botón CTA principal (nav desktop) ──────────────────── */
+.nav-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .55rem;
+  background: #fff;
+  color: var(--amid-primary-dark);
+  text-decoration: none;
+  font-weight: 900;
+  padding: .78rem 1.1rem;
+  border-radius: 14px;
+  box-shadow: 0 10px 20px rgba(15, 23, 42, .10);
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+
+.nav-cta:hover {
+  transform: translateY(-1px);
+  background: #eff6ff;
+  color: var(--amid-primary-dark);
+}
+
+/* ── Botones glass (header) ─────────────────────────────── */
+/* Se usan en: accesos rápidos, agendar cita móvil, menú hamburguesa */
+.header-glass-btn {
+  background: rgba(255, 255, 255, .14);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, .18);
+}
+
+.header-glass-btn:hover {
+  background: rgba(255, 255, 255, .22);
+}
+
+/* ── Quick-link cards (panel de accesos rápidos) ─────────── */
+.quick-link-card {
+  transition: all .18s ease;
+}
+
+.quick-link-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(15, 23, 42, .08);
+}

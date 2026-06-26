@@ -1,0 +1,126 @@
+.hp-premium{
+  --primary:#0f3d75;
+  --accent:#38bdf8;
+  --ink:#0f172a;
+  --muted:#64748b;
+  --line:#dbeafe;
+}
+
+.hp-premium .hp-hero{
+  display:grid;
+  grid-template-columns:1.05fr .95fr;
+  gap:2rem;
+  align-items:center;
+  padding:3rem;
+  border-radius:32px;
+  background:linear-gradient(135deg,#082f5f,#0f3d75 65%,#38bdf8);
+  color:#fff;
+  margin-bottom:2rem;
+}
+
+.hp-premium h1{
+  font-size:clamp(2.4rem,5vw,4.2rem);
+  line-height:1;
+  font-weight:950;
+}
+
+.hp-premium .hp-eyebrow{
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--accent);
+  font-size:.8rem;
+}
+
+.hp-premium .hp-hero p,
+.hp-premium .hp-section p{
+  color:var(--muted);
+}
+
+.hp-premium .hp-hero p{
+  color:rgba(255,255,255,.85);
+  font-size:1.1rem;
+}
+
+.hp-premium .hp-actions{
+  display:flex;
+  gap:.8rem;
+  flex-wrap:wrap;
+  margin-top:1.5rem;
+}
+
+.hp-premium .hp-btn{
+  padding:.9rem 1.4rem;
+  border-radius:14px;
+  font-weight:900;
+  text-decoration:none;
+}
+
+.hp-premium .hp-btn-main{
+  background:#fff;
+  color:var(--primary);
+}
+
+.hp-premium .hp-btn-light{
+  background:rgba(255,255,255,.15);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.25);
+}
+
+.hp-premium .hp-hero-card{
+  padding:.6rem;
+  border-radius:24px;
+  background:rgba(255,255,255,.16);
+}
+
+.hp-premium .hp-hero-card img{
+  width:100%;
+  aspect-ratio:16/11;
+  object-fit:cover;
+  border-radius:18px;
+}
+
+.hp-premium .hp-section{
+  margin-bottom:2rem;
+}
+
+.hp-premium .hp-section h2,
+.hp-premium .hp-cta h2{
+  color:var(--ink);
+  font-weight:950;
+}
+
+.hp-premium .hp-soft{
+  padding:2rem;
+  border-radius:28px;
+  background:#f8fbff;
+}
+
+.hp-premium .hp-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:1rem;
+  margin-top:1.2rem;
+}
+
+.hp-premium .hp-cta{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:1rem;
+  padding:2rem;
+  border-radius:28px;
+  background:#eff6ff;
+}
+
+@media(max-width:900px){
+  .hp-premium .hp-hero,
+  .hp-premium .hp-grid{
+    grid-template-columns:1fr;
+  }
+
+  .hp-premium .hp-cta{
+    flex-direction:column;
+    text-align:center;
+  }
+}

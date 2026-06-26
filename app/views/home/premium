@@ -1,0 +1,60 @@
+<%
+  featured_services  = @packages.where(kind: "servicios", featured: true)
+  featured_packages  = @packages.where(kind: "paquete", featured: true)
+%>
+
+<%= stylesheet_link_tag "home_premium", "data-turbo-track": "reload" %>
+
+<div class="hp hp-premium">
+  <section class="hp-hero">
+    <div>
+      <span class="hp-eyebrow">Clínica AMID · Morelia</span>
+      <h1>Atención médica integral con confianza y precisión</h1>
+      <p>Agenda servicios médicos, estudios y paquetes personalizados en minutos.</p>
+
+      <div class="hp-actions">
+        <%= link_to "Agendar cita", new_appointment_path, class: "hp-btn hp-btn-main", data: { turbo: false } %>
+        <%= link_to "Ver servicios", services_path, class: "hp-btn hp-btn-light" %>
+      </div>
+    </div>
+
+    <div class="hp-hero-card">
+      <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+          <% ["slider1.jpg","slider2.jpg","slider3.jpg"].each_with_index do |img,idx| %>
+            <div class="carousel-item <%= 'active' if idx == 0 %>">
+              <%= image_tag img, alt: "Clínica AMID" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="hp-section">
+    <span class="hp-eyebrow">Servicios</span>
+    <h2>Servicios destacados</h2>
+
+    <div class="hp-grid">
+      <% featured_services.each do |package| %>
+        <%= render "shared/featured_package_card", package: package %>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="hp-section hp-soft">
+    <span class="hp-eyebrow">Paquetes</span>
+    <h2>Paquetes destacados</h2>
+
+    <div class="hp-grid">
+      <% featured_packages.each do |package| %>
+        <%= render "shared/featured_package_card", package: package %>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="hp-cta">
+    <h2>¿Listo para cuidar tu salud?</h2>
+    <%= link_to "Agendar ahora", new_appointment_path, class: "hp-btn hp-btn-main", data: { turbo: false } %>
+  </section>
+</div>
