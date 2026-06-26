@@ -26,10 +26,10 @@ class Admin::SpecialtiesController < ApplicationController
     respond_to do |format|
       if @specialty.save
         format.html { redirect_to [:admin, @specialty], notice: "Specialty was successfully created." }
-        format.json { render :show, status: :created, location: @specialty }
+        format.json { render json: { id: @specialty.id, name: @specialty.name }, status: :created }
       else
         format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @specialty.errors, status: :unprocessable_entity }
+        format.json { render json: { errors: @specialty.errors.full_messages }, status: :unprocessable_entity }
       end
     end
   end

@@ -1,4 +1,5 @@
 class AppointmentsController < ApplicationController
+  before_action :ensure_appointment_booking_enabled!, only: %i[new create booking_appointment check_availability]
   before_action :set_appointment, only: %i[show edit update destroy]
 
   def new
@@ -91,7 +92,7 @@ class AppointmentsController < ApplicationController
       format.html
       format.turbo_stream { render partial: "appointments/show", locals: { appointment: @appointment } }
       format.pdf do
-        logo = Rails.root.join("app/assets/images/logo.png")
+        logo = Rails.root.join("app/assets/images/LOGO.png")
         pdf  = User::Pdf::AppointmentPdf.new(@appointment, logo_path: logo).render
 
         send_data pdf,

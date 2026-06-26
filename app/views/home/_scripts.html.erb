@@ -1,0 +1,22 @@
+<script>
+  document.addEventListener("turbo:load", function () {
+    const tabs  = document.querySelectorAll("[data-hptab]");
+    const items = document.querySelectorAll(".hp-search-item");
+
+    tabs.forEach(function(tab) {
+      tab.addEventListener("click", function() {
+        const kind = tab.dataset.hptab;
+
+        tabs.forEach(function(t) {
+          t.classList.remove("active");
+        });
+
+        tab.classList.add("active");
+
+        items.forEach(function(item) {
+          item.style.display = (kind === "all" || item.dataset.kind === kind) ? "" : "none";
+        });
+      });
+    });
+  });
+</script>

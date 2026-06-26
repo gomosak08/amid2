@@ -1,0 +1,82 @@
+<%
+  featured_services = @packages.where(kind: "servicios", featured: true)
+  featured_packages = @packages.where(kind: "paquete", featured: true)
+%>
+
+<%= stylesheet_link_tag "home_warm", "data-turbo-track": "reload" %>
+
+<div class="hw">
+  <section class="hw-hero">
+    <div class="hw-hero-text">
+      <span>Atención cercana en Morelia</span>
+      <h1>Cuidamos tu salud con calidez, claridad y acompañamiento</h1>
+      <p>Encuentra servicios médicos y paquetes pensados para ti y tu familia.</p>
+
+      <div class="hw-actions">
+        <%= link_to "Agendar mi cita", new_appointment_path, class: "hw-btn hw-main", data: { turbo: false } %>
+        <%= link_to "Ver paquetes", packages_path, class: "hw-btn hw-outline" %>
+      </div>
+    </div>
+
+    <div class="hw-photo">
+      <%= image_tag "slider1.jpg", alt: "Clínica AMID" %>
+    </div>
+  </section>
+
+  <section class="hw-intro">
+    <div>
+      <i class="fa-solid fa-user-doctor"></i>
+      <h3>Especialistas</h3>
+      <p>Atención médica profesional.</p>
+    </div>
+
+    <div>
+      <i class="fa-solid fa-calendar-check"></i>
+      <h3>Citas fáciles</h3>
+      <p>Agenda en línea en minutos.</p>
+    </div>
+
+    <div>
+      <i class="fa-solid fa-heart-pulse"></i>
+      <h3>Atención humana</h3>
+      <p>Trato claro, cálido y respetuoso.</p>
+    </div>
+  </section>
+
+  <section class="hw-section">
+    <div class="hw-heading">
+      <span>Servicios</span>
+      <h2>Servicios destacados</h2>
+      <%= link_to "Ver todos", services_path %>
+    </div>
+
+    <div class="hw-grid">
+      <% featured_services.each do |package| %>
+        <%= render "shared/featured_package_card", package: package %>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="hw-section hw-packages">
+    <div class="hw-heading">
+      <span>Paquetes</span>
+      <h2>Paquetes destacados</h2>
+      <%= link_to "Ver paquetes", packages_path %>
+    </div>
+
+    <div class="hw-grid">
+      <% featured_packages.each do |package| %>
+        <%= render "shared/featured_package_card", package: package %>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="hw-cta">
+    <div>
+      <span>Agenda en línea</span>
+      <h2>Da el primer paso para cuidar tu salud</h2>
+    </div>
+
+    <%= link_to "Agendar cita", new_appointment_path, class: "hw-btn hw-main", data: { turbo: false } %>
+  </section>
+</div>

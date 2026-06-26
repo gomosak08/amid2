@@ -1,5 +1,27 @@
-<%= form_with(model: [:admin, @doctor], local: true, class: "bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden") do |form| %>
-  <!-- Header -->
+<%
+  # ── pre-compute existing schedule for edit mode ──────────────────────
+  existing   = @doctor.available_hours || {}
+  days_en    = %w[Monday Tuesday Wednesday Thursday Friday Saturday Sunday]
+  days_es    = %w[Lunes Martes Miércoles Jueves Viernes Sábado Domingo]
+  days_short = %w[Lun Mar Mié Jue Vie Sáb Dom]
+
+  # Most common range → becomes the "base" schedule
+  all_ranges  = existing.values.flatten.reject(&:blank?)
+  base_time   = all_ranges.tally.max_by { |_, c| c }&.first || "09:00-17:00"
+  base_start  = base_time.split("-").first || "09:00"
+  base_end    = base_time.split("-").last  || "17:00"
+
+  # Which days match the base range (will be pre-selected as chips)
+  base_days = existing.select { |_, v| v.include?(base_time) }.keys
+
+  # Custom schedules: days with a DIFFERENT (non-base) range
+  custom_times = existing.reject { |day, v| base_days.include?(day) || v.blank? }
+%>
+
+<%= form_with(model: [:admin, @doctor], local: true, id: "doctor-form",
+              class: "bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden") do |form| %>
+
+  <!-- ── Header ─────────────────────────────────────────── -->
   <div class="px-5 py-6 sm:px-8 sm:py-8 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white">
     <h2 class="text-2xl font-bold text-gray-900">
       <%= @doctor.persisted? ? "Editar doctor" : "Nuevo doctor" %>
@@ -10,6 +32,8 @@
   </div>
 
   <div class="p-5 sm:p-8 space-y-8">
+
+    <!-- ── Errores ──────────────────────────────────────── -->
     <% if @doctor.errors.any? %>
       <div id="error_explanation" class="rounded-xl border border-red-200 bg-red-50 p-4">
         <h2 class="text-sm font-semibold text-red-800 mb-2">
@@ -23,7 +47,7 @@
       </div>
     <% end %>
 
-    <!-- Información general -->
+    <!-- ── Información general ──────────────────────────── -->
     <section class="space-y-5">
       <div>
         <h3 class="text-lg font-semibold text-gray-900">Información general</h3>
@@ -31,49 +55,65 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
         <!-- Nombre -->
         <div class="md:col-span-2">
-          <%= form.label :name, "Nombre", class: "block text-sm font-semibold text-gray-800 mb-2" %>
+          <%= form.label :name, "Nombre completo", class: "block text-sm font-semibold text-gray-800 mb-2" %>
           <%= form.text_field :name,
               placeholder: "Ej. Dra. María González",
               class: "block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500" %>
         </div>
 
-        <!-- Especialidad -->
-        <div>
-          <%= form.label :specialty_id, "Especialidad", class: "block text-sm font-semibold text-gray-800 mb-2" %>
-          <%= form.collection_select :specialty_id, Specialty.order(:name), :id, :name,
-              { include_blank: "Selecciona una especialidad" },
-              class: "block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500" %>
-        </div>
-
-        <!-- Correo -->
+        <!-- Correo — UN solo campo, se sincroniza con user_attributes -->
         <div>
           <%= form.label :email, "Correo electrónico", class: "block text-sm font-semibold text-gray-800 mb-2" %>
+          <p class="text-xs text-gray-400 mb-2">Se usará como correo del doctor y para acceder al panel.</p>
           <%= form.email_field :email,
+              id: "doctor-email-main",
               placeholder: "doctor@clinica.com",
               class: "block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500" %>
         </div>
+
+        <!-- Especialidad + botón inline -->
+        <div>
+          <%= form.label :specialty_id, "Especialidad", class: "block text-sm font-semibold text-gray-800 mb-2" %>
+          <div class="flex gap-2 items-center">
+            <%= form.collection_select :specialty_id, Specialty.order(:name), :id, :name,
+                { include_blank: "Selecciona una especialidad" },
+                id: "doctor_specialty_id",
+                class: "block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500" %>
+            <button type="button"
+                    id="btn-new-specialty"
+                    title="Crear nueva especialidad"
+                    class="shrink-0 inline-flex items-center justify-center h-11 w-11 rounded-xl border border-blue-300 bg-blue-50 text-blue-600 hover:bg-blue-100 transition"
+                    onclick="document.getElementById('modal-new-specialty').classList.remove('hidden')">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
       </div>
     </section>
 
-    <!-- Cuenta Operativa (User) -->
+    <!-- ── Cuenta de Acceso ─────────────────────────────── -->
     <section class="space-y-5">
       <div>
         <h3 class="text-lg font-semibold text-gray-900">Cuenta de Acceso</h3>
-        <p class="text-sm text-gray-500">Credenciales para que el médico acceda al panel.</p>
+        <p class="text-sm text-gray-500">Contraseña y teléfono para el acceso al panel.</p>
       </div>
-      
+
       <%= form.fields_for :user, (@doctor.user || @doctor.build_user) do |uf| %>
+        <!-- Hidden id (needed for update) -->
+        <%= uf.hidden_field :id %>
+        <!-- Email hidden — synced from the main email field via JS -->
+        <input type="hidden" name="doctor[user_attributes][email]" id="hidden-user-email"
+               value="<%= @doctor.email %>">
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 rounded-2xl border border-blue-100 bg-blue-50/50 p-5">
           <div>
-            <%= uf.label :email, "Correo de Acceso", class: "block text-sm font-semibold text-blue-900 mb-2" %>
-            <%= uf.email_field :email,
-                placeholder: "login@clinica.com",
-                class: "block w-full rounded-xl border border-blue-200 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500" %>
-          </div>
-          <div>
-            <%= uf.label :phone, "Teléfono (Obligatorio)", class: "block text-sm font-semibold text-blue-900 mb-2" %>
+            <%= uf.label :phone, "Teléfono", class: "block text-sm font-semibold text-blue-900 mb-2" %>
             <%= uf.telephone_field :phone,
                 placeholder: "10 dígitos",
                 class: "block w-full rounded-xl border border-blue-200 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500" %>
@@ -82,7 +122,7 @@
             <%= uf.label :password, class: "block text-sm font-semibold text-blue-900 mb-2" do %>
               Contraseña
               <% if uf.object.persisted? %>
-                <span class="text-xs font-normal text-blue-600 ml-1">(Vacío si no cambia)</span>
+                <span class="text-xs font-normal text-blue-600 ml-1">(Vacío = sin cambios)</span>
               <% end %>
             <% end %>
             <%= uf.password_field :password,
@@ -92,13 +132,12 @@
       <% end %>
     </section>
 
-    <!-- Paquetes Asociados -->
+    <!-- ── Paquetes Asociados ───────────────────────────── -->
     <section class="space-y-5">
       <div>
-        <h3 class="text-lg font-semibold text-gray-900">Paquetes / Especialidades</h3>
+        <h3 class="text-lg font-semibold text-gray-900">Paquetes / Servicios</h3>
         <p class="text-sm text-gray-500">Selecciona qué atenciones tiene permitido brindar este médico.</p>
       </div>
-
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
         <%= form.collection_check_boxes(:package_ids, Package.all, :id, :name) do |b| %>
           <%= b.label class: "flex cursor-pointer items-start gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 transition hover:border-blue-300 hover:bg-blue-50" do %>
@@ -109,75 +148,328 @@
       </div>
     </section>
 
-    <!-- Disponibilidad -->
-    <section class="space-y-5">
+    <!-- ══════════════════════════════════════════════════════
+         DISPONIBILIDAD SEMANAL  –  nuevo UI
+    ══════════════════════════════════════════════════════ -->
+    <section class="space-y-6">
       <div>
         <h3 class="text-lg font-semibold text-gray-900">Disponibilidad semanal</h3>
         <p class="text-sm text-gray-500">
-          Define el horario disponible para cada día. Si un día no tiene horario, déjalo vacío.
+          Define un horario base y marca los días que aplica. Los días sin marcar pueden tener su propio horario o dejarse vacíos (no trabaja ese día).
         </p>
       </div>
 
-      <div class="space-y-4">
-        <% %w[Lunes Martes Miércoles Jueves Viernes Sábado Domingo].zip(%w[Monday Tuesday Wednesday Thursday Friday Saturday Sunday]).each do |dia, day| %>
-          <% times = (@doctor.available_hours || {})[day] || [] %>
-          <% start_time = times.first&.split("-")&.first %>
-          <% end_time   = times.first&.split("-")&.last %>
+      <!-- ── Horario base + chips de días ── -->
+      <div class="rounded-2xl border-2 border-blue-200 bg-blue-50/40 p-5 space-y-5">
+        <div class="flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span class="text-sm font-semibold text-blue-900">Horario base</span>
+        </div>
 
-          <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4 sm:p-5">
-            <div class="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6">
-              <!-- Día -->
-              <div class="lg:w-44 shrink-0">
-                <div class="text-sm font-semibold text-gray-900"><%= dia %></div>
-                <div class="text-xs text-gray-500"><%= day %></div>
+        <!-- Time pickers -->
+        <div class="flex flex-wrap gap-4 items-end">
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Entrada</label>
+            <input type="time" id="base-start" value="<%= base_start %>"
+                   class="rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div class="pb-2.5 text-gray-400 font-semibold text-sm">—</div>
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Salida</label>
+            <input type="time" id="base-end" value="<%= base_end %>"
+                   class="rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500">
+          </div>
+        </div>
+
+        <!-- Day chips -->
+        <div>
+          <p class="text-xs font-medium text-gray-600 mb-3">Selecciona los días que tienen este horario:</p>
+          <div class="flex flex-wrap gap-2" id="day-chips">
+            <% days_en.each_with_index do |day, i| %>
+              <button type="button"
+                      data-day="<%= day %>"
+                      data-day-es="<%= days_es[i] %>"
+                      class="day-chip px-4 py-2 rounded-xl text-sm font-semibold border-2 transition select-none
+                             <%= base_days.include?(day) ? 'border-blue-500 bg-blue-500 text-white chip-active' : 'border-gray-300 bg-white text-gray-600' %>"
+                      onclick="toggleChip(this)">
+                <%= days_short[i] %>
+              </button>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Horarios individuales (días no marcados) ── -->
+      <div id="custom-days-section" class="space-y-3">
+        <% days_en.each_with_index do |day, i| %>
+          <%
+            custom_range = custom_times[day]&.first
+            c_start = custom_range&.split("-")&.first || ""
+            c_end   = custom_range&.split("-")&.last  || ""
+            hidden  = base_days.include?(day) ? "hidden" : ""
+          %>
+          <div id="custom-row-<%= day %>"
+               class="custom-day-row rounded-2xl border border-gray-200 bg-gray-50 p-4 <%= hidden %>"
+               data-day="<%= day %>">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+              <!-- Día label -->
+              <div class="sm:w-36 shrink-0">
+                <div class="text-sm font-semibold text-gray-900"><%= days_es[i] %></div>
+                <div class="text-xs text-gray-400 mt-0.5">Horario propio o vacío = no trabaja</div>
               </div>
-
-              <!-- Inputs -->
-              <div class="flex-1 grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-3 items-center">
+              <!-- Time inputs -->
+              <div class="flex flex-wrap gap-3 items-end flex-1">
                 <div>
-                  <label for="<%= day.downcase %>-start" class="block text-xs font-medium text-gray-600 mb-1">
-                    Hora de inicio
-                  </label>
-                  <input
-                    type="time"
-                    id="<%= day.downcase %>-start"
-                    name="doctor[available_hours][<%= day %>][]"
-                    value="<%= start_time %>"
-                    class="block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-                  />
+                  <label class="block text-xs font-medium text-gray-500 mb-1">Entrada</label>
+                  <input type="time"
+                         id="custom-start-<%= day %>"
+                         value="<%= c_start %>"
+                         class="rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500">
                 </div>
-
-                <div class="hidden sm:flex items-center justify-center pt-6 text-gray-400 font-semibold">
-                  a
-                </div>
-
+                <div class="pb-2.5 text-gray-400 font-semibold text-sm">—</div>
                 <div>
-                  <label for="<%= day.downcase %>-end" class="block text-xs font-medium text-gray-600 mb-1">
-                    Hora de fin
-                  </label>
-                  <input
-                    type="time"
-                    id="<%= day.downcase %>-end"
-                    name="doctor[available_hours][<%= day %>][]"
-                    value="<%= end_time %>"
-                    class="block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-                  />
+                  <label class="block text-xs font-medium text-gray-500 mb-1">Salida</label>
+                  <input type="time"
+                         id="custom-end-<%= day %>"
+                         value="<%= c_end %>"
+                         class="rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500">
                 </div>
+                <button type="button"
+                        class="pb-2.5 text-xs text-gray-400 hover:text-red-500 transition"
+                        onclick="clearCustomRow('<%= day %>')">
+                  Limpiar
+                </button>
               </div>
             </div>
           </div>
         <% end %>
-      </div>
-    </section>
-  </div>
 
-  <!-- Footer -->
+        <!-- Placeholder when all days are on base schedule -->
+        <div id="all-days-base-msg" class="<%= base_days.length == 7 ? '' : 'hidden' %> text-center py-4 text-sm text-gray-400">
+          Todos los días usan el horario base.
+        </div>
+      </div>
+
+      <!-- Container where JS injects hidden inputs before submit -->
+      <div id="schedule-hidden-inputs"></div>
+    </section>
+
+  </div><!-- /p-5 sm:p-8 -->
+
+  <!-- ── Footer ─────────────────────────────────────────── -->
   <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 px-5 py-5 sm:px-8 border-t border-gray-100 bg-gray-50">
     <%= link_to "Cancelar",
         admin_doctors_path,
         class: "inline-flex items-center justify-center rounded-xl border border-gray-300 bg-white px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-100 transition" %>
 
     <%= form.submit(@doctor.persisted? ? "Actualizar doctor" : "Guardar doctor",
+        id: "doctor-submit-btn",
         class: "inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition") %>
   </div>
+
 <% end %>
+
+<!-- ══════════════════════════════════════════════════════
+     MODAL: Nueva Especialidad (inline)
+══════════════════════════════════════════════════════ -->
+<div id="modal-new-specialty"
+     class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+     role="dialog" aria-modal="true" aria-labelledby="modal-specialty-title">
+  <div class="w-full max-w-sm bg-white rounded-2xl shadow-2xl p-6 space-y-5">
+    <div class="flex items-center justify-between">
+      <h3 id="modal-specialty-title" class="text-lg font-bold text-gray-900">Nueva especialidad</h3>
+      <button type="button"
+              onclick="document.getElementById('modal-new-specialty').classList.add('hidden')"
+              class="text-gray-400 hover:text-gray-600 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div>
+      <label for="new-specialty-name" class="block text-sm font-semibold text-gray-800 mb-2">
+        Nombre de la especialidad
+      </label>
+      <input type="text" id="new-specialty-name" placeholder="Ej. Cardiología"
+             class="block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500">
+      <p id="new-specialty-error" class="mt-2 text-sm text-red-600 hidden"></p>
+    </div>
+    <div class="flex gap-3">
+      <button type="button"
+              onclick="document.getElementById('modal-new-specialty').classList.add('hidden')"
+              class="flex-1 rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-100 transition">
+        Cancelar
+      </button>
+      <button type="button" id="btn-save-specialty"
+              class="flex-1 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition">
+        Guardar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  'use strict';
+
+  const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+
+  // ── 1. EMAIL SYNC ────────────────────────────────────────
+  // Keep doctor[email] and doctor[user_attributes][email] in sync from one field.
+  const mainEmail   = document.getElementById('doctor-email-main');
+  const hiddenEmail = document.getElementById('hidden-user-email');
+
+  function syncEmail() { if (hiddenEmail) hiddenEmail.value = mainEmail.value; }
+  if (mainEmail) {
+    mainEmail.addEventListener('input', syncEmail);
+    syncEmail(); // init
+  }
+
+  // ── 2. DAY CHIPS ─────────────────────────────────────────
+  function toggleChip(btn) {
+    const isActive = btn.classList.contains('chip-active');
+    if (isActive) {
+      // Deactivate: show custom row
+      btn.classList.remove('chip-active', 'border-blue-500', 'bg-blue-500', 'text-white');
+      btn.classList.add('border-gray-300', 'bg-white', 'text-gray-600');
+      showCustomRow(btn.dataset.day);
+    } else {
+      // Activate: hide custom row
+      btn.classList.add('chip-active', 'border-blue-500', 'bg-blue-500', 'text-white');
+      btn.classList.remove('border-gray-300', 'bg-white', 'text-gray-600');
+      hideCustomRow(btn.dataset.day);
+    }
+    updateAllDaysMsg();
+  }
+
+  function showCustomRow(day) {
+    const row = document.getElementById('custom-row-' + day);
+    if (row) row.classList.remove('hidden');
+  }
+
+  function hideCustomRow(day) {
+    const row = document.getElementById('custom-row-' + day);
+    if (row) row.classList.add('hidden');
+  }
+
+  function updateAllDaysMsg() {
+    const anyCustomVisible = DAYS.some(d => {
+      const row = document.getElementById('custom-row-' + d);
+      return row && !row.classList.contains('hidden');
+    });
+    const msg = document.getElementById('all-days-base-msg');
+    if (msg) msg.classList.toggle('hidden', anyCustomVisible);
+  }
+
+  // Make toggleChip globally available (called via onclick)
+  window.toggleChip = toggleChip;
+
+  // ── 3. CLEAR CUSTOM ROW ──────────────────────────────────
+  window.clearCustomRow = function(day) {
+    const s = document.getElementById('custom-start-' + day);
+    const e = document.getElementById('custom-end-' + day);
+    if (s) s.value = '';
+    if (e) e.value = '';
+  };
+
+  // ── 4. BUILD SCHEDULE HIDDEN INPUTS ON SUBMIT ────────────
+  // No static form inputs for schedule — JS generates them on submit.
+  // This avoids any disabled/enabled juggling.
+  document.getElementById('doctor-form').addEventListener('submit', function () {
+    const container = document.getElementById('schedule-hidden-inputs');
+    container.innerHTML = ''; // clear previous
+
+    const baseStart = document.getElementById('base-start').value;
+    const baseEnd   = document.getElementById('base-end').value;
+
+    DAYS.forEach(function (day) {
+      const chip = document.querySelector('[data-day="' + day + '"].day-chip');
+      const isBase = chip && chip.classList.contains('chip-active');
+
+      if (isBase && baseStart && baseEnd) {
+        // Day uses base schedule
+        addHidden(container, day, baseStart);
+        addHidden(container, day, baseEnd);
+      } else if (!isBase) {
+        // Check for custom schedule
+        const s = (document.getElementById('custom-start-' + day) || {}).value || '';
+        const e = (document.getElementById('custom-end-'   + day) || {}).value || '';
+        if (s && e) {
+          addHidden(container, day, s);
+          addHidden(container, day, e);
+        }
+        // else: no inputs → controller receives nothing for this day → cleared
+      }
+    });
+
+    // Also sync email once more just before submit
+    syncEmail();
+  });
+
+  function addHidden(container, day, value) {
+    const input = document.createElement('input');
+    input.type  = 'hidden';
+    input.name  = 'doctor[available_hours][' + day + '][]';
+    input.value = value;
+    container.appendChild(input);
+  }
+
+  // ── 5. INLINE SPECIALTY MODAL ────────────────────────────
+  const modal     = document.getElementById('modal-new-specialty');
+  const saveBtn   = document.getElementById('btn-save-specialty');
+  const nameInput = document.getElementById('new-specialty-name');
+  const errorEl   = document.getElementById('new-specialty-error');
+  const select    = document.getElementById('doctor_specialty_id');
+  const csrf      = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
+
+  modal.addEventListener('click', e => { if (e.target === modal) modal.classList.add('hidden'); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !modal.classList.contains('hidden')) modal.classList.add('hidden');
+  });
+  nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); saveBtn.click(); } });
+
+  saveBtn.addEventListener('click', async function () {
+    const name = nameInput.value.trim();
+    if (!name) {
+      errorEl.textContent = 'El nombre es obligatorio.';
+      errorEl.classList.remove('hidden');
+      nameInput.focus();
+      return;
+    }
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Guardando…';
+    errorEl.classList.add('hidden');
+
+    try {
+      const res  = await fetch('<%= admin_specialties_path %>', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-Token': csrf },
+        body: JSON.stringify({ specialty: { name } })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        select.add(new Option(data.name, data.id, true, true));
+        modal.classList.add('hidden');
+        nameInput.value = '';
+      } else {
+        errorEl.textContent = (data.errors || ['Error al guardar']).join(', ');
+        errorEl.classList.remove('hidden');
+      }
+    } catch {
+      errorEl.textContent = 'Error de conexión. Intenta de nuevo.';
+      errorEl.classList.remove('hidden');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Guardar';
+    }
+  });
+
+  // Init
+  updateAllDaysMsg();
+})();
+</script>

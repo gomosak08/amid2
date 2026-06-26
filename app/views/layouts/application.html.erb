@@ -28,280 +28,24 @@
 
   <script src="https://www.google.com/recaptcha/api.js?render=<%= ENV.fetch("RECAPTCHA_SITE_KEY", "") %>" async defer></script>
 
-  <style>
-    :root{
-      --amid-primary:#2563eb;
-      --amid-primary-dark:#1d4ed8;
-      --amid-secondary:#06b6d4;
-      --amid-accent:#22c55e;
-      --amid-ink:#0f172a;
-      --amid-muted:#64748b;
-      --amid-bg:#f8fafc;
-      --amid-card:#ffffff;
-      --amid-line:#e2e8f0;
-      --header-height: 92px;
-      --site-max-width: 1900px;
-      --site-pad-x: 22px;
-    }
-
-    html{
-      scroll-behavior:smooth;
-    }
-
-    body{
-      margin:0;
-      background: linear-gradient(180deg, #f8fbff 0%, #f8fafc 36%, #f1f5f9 100%);
-      color: var(--amid-ink);
-      overflow-x: hidden;
-    }
-
-    .site-container{
-      width: min(100% - (var(--site-pad-x) * 2), var(--site-max-width));
-      margin-inline: auto;
-    }
-
-    @media (min-width: 768px){
-      .site-container{
-        padding-left:1.25rem;
-        padding-right:1.25rem;
-      }
-    }
-
-    /* Header fijo */
-    .site-header{
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      width: 100%;
-      z-index: 1100;
-      backdrop-filter: blur(14px);
-      background:
-        linear-gradient(90deg, rgba(108,214,233,.95) 0%, rgba(59,130,246,.98) 50%, rgba(108,214,233,.95) 100%);
-      box-shadow: 0 10px 30px rgba(15,23,42,.10);
-      border-bottom: 1px solid rgba(255,255,255,.18);
-    }
-
-    .header-inner{
-      min-height: var(--header-height);
-    }
-
-    .brand-logo{
-      height: 62px;
-      width: auto;
-      display:block;
-    }
-
-    @media (min-width: 768px){
-      .brand-logo{
-        height: 74px;
-      }
-    }
-
-    .nav-link-main{
-      color:#fff;
-      text-decoration:none;
-      font-weight:700;
-      font-size:.98rem;
-      padding:.55rem .25rem;
-      transition: color .18s ease, opacity .18s ease;
-      opacity:.96;
-    }
-
-    .nav-link-main:hover{
-      color:#d1fae5;
-      opacity:1;
-    }
-
-    .nav-cta{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:.55rem;
-      background:#fff;
-      color:var(--amid-primary-dark);
-      text-decoration:none;
-      font-weight:900;
-      padding:.78rem 1.1rem;
-      border-radius:14px;
-      box-shadow: 0 10px 20px rgba(15,23,42,.10);
-      transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
-    }
-
-    .nav-cta:hover{
-      transform: translateY(-1px);
-      background:#eff6ff;
-      color:var(--amid-primary-dark);
-    }
-
-    .header-glass-btn {
-      background: rgba(255, 255, 255, 0.14);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-    }
-
-    .header-glass-btn:hover {
-      background: rgba(255, 255, 255, 0.22);
-    }
-
-    .quick-panel-enter {
-      opacity: 0;
-      transform: translateY(-8px) scale(0.98);
-      pointer-events: none;
-    }
-
-    .quick-panel-open {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-      pointer-events: auto;
-    }
-
-    .quick-panel-transition {
-      transition: opacity .18s ease, transform .18s ease;
-      transform-origin: top right;
-    }
-
-    .quick-link-card {
-      transition: all .18s ease;
-    }
-
-    .quick-link-card:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
-    }
-
-    .quick-panel-overlay {
-      background: rgba(15, 23, 42, 0.18);
-      backdrop-filter: blur(2px);
-    }
-
-    .main-content{
-      padding-top: calc(var(--header-height) + 18px);
-      padding-bottom: 2rem;
-    }
-
-    @media (max-width: 767.98px){
-      :root{
-        --header-height: 84px;
-      }
-
-      .main-content{
-        padding-top: calc(var(--header-height) + 14px);
-      }
-    }
-
-    .map-card{
-      overflow:hidden;
-      border-radius: 24px;
-      background:#fff;
-      border:1px solid var(--amid-line);
-      box-shadow: 0 12px 30px rgba(15,23,42,.06);
-    }
-
-    .map-card-head{
-      padding:1rem 1rem .75rem;
-      border-bottom:1px solid #eef2f7;
-    }
-
-    .map-card-title{
-      margin:0;
-      font-size:1.05rem;
-      font-weight:900;
-      color:var(--amid-ink);
-    }
-
-    .map-card-sub{
-      margin:.2rem 0 0;
-      color:var(--amid-muted);
-      font-size:.94rem;
-    }
-
-    .site-footer{
-      color:#fff;
-      background:
-        linear-gradient(90deg, rgba(108,214,233,.96) 0%, rgba(59,130,246,.98) 50%, rgba(108,214,233,.96) 100%);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
-    }
-
-    .footer-title{
-      font-size:1.05rem;
-      font-weight:900;
-      margin-bottom:.85rem;
-    }
-
-    .footer-link{
-      color:#fff;
-      text-decoration:none;
-      opacity:.94;
-    }
-
-    .footer-link:hover{
-      color:#d1fae5;
-      text-decoration:underline;
-      opacity:1;
-    }
-
-    .footer-social{
-      display:inline-flex;
-      align-items:center;
-      gap:.6rem;
-      color:#fff;
-      text-decoration:none;
-      padding:.45rem 0;
-      opacity:.95;
-    }
-
-    .footer-social:hover{
-      color:#d1fae5;
-    }
-
-    .whatsapp-float{
-      position:fixed;
-      right:18px;
-      bottom:18px;
-      z-index:1200;
-      display:inline-flex;
-      align-items:center;
-      gap:.7rem;
-      background:#22c55e;
-      color:#06240f;
-      text-decoration:none;
-      font-weight:900;
-      padding:.9rem 1rem;
-      border-radius:999px;
-      box-shadow: 0 18px 32px rgba(34,197,94,.28);
-      transition: transform .18s ease, filter .18s ease;
-    }
-
-    .whatsapp-float:hover{
-      transform: translateY(-2px);
-      filter: brightness(.98);
-      color:#06240f;
-    }
-
-    .whatsapp-float .label{
-      display:none;
-    }
-
-    @media (min-width: 768px){
-      .whatsapp-float .label{
-        display:inline;
-      }
-    }
-
-    .mobile-menu-panel{
-      border-top: 1px solid rgba(255,255,255,.18);
-    }
-  </style>
+  <%= stylesheet_link_tag "layout",  "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag "topbar",  "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag "buttons", "data-turbo-track": "reload" %>
 
   <%= yield :head %>
 </head>
 
 <body class="font-sans antialiased">
+  <% if current_page?(root_path) %>
+    <div class="fixed bottom-5 left-5 z-[1300] max-w-[calc(100vw-2.5rem)] rounded-2xl bg-amber-400 px-4 py-3 text-sm font-black uppercase tracking-wide text-amber-950 shadow-2xl ring-1 ring-amber-600/20">
+      Página de prueba: no agendar
+    </div>
+  <% end %>
+
   <header class="site-header text-white">
     <div class="site-container">
       <div class="header-inner flex items-center justify-between gap-4 relative">
-        <div class="flex items-center shrink-0">
+        <div class="header-brand flex items-center min-w-0">
           <%= link_to root_path, class: "flex items-center" do %>
             <%= image_tag "LOGO.png", alt: "AMID Logo", class: "brand-logo" %>
           <% end %>
@@ -316,8 +60,10 @@
             <%= link_to "Contacto", (defined?(contact_path) ? contact_path : "#"), class: "nav-link-main" %>
           </nav>
 
-          <%= link_to "Agendar cita", new_appointment_path %>
-
+          <%= link_to new_appointment_path, class: "nav-cta", data: { turbo: false } do %>
+            <i class="fa-solid fa-calendar-check"></i>
+            <span>Agendar cita</span>
+          <% end %>
 
           <button
             id="quick-panel-toggle"
@@ -325,7 +71,7 @@
             class="header-glass-btn inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-white/60"
             aria-expanded="false"
             aria-controls="quick-panel">
-            <i class="fa-solid fa-grid-2"></i>
+            <i class="fa-solid fa-table-cells-large"></i>
             Accesos rápidos
             <i class="fa-solid fa-chevron-down text-xs"></i>
           </button>
@@ -344,7 +90,7 @@
           <% end %>
         </div>
 
-        <div class="lg:hidden flex items-center gap-2">
+        <div class="mobile-header-actions lg:hidden flex items-center gap-2">
           <%= link_to new_appointment_path,
             class: "header-glass-btn inline-flex items-center justify-center rounded-xl w-11 h-11 text-white shadow-sm",
             data: { turbo: false },
@@ -358,7 +104,7 @@
             class="header-glass-btn inline-flex items-center justify-center rounded-xl w-11 h-11 text-white shadow-sm"
             aria-expanded="false"
             aria-controls="quick-panel">
-            <i class="fa-solid fa-grid-2 text-lg"></i>
+            <i class="fa-solid fa-table-cells-large text-lg"></i>
           </button>
 
           <button id="menu-toggle" class="header-glass-btn inline-flex items-center justify-center rounded-xl w-11 h-11 text-white shadow-sm border-0" type="button" aria-label="Abrir menú">
@@ -688,18 +434,24 @@
         <div class="map-card">
           <div class="map-card-head">
             <h3 class="map-card-title">Ubicación de la clínica</h3>
-            <p class="map-card-sub">Estamos en Morelia, Michoacán. Puedes visitarnos o escribirnos por WhatsApp para agendar.</p>
+            <p class="map-card-sub">
+              <%= link_to "Gob. Juan B. Ceballos 990, Nueva Chapultepec, 58280 Morelia, Mich.",
+                "https://maps.app.goo.gl/8EUjCSUeeXdcVyo17",
+                target: "_blank",
+                rel: "noopener",
+                class: "text-blue-700 font-semibold no-underline hover:underline" %>
+            </p>
           </div>
 
           <div class="w-full h-[280px] md:h-[360px]">
-            <iframe
-              loading="lazy"
-              class="w-full h-full"
-              src="https://maps.google.com/maps?q=Gral.%20Manuel%20de%20la%20Pe%C3%B1a%20y%20Pe%C3%B1a%20Pte.%20%23714%20Col.%20Chapultepec%20Sur.%20C.P.%2058260%20Morelia%2C%20Mich.&amp;t=m&amp;z=13&amp;output=embed&amp;iwloc=near"
-              title="Ubicación de la clínica"
-              allowfullscreen
-              referrerpolicy="no-referrer-when-downgrade"
-            ></iframe>
+
+
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3756.620131946721!2d-101.17331482412109!3d19.686205332531678!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x842d0dfb0383f997%3A0x327dfc2549adcaa0!2sGob.%20Juan%20B.%20Ceballos%20990%2C%20Nueva%20Chapultepec%2C%2058280%20Morelia%2C%20Mich.!5e0!3m2!1ses-419!2smx!4v1781815163892!5m2!1ses-419!2smx"
+             class="w-full h-full"
+             loading="lazy" 
+             title="Ubicación de la clínica"
+             referrerpolicy="no-referrer-when-downgrade"
+             allowfullscreen></iframe>
           </div>
         </div>
       </div>
@@ -715,8 +467,12 @@
             Atención Médica Integral y Diagnóstica con enfoque profesional, humano y accesible.
           </p>
           <p class="text-white/90">
-            Gral. Manuel de la Peña y Peña Pte. #714<br>
-            Col. Chapultepec Sur, C.P. 58260<br>
+            <%= link_to "Gob. Juan B. Ceballos 990",
+              "https://maps.app.goo.gl/8EUjCSUeeXdcVyo17",
+              target: "_blank",
+              rel: "noopener",
+              class: "footer-link" %><br>
+            Nueva Chapultepec, C.P. 58280<br>
             Morelia, Michoacán
           </p>
         </div>

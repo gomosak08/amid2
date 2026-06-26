@@ -1,0 +1,71 @@
+<%
+  featured_services = @packages.where(kind: "servicios", featured: true)
+  featured_packages = @packages.where(kind: "paquete", featured: true)
+%>
+
+<%= stylesheet_link_tag "home_modern", "data-turbo-track": "reload" %>
+
+<div class="hm">
+  <section class="hm-hero">
+    <div class="hm-copy">
+      <span>AMID Digital Health</span>
+      <h1>Agenda, confirma y recibe atención médica sin complicaciones</h1>
+      <p>Una experiencia rápida, moderna y clara para reservar servicios y paquetes médicos.</p>
+
+      <div class="hm-actions">
+        <%= link_to "Agendar cita", new_appointment_path, class: "hm-btn hm-primary", data: { turbo: false } %>
+        <%= link_to "Explorar catálogo", services_path, class: "hm-btn hm-secondary" %>
+      </div>
+    </div>
+
+    <div class="hm-panel">
+      <div class="hm-panel-stat">
+        <strong><%= featured_services.count %></strong>
+        <span>Servicios</span>
+      </div>
+      <div class="hm-panel-stat">
+        <strong><%= featured_packages.count %></strong>
+        <span>Paquetes</span>
+      </div>
+      <div class="hm-panel-stat">
+        <strong>24/7</strong>
+        <span>Agenda en línea</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="hm-split">
+    <div class="hm-section-head">
+      <span>Servicios</span>
+      <h2>Servicios destacados</h2>
+    </div>
+
+    <div class="hm-grid">
+      <% featured_services.each do |package| %>
+        <div class="hm-card-wrap">
+          <%= render "shared/featured_package_card", package: package %>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="hm-split hm-packages">
+    <div class="hm-section-head">
+      <span>Paquetes</span>
+      <h2>Paquetes para cuidar tu salud</h2>
+    </div>
+
+    <div class="hm-grid">
+      <% featured_packages.each do |package| %>
+        <div class="hm-card-wrap">
+          <%= render "shared/featured_package_card", package: package %>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="hm-cta">
+    <h2>Tu próxima cita está a un clic</h2>
+    <%= link_to "Reservar ahora", new_appointment_path, class: "hm-btn hm-primary", data: { turbo: false } %>
+  </section>
+</div>

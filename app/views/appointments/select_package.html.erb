@@ -29,7 +29,7 @@
     </div>
   </div>
 
-  <% grouped_packages = @packages.group_by(&:kind) %>
+  <% grouped_packages = @packages.reject { |p| p.kind == "cirugia" }.group_by(&:kind) %>
 
   <div class="space-y-10">
     <% grouped_packages.each do |kind, items| %>
