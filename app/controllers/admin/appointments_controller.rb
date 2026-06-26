@@ -5,6 +5,7 @@ class Admin::AppointmentsController < ApplicationController
 
   before_action :authenticate_user!
   before_action :require_admin_or_assistant_or_doctor
+  before_action :ensure_appointment_booking_enabled!, only: %i[new create available_fields]
   before_action :set_appointment, only: [ :show, :edit, :update, :destroy, :cancel, :attach_results, :remove_result ]
   before_action :require_results_permission, only: [ :attach_results, :remove_result ]
 
@@ -153,7 +154,7 @@ class Admin::AppointmentsController < ApplicationController
     respond_to do |format|
       format.html
       format.pdf do
-        logo_path = Rails.root.join("app/assets/images/logo.png")
+        logo_path = Rails.root.join("app/assets/images/LOGO.png")
         pdf = User::Pdf::AppointmentPdf.new(@appointment, logo_path: logo_path).render
 
         send_data pdf,
