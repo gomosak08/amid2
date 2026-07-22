@@ -1,4 +1,15 @@
 Rails.application.routes.draw do
+  namespace :api do
+    namespace :internal do
+      resources :appointments, only: %i[index show] do
+        member do
+          patch :clinical_status
+        end
+      end
+    end
+  end
+
+
   # ================================
   # STATIC PAGES
   # ================================

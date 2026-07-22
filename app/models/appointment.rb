@@ -2,11 +2,13 @@ class Appointment < ApplicationRecord
   belongs_to :package
   belongs_to :doctor
   belongs_to :created_by, class_name: "User", optional: true
+
   has_many_attached :study_results
 
   before_validation :ensure_unique_code, on: :create
   before_validation :ensure_token, on: :create
   before_validation :normalize_phone_number
+  before_validation :sync_status_from_clinical_status
 
   after_create_commit :schedule_whatsapp_notifications
 
@@ -15,16 +17,15 @@ class Appointment < ApplicationRecord
   validates :unique_code, presence: true, uniqueness: true
   validates :google_calendar_id, uniqueness: true, allow_nil: true
 
-  validate :doctor_can_deliver_package, if: -> { doctor && package }
+  validate :doctor_can_deliver_package, if: -> { doctor.present? && package.present? }
   validate :phone_not_banned, on: :create
   validate :no_double_booking
-  validate :doctor_not_unavailable, if: -> { doctor && start_date }
+  validate :doctor_not_unavailable, if: -> { doctor.present? && start_date.present? }
 
   enum :scheduled_by, {
     patient: 0,
     admin: 1,
     assistant: 2
-
   }
 
   enum :status, {
@@ -35,41 +36,67 @@ class Appointment < ApplicationRecord
     no_show: 4
   }
 
+  enum :clinical_status, {
+    pending: 0,
+    checked_in: 1,
+    triaged: 2,
+    waiting_for_doctor: 3,
+    in_consultation: 4,
+    completed: 5
+  }, prefix: true
+
   def to_param
     token.presence || super
   end
 
   def scheduled_by_label
     if created_by.present?
-      user_name = created_by.name.presence || created_by.email.split('@').first
-      
-      role_str = case created_by.role
-                 when "admin" then "Administrador"
-                 when "assistant" then "Asistente"
-                 when "doctor" then "Médico"
-                 else "Usuario"
-                 end
-                 
-      "#{role_str} - #{user_name}"
+      user_name =
+        created_by.name.presence ||
+        created_by.email.to_s.split("@").first.presence ||
+        "Usuario"
+
+      role_label =
+        case created_by.role
+        when "admin"
+          "Administrador"
+        when "assistant"
+          "Asistente"
+        when "doctor"
+          "Médico"
+        else
+          "Usuario"
+        end
+
+      "#{role_label} - #{user_name}"
     else
       case scheduled_by
-      when "patient" then "Paciente"
-      when "admin"   then "Administrador"
-      when "assistant" then "Asistente"
-      when "general_user" then "Usuario General"
-      else (scheduled_by || "No especificado").to_s.humanize
+      when "patient"
+        "Paciente"
+      when "admin"
+        "Administrador"
+      when "assistant"
+        "Asistente"
+      else
+        scheduled_by.present? ? scheduled_by.humanize : "No especificado"
       end
     end
   end
 
   def status_label
     case status
-    when "scheduled"          then "Programada"
-    when "canceled_by_admin"  then "Cancelada por Admin"
-    when "canceled_by_client" then "Cancelada por Cliente"
-    when "completed"          then "Completada"
-    when "no_show"            then "No Asistió"
-    else status.humanize
+    when "scheduled"
+      "Programada"
+    when "canceled_by_admin"
+      "Cancelada por Admin"
+    when "canceled_by_client"
+      "Cancelada por Cliente"
+    when "completed"
+      "Completada"
+    when "no_show"
+      "No Asistió"
+    else
+      status.present? ? status.humanize : "No especificado"
     end
   end
 
@@ -77,11 +104,14 @@ class Appointment < ApplicationRecord
     raw_phone =
       if respond_to?(:phone_number) && phone_number.present?
         phone_number
-      elsif respond_to?(:phone) && phone.present?
+      elsif phone.present?
         phone
       end
 
-    self.phone_number_e164 = PhoneNormalizer.to_e164(raw_phone) if respond_to?(:phone_number_e164=)
+    return if raw_phone.blank?
+    return unless respond_to?(:phone_number_e164=)
+
+    self.phone_number_e164 = PhoneNormalizer.to_e164(raw_phone)
   end
 
   def phone_not_banned
@@ -92,25 +122,46 @@ class Appointment < ApplicationRecord
     return if ban.blank?
 
     if ban.hard?
-      errors.add(:base, "Este número no puede agendar ni contactar asistencia.")
+      errors.add(
+        :base,
+        "Este número no puede agendar ni contactar asistencia."
+      )
     else
-      errors.add(:base, "Este número no puede agendar en línea. Debe hacerlo con un asistente.")
+      errors.add(
+        :base,
+        "Este número no puede agendar en línea. Debe hacerlo con un asistente."
+      )
     end
   end
 
   def doctor_not_unavailable
-    # Solo lanza error si hay un bloqueo de DÍA COMPLETO (ignorando bloqueos por horas)
-    # Las superposiciones de horas y bloqueos específicos ya se validan en el Service y con no_double_booking
-    full_day_block = DoctorUnavailability
-                     .where(doctor_id: doctor_id, date: start_date.to_date)
-                     .where(start_time: nil, end_time: nil)
+    return if doctor_id.blank? || start_date.blank?
+
+    full_day_block =
+      DoctorUnavailability
+        .where(
+          doctor_id: doctor_id,
+          date: start_date.to_date,
+          start_time: nil,
+          end_time: nil
+        )
 
     if full_day_block.exists?
-      errors.add(:start_date, "el doctor no está disponible ese día completo.")
+      errors.add(
+        :start_date,
+        "el doctor no está disponible ese día completo."
+      )
     end
   end
 
   private
+
+  def sync_status_from_clinical_status
+    return unless will_save_change_to_clinical_status?
+    return unless clinical_status_completed?
+
+    self.status = :completed
+  end
 
   def schedule_whatsapp_notifications
     raw_phone =
@@ -121,7 +172,7 @@ class Appointment < ApplicationRecord
       end
 
     return if raw_phone.blank?
-    return unless start_date.present?
+    return if start_date.blank?
 
     target_phone =
       if respond_to?(:phone_number_e164) && phone_number_e164.present?
@@ -133,28 +184,35 @@ class Appointment < ApplicationRecord
     now = Time.current
     time_until_appointment = start_date - now
 
-    Rails.logger.info "[WA SCHEDULER] Appointment ##{id} start_date=#{start_date} now=#{now} diff_seconds=#{time_until_appointment}"
+    Rails.logger.info(
+      "[WA SCHEDULER] Appointment ##{id} " \
+      "start_date=#{start_date} now=#{now} " \
+      "diff_seconds=#{time_until_appointment}"
+    )
 
-    # 1) Confirmación inmediata
+    # 1. Confirmación inmediata
     SendWhatsappMessageJob.perform_later(
       to: target_phone,
       message_type: "confirmation",
       appointment_id: id
     )
 
-    # 2) Primer recordatorio
-    # - Si faltan más de 24h: mandar 24h antes
-    # - Si faltan menos de 24h pero más de 2h: mandar inmediato
+    # 2. Recordatorio 24 horas antes
     if time_until_appointment > 24.hours
       reminder_24h_at = start_date - 24.hours
 
-      SendWhatsappMessageJob.set(wait_until: reminder_24h_at).perform_later(
-        to: target_phone,
-        message_type: "reminder_24h",
-        appointment_id: id
-      )
+      SendWhatsappMessageJob
+        .set(wait_until: reminder_24h_at)
+        .perform_later(
+          to: target_phone,
+          message_type: "reminder_24h",
+          appointment_id: id
+        )
 
-      Rails.logger.info "[WA SCHEDULER] reminder_24h agendado para #{reminder_24h_at} appointment_id=#{id}"
+      Rails.logger.info(
+        "[WA SCHEDULER] reminder_24h agendado para " \
+        "#{reminder_24h_at} appointment_id=#{id}"
+      )
     elsif time_until_appointment > 2.hours
       SendWhatsappMessageJob.perform_later(
         to: target_phone,
@@ -162,43 +220,65 @@ class Appointment < ApplicationRecord
         appointment_id: id
       )
 
-      Rails.logger.info "[WA SCHEDULER] reminder_24h enviado inmediato appointment_id=#{id}"
+      Rails.logger.info(
+        "[WA SCHEDULER] reminder_24h enviado inmediato " \
+        "appointment_id=#{id}"
+      )
     else
-      Rails.logger.info "[WA SCHEDULER] reminder_24h no aplica appointment_id=#{id}"
+      Rails.logger.info(
+        "[WA SCHEDULER] reminder_24h no aplica appointment_id=#{id}"
+      )
     end
 
-    # 3) Segundo recordatorio 2h antes
-    # Solo si la cita se agenda con más de 2 horas de anticipación
+    # 3. Recordatorio 2 horas antes
     if time_until_appointment > 2.hours
       reminder_2h_at = start_date - 2.hours
 
-      SendWhatsappMessageJob.set(wait_until: reminder_2h_at).perform_later(
-        to: target_phone,
-        message_type: "reminder_2h",
-        appointment_id: id
-      )
+      SendWhatsappMessageJob
+        .set(wait_until: reminder_2h_at)
+        .perform_later(
+          to: target_phone,
+          message_type: "reminder_2h",
+          appointment_id: id
+        )
 
-      Rails.logger.info "[WA SCHEDULER] reminder_2h agendado para #{reminder_2h_at} appointment_id=#{id}"
+      Rails.logger.info(
+        "[WA SCHEDULER] reminder_2h agendado para " \
+        "#{reminder_2h_at} appointment_id=#{id}"
+      )
     else
-      Rails.logger.info "[WA SCHEDULER] reminder_2h no aplica appointment_id=#{id}"
+      Rails.logger.info(
+        "[WA SCHEDULER] reminder_2h no aplica appointment_id=#{id}"
+      )
     end
   end
 
   def no_double_booking
-    overlapping_appointment = Appointment
-      .where(doctor_id: doctor_id)
-      .where(start_date: start_date)
-      .where(status: :scheduled)
-      .where.not(id: id)
+    return if doctor_id.blank? || start_date.blank?
+
+    overlapping_appointment =
+      Appointment
+        .where(doctor_id: doctor_id)
+        .where(start_date: start_date)
+        .where(status: :scheduled)
+        .where.not(id: id)
 
     if overlapping_appointment.exists?
-      errors.add(:start_date, "ya está ocupado para este doctor.")
+      errors.add(
+        :start_date,
+        "ya está ocupado para este doctor."
+      )
     end
   end
 
   def doctor_can_deliver_package
+    return if doctor.blank? || package_id.blank?
+
     unless doctor.packages.exists?(id: package_id)
-      errors.add(:doctor_id, "no puede atender el paquete seleccionado")
+      errors.add(
+        :doctor_id,
+        "no puede atender el paquete seleccionado"
+      )
     end
   end
 

@@ -45,6 +45,8 @@ gem "flatpickr"
 gem "recaptcha", require: "recaptcha/rails"
 gem "prawn"
 
+gem "pg"
+
 gem "google-api-client" # or the latest version
 # gem 'google-api-client'
 gem "googleauth"
