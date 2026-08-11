@@ -300,6 +300,10 @@ GEM
       ast (~> 2.4.1)
       racc
     pdf-core (0.10.0)
+    pg (1.6.3)
+    pg (1.6.3-arm64-darwin)
+    pg (1.6.3-x86_64-darwin)
+    pg (1.6.3-x86_64-linux)
     prawn (2.5.0)
       matrix (~> 0.4)
       pdf-core (~> 0.10.0)
@@ -505,6 +509,7 @@ DEPENDENCIES
   jbuilder
   jsbundling-rails
   omniauth-google-oauth2
+  pg
   prawn
   prawn-table
   puma (>= 5.0)
