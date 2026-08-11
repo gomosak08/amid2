@@ -4,6 +4,8 @@
      else
        "Consulta los detalles de este servicio para conocer más información."
      end
+   card_title = local_assigns.fetch(:display_name, package.name)
+   card_type = local_assigns.fetch(:category_label, package.kind.to_s.humanize)
 %>
 
 <div class="amid-card" data-controller="toggle-description">
@@ -245,7 +247,7 @@
   <div class="amid-card-media">
     <% if package.image.attached? %>
       <div class="amid-card-image-stage">
-        <%= image_tag package.image, alt: package.name, class: "amid-card-image" %>
+        <%= image_tag package.image, alt: card_title, class: "amid-card-image" %>
       </div>
     <% else %>
       <div class="amid-card-empty">
@@ -264,7 +266,7 @@
     <div class="amid-card-top">
       <span class="amid-card-type">
         <i class="fa-solid fa-star text-[11px]"></i>
-        <%= package.kind.to_s.humanize %>
+        <%= card_type %>
       </span>
 
       <button
@@ -276,7 +278,7 @@
     </div>
 
     <h3 class="amid-card-title">
-      <%= link_to package.name, package_path(package), class: "amid-card-title-link" %>
+      <%= link_to card_title, package_path(package), class: "amid-card-title-link" %>
     </h3>
 
     <div class="amid-card-pills">

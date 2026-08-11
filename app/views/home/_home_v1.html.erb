@@ -1,9 +1,15 @@
 <%# ── HOME VERSION 1 (versión completa — hero + pasos + por qué + servicios + CTA) ── %>
 
 <%
-  featured_surgeries = @packages.where(kind: "cirugia", featured: true)
-  all_featured = featured_services + featured_packages + featured_surgeries
-  featured_total = all_featured.count
+  service_groups = amid_public_service_groups(@packages.to_a)
+  home_catalog_sections = [
+    ["Servicios", "Atención médica general disponible para agendar.", service_groups[:general].select(&:featured?), "Servicio"],
+    ["Ultrasonidos", "Estudios diagnósticos organizados para consulta rápida.", service_groups[:ultrasounds].select(&:featured?), "Ultrasonido"],
+    ["Ginecología", "Servicios enfocados en salud ginecológica y seguimiento.", service_groups[:gynecology].select(&:featured?), "Ginecología"],
+    ["Servicios Especiales", "Atención complementaria para tu bienestar.", service_groups[:special].select(&:featured?), "Servicio especial"],
+    ["Explora nuestros paquetes", "Opciones integrales con servicios agrupados.", featured_packages, "Paquete"]
+  ]
+  featured_total = home_catalog_sections.sum { |(_title, _description, packages, _label)| packages.count }
 %>
 
 <style>
@@ -149,13 +155,12 @@
   transition:background .18s,transform .18s;
 }
 .hp-see-all:hover{ background:linear-gradient(180deg,#065f46,#064e3b);color:#fff;transform:translateY(-1px); }
-.hp-service-tabs{ display:flex;gap:.6rem;margin-bottom:1.25rem;flex-wrap:wrap; }
-.hp-tab{
-  display:inline-flex;align-items:center;gap:.5rem;padding:.65rem 1.1rem;border-radius:999px;
-  font-weight:800;font-size:.9rem;border:1px solid var(--c-line);background:#fff;color:var(--c-muted);
-  cursor:pointer;text-decoration:none;transition:all .18s;
-}
-.hp-tab.active,.hp-tab:hover{ background:var(--c-green);color:#fff;border-color:var(--c-green); }
+.hp-services-stack{ display:flex;flex-direction:column;gap:1.65rem; }
+.hp-service-group{ border-top:1px solid var(--c-line);padding-top:1.25rem; }
+.hp-service-group:first-child{ border-top:0;padding-top:0; }
+.hp-service-group-head{ margin-bottom:.9rem;max-width:760px; }
+.hp-service-group-head h3{ margin:0;color:var(--c-ink);font-size:1.18rem;font-weight:950;line-height:1.2; }
+.hp-service-group-head p{ margin:.35rem 0 0;color:var(--c-muted);font-size:.92rem;line-height:1.55; }
 .hp-cards-grid{ display:grid;grid-template-columns:repeat(4,1fr);gap:1.1rem; }
 .hp-empty{ background:#fff;border:1px dashed var(--c-line);border-radius:var(--r);padding:2rem;text-align:center;color:var(--c-muted);font-size:.95rem; }
 /* ─ CTA ─ */
@@ -398,25 +403,30 @@
   <section class="hp-services">
     <div class="hp-services-head">
       <div>
-        <div class="hp-section-label"><i class="fa-solid fa-stethoscope"></i> Catálogo</div>
-        <h2 class="hp-section-title">Servicios y paquetes destacados</h2>
-        <p class="hp-section-sub">Selecciona cualquier opción para agendar directamente.</p>
+        <div class="hp-section-label">Catálogo</div>
+        <h2 class="hp-section-title">Servicios</h2>
+        <p class="hp-section-sub">Conoce las opciones disponibles en AMID: servicios médicos, ultrasonidos, ginecología, servicios especiales y paquetes para agendar en línea.</p>
       </div>
       <div style="display:flex;gap:.65rem;flex-wrap:wrap;align-items:center">
         <%= link_to services_path, class: "hp-see-all" do %><i class="fa-solid fa-wave-square"></i> Todos los servicios<% end %>
         <%= link_to packages_path, class: "hp-see-all" do %><i class="fa-solid fa-box-open"></i> Todos los paquetes<% end %>
       </div>
     </div>
-    <div class="hp-service-tabs">
-      <span class="hp-tab active" data-hptab="all"><i class="fa-solid fa-layer-group"></i> Todo (<%= featured_total %>)</span>
-      <span class="hp-tab" data-hptab="servicios"><i class="fa-solid fa-stethoscope"></i> Servicios (<%= featured_services.count %>)</span>
-      <span class="hp-tab" data-hptab="paquete"><i class="fa-solid fa-box-open"></i> Paquetes (<%= featured_packages.count %>)</span>
-    </div>
-    <% if all_featured.any? %>
-      <div class="hp-cards-grid" id="hp-cards-grid">
-        <% all_featured.each do |package| %>
-          <div class="hp-search-item" data-kind="<%= package.kind %>">
-            <%= render "shared/featured_package_card", package: package %>
+
+    <% if featured_total.positive? %>
+      <div class="hp-services-stack">
+        <% home_catalog_sections.each do |title, description, packages, label| %>
+          <% next if packages.blank? %>
+          <div class="hp-service-group">
+            <div class="hp-service-group-head">
+              <h3><%= title %></h3>
+              <p><%= description %></p>
+            </div>
+            <div class="hp-cards-grid">
+              <% packages.each do |package| %>
+                <%= render "shared/featured_package_card", package: package, category_label: label %>
+              <% end %>
+            </div>
           </div>
         <% end %>
       </div>
@@ -437,20 +447,3 @@
     </div>
   </section>
 </div>
-
-<script>
-  document.addEventListener("turbo:load", function () {
-    var tabs  = document.querySelectorAll("[data-hptab]");
-    var items = document.querySelectorAll(".hp-search-item");
-    tabs.forEach(function(tab) {
-      tab.addEventListener("click", function() {
-        var kind = tab.dataset.hptab;
-        tabs.forEach(function(t){ t.classList.remove("active"); });
-        tab.classList.add("active");
-        items.forEach(function(item){
-          item.style.display = (kind === "all" || item.dataset.kind === kind) ? "" : "none";
-        });
-      });
-    });
-  });
-</script>
