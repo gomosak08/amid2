@@ -1,4 +1,4 @@
-<%# ── HOME VERSION 1 (versión clínica completa — hero + pasos + por qué + servicios + CTA) ── %>
+<%# ── HOME VERSION 1 (versión completa — hero + pasos + por qué + servicios + CTA) ── %>
 
 <%
   featured_surgeries = @packages.where(kind: "cirugia", featured: true)
@@ -221,15 +221,6 @@
     padding:.88rem 1rem;
   }
 }
-@media (prefers-reduced-motion: reduce){
-  .hp-booking-frame{
-    animation:none;
-  }
-  .hp-booking-frame:first-child{ opacity:1;transform:none; }
-}
-
-
-
 .hp-booking-section {
   margin-bottom: 2rem;
   border: 1px solid #dbeafe;
@@ -262,95 +253,16 @@
   aspect-ratio: 1200 / 800;
   overflow: hidden;
   background: #06172e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.hp-booking-frame {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  animation: bookingVideo 28s infinite linear;
-  animation-delay: calc(var(--i) * 4s);
-}
-
-.hp-booking-frame img {
+.hp-booking-video {
+  display: block;
   width: 100%;
   height: 100%;
-  display: block;
-  object-fit: cover;
-  transform: scale(1.04);
-  animation: bookingMotion 4s infinite ease-in-out;
-}
-
-@keyframes bookingVideo {
-  0% {
-    opacity: 0;
-  }
-
-  1.5% {
-    opacity: 1;
-  }
-
-  13% {
-    opacity: 1;
-  }
-
-  14.28% {
-    opacity: 0;
-  }
-
-  100% {
-    opacity: 0;
-  }
-}
-
-@keyframes bookingMotion {
-  0% {
-    transform: scale(1.04) translateY(0);
-  }
-
-  100% {
-    transform: scale(1.08) translateY(-10px);
-  }
-}
-
-
-
-@media (prefers-reduced-motion: reduce) {
-  .hp-booking-frame,
-  .hp-booking-frame img {
-    animation: none;
-  }
-
-  .hp-booking-frame:first-child {
-    opacity: 1;
-  }
-}
-
-@keyframes bookingFade {
-  0% {
-    opacity: 0;
-    transform: translateX(18px) scale(1.01);
-  }
-
-  4% {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  18% {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  22% {
-    opacity: 0;
-    transform: translateX(-18px) scale(1.01);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translateX(-18px) scale(1.01);
-  }
+  object-fit: contain;
 }
 
 @media(max-width:640px){
@@ -382,7 +294,7 @@
         </span>
         <h1 class="hp-hero-h1">Tu salud en<br><span>las mejores manos</span></h1>
         <p class="hp-hero-sub">
-          En Clínica AMID te ofrecemos servicios médicos de alta calidad,
+          En AMID te ofrecemos servicios médicos de alta calidad,
           paquetes personalizados y la facilidad de agendar tu cita en minutos.
           Estamos en Morelia, Michoacán.
         </p>
@@ -411,7 +323,7 @@
             <div class="carousel-inner">
               <% ["slider1.jpg","slider2.jpg","slider3.jpg","slider4.jpg","slider5.jpg"].each_with_index do |img,idx| %>
                 <div class="carousel-item <%= 'active' if idx==0 %>">
-                  <%= image_tag img, alt: "AMID clínica", loading: "lazy" %>
+                  <%= image_tag img, alt: "AMID", loading: "lazy" %>
                 </div>
               <% end %>
             </div>
@@ -470,19 +382,13 @@
     <div class="hp-booking-visual" aria-label="Animación de pasos para agendar">
       <div class="hp-booking-stage">
         <div class="hp-booking-screen">
-          <% [
-            ["animacion1.png", "Elegir servicio para agendar"],
-            ["animacion2.png", "Seleccionar fecha y hora"],
-            ["animacion3.png", "Confirmar cita"],
-            ["animacion4.png", "Elegir servicio"],
-            ["animacion5.png", "Revisar detalles"],
-            ["animacion6.png", "Completar datos"],
-            ["animacion7.png", "Cita lista"]
-          ].each_with_index do |(img, title), index| %>
-            <div class="hp-booking-frame" style="--i:<%= index %>">
-              <%= image_tag img, alt: title, loading: "lazy" %>
-            </div>
-          <% end %>
+          <%= video_tag "videos/agenda facil.mp4",
+            autoplay: true,
+            loop: true,
+            muted: true,
+            playsinline: true,
+            preload: "metadata",
+            class: "hp-booking-video" %>
         </div>
       </div>
     </div>

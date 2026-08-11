@@ -19,7 +19,7 @@
     </div>
 
     <div class="hw-photo">
-      <%= image_tag "slider1.jpg", alt: "Clínica AMID" %>
+      <%= image_tag "slider1.jpg", alt: "AMID" %>
     </div>
   </section>
 

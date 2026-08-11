@@ -93,3 +93,35 @@ facilitar la asignacion de horarios al crear un doctor
 al crear doctor toma los datos de admin como da
 cambiar los botones headers a verde del logo 
 
+
+
+###################33
+Eliminar referencia a centro médico
+revisar imagen de paquetes
+ultrasonido de prostata, 
+
+En servicios, dar mas introduccion y descripcion a lo que son los servicios, quito el icono de servicios
+
+actualizar imagen de
+ultrasonido de prostata
+ultrasonido de tiroides
+ultrasonido de higado 
+ultrasonido testicular
+ultrasonido de vesicula biliar
+ultrasonido arterial o venoso
+
+separar ginecologia a partir de blanqueamiento intimo 
+
+
+explora nuestros paquetes
+
+en servicios poner ultrasonidos-ginecologia
+ultrasonido de embarazo en ginecologia y en ultrasonidos
+
+cambiar nombre de ultrasonido doppler a ultrasonido arterial o venoso y eliminar el que existe ahora 
+
+atencion psicologica y nutricion como servicios especiales
+
+
+
+quitar ultrasonido de riñon
