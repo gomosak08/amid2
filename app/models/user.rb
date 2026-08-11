@@ -3,7 +3,7 @@ class User < ApplicationRecord
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable, :recoverable, :rememberable, :validatable
 
-  enum role: { admin: "admin", assistant: "assistant", doctor: "doctor" }
+  enum :role, { admin: "admin", assistant: "assistant", doctor: "doctor" }
   has_one :doctor, dependent: :nullify
   has_many :created_appointments,
            class_name: "Appointment",

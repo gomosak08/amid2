@@ -1,14 +1,41 @@
 Rails.application.routes.draw do
   namespace :api do
     namespace :internal do
-      resources :appointments, only: %i[index show] do
-        member do
-          patch :clinical_status
+      namespace :v1 do
+        resources :appointments, only: %i[index show create update] do
+          member do
+            patch :clinical_status
+            post :cancel
+          end
+        end
+
+        resources :packages, only: %i[index show]
+        resources :doctors, only: %i[index show]
+
+        get "doctors/:doctor_id/availability",
+            to: "doctor_availability#show",
+            as: :doctor_availability
+
+        get "doctors/:doctor_id/calendar",
+            to: "doctor_calendar#show",
+            as: :doctor_calendar
+
+        scope "doctors/:doctor_id" do
+          resources :time_blocks,
+                    controller: "doctor_time_blocks",
+                    only: %i[index show create update destroy]
         end
       end
     end
   end
 
+
+  namespace :api do
+    namespace :webhooks do
+      get  :whatsapp, to: "whatsapp#verify"
+      post :whatsapp, to: "whatsapp#receive"
+    end
+  end
 
   # ================================
   # STATIC PAGES

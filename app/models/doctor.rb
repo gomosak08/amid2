@@ -11,6 +11,11 @@ class Doctor < ApplicationRecord
 
   has_many :doctor_unavailabilities, dependent: :destroy
   has_many :doctor_time_blocks, dependent: :destroy
+
+
+  has_many :doctor_calendar_blocks,
+         dependent: :destroy,
+         inverse_of: :doctor
   scope :for_package, ->(pkg_id) {
     joins(:doctor_packages).where(doctor_packages: { package_id: pkg_id })
   }
