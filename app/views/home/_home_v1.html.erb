@@ -1,15 +1,23 @@
 <%# ── HOME VERSION 1 (versión completa — hero + pasos + por qué + servicios + CTA) ── %>
 
 <%
-  service_groups = amid_public_service_groups(@packages.to_a)
-  home_catalog_sections = [
-    ["Servicios", "Atención médica general disponible para agendar.", service_groups[:general].select(&:featured?), "Servicio"],
-    ["Ultrasonidos", "Estudios diagnósticos organizados para consulta rápida.", service_groups[:ultrasounds].select(&:featured?), "Ultrasonido"],
-    ["Ginecología", "Servicios enfocados en salud ginecológica y seguimiento.", service_groups[:gynecology].select(&:featured?), "Ginecología"],
-    ["Servicios Especiales", "Atención complementaria para tu bienestar.", service_groups[:special].select(&:featured?), "Servicio especial"],
-    ["Explora nuestros paquetes", "Opciones integrales con servicios agrupados.", featured_packages, "Paquete"]
-  ]
-  featured_total = home_catalog_sections.sum { |(_title, _description, packages, _label)| packages.count }
+  kind_descriptions = {
+    "servicio" => "Atención médica general disponible para agendar.",
+    "paquete" => "Opciones integrales con servicios agrupados.",
+    "ginecologia" => "Servicios enfocados en salud ginecológica y seguimiento.",
+    "ultrasonido" => "Estudios diagnósticos organizados para consulta rápida.",
+    "servicio_especial" => "Atención complementaria para tu bienestar."
+  }
+
+  featured_catalog = @packages.select(&:featured?)
+  home_catalog_sections = Package::KIND_OPTIONS.filter_map do |kind, label|
+    packages = featured_catalog.select { |package| package.kinds.include?(kind) }
+    [label, kind_descriptions[kind], packages, label] if packages.any?
+  end
+
+  featured_total = home_catalog_sections.sum do |(_title, _description, packages, _label)|
+    packages.count
+  end
 %>
 
 <style>

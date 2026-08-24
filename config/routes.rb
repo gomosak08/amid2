@@ -16,7 +16,6 @@ Rails.application.routes.draw do
   # ================================
   get "services",  to: "services#index"
   get "packages",  to: "packages#index"
-  get "surgeries", to: "surgeries#index"
 
 
   # ================================

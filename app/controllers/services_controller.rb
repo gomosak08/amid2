@@ -1,6 +1,6 @@
 class ServicesController < ApplicationController
   def index
-    @packages = Package.all
+    @packages = Package.publicly_listed.order(:name)
   end
 
   def show

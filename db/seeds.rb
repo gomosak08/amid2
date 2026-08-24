@@ -23,7 +23,7 @@ def pkgs_by_names_includes(*fragments)
 end
 
 def pkgs_by_kind(kind)
-  Package.where(kind: kind)
+  Package.with_kind(Package::KIND_ALIASES.fetch(kind.to_s, kind.to_s))
 end
 
 def link_doctor_packages!(doctor, relation)
@@ -331,6 +331,8 @@ kind = [
 
 puts "🧩 Creating packages..."
 name.each_with_index do |package_name, i|
+  next if kind[i] == "cirugia"
+
   attrs = {
     name:        package_name,
     description: description[i],

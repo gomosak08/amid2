@@ -9,7 +9,7 @@ class Admin::StatisticsController < ApplicationController
     @to   = parse_date(params[:to]) || Date.current.end_of_month
 
     @doctor_options  = Doctor.order(:name)
-    @package_options = Package.order(:kind, :name)
+    @package_options = Package.order(:name)
     @creator_options = User
       .where(id: Appointment.where.not(created_by_id: nil).distinct.select(:created_by_id))
       .order(:role, :name, :email)

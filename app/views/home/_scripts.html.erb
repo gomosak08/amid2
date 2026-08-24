@@ -14,7 +14,7 @@
         tab.classList.add("active");
 
         items.forEach(function(item) {
-          item.style.display = (kind === "all" || item.dataset.kind === kind) ? "" : "none";
+          item.style.display = (kind === "all" || item.dataset.kinds.split(" ").includes(kind)) ? "" : "none";
         });
       });
     });

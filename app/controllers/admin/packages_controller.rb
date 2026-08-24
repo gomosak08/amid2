@@ -97,8 +97,8 @@ module Admin
         :image,
         :price,
         :duration,
-        :kind,
         :featured,
+        kinds: [],
         doctor_ids: []
       )
     end

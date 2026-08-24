@@ -1,6 +1,6 @@
 <%
-  featured_services  = @packages.where(kind: "servicios", featured: true)
-  featured_packages  = @packages.where(kind: "paquete", featured: true)
+  featured_services  = @packages.select { |package| package.featured? && package.kinds.include?("servicio") }
+  featured_packages  = @packages.select { |package| package.featured? && package.kinds.include?("paquete") }
 %>
 
 <%= stylesheet_link_tag "home_premium", "data-turbo-track": "reload" %>

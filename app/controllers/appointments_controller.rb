@@ -6,7 +6,7 @@ class AppointmentsController < ApplicationController
     @package = Package.find_by(id: params[:package_id] || params.dig(:appointment, :package_id))
 
     if @package.blank?
-      @packages = Package.order(:kind, :name)
+      @packages = Package.publicly_listed.order(:name)
       render :select_package
       return
     end

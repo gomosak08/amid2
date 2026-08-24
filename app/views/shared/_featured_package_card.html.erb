@@ -5,7 +5,7 @@
        "Consulta los detalles de este servicio para conocer más información."
      end
    card_title = local_assigns.fetch(:display_name, package.name)
-   card_type = local_assigns.fetch(:category_label, package.kind.to_s.humanize)
+   card_type = local_assigns.fetch(:category_label, package.kind_labels.join(" · "))
 %>
 
 <div class="amid-card" data-controller="toggle-description">
@@ -308,11 +308,8 @@
       <% end %>
 
       <% target_path =
-          case package.kind.to_s
-          when "paquete"
+          if package.kinds.include?("paquete")
             packages_path
-          when "cirugia"
-            surgeries_path
           else
             services_path
           end

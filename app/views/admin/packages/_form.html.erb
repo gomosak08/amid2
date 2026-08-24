@@ -45,13 +45,24 @@
         <%= form.number_field :duration, class: "block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500" %>
       </div>
 
-      <div class="lg:col-span-2">
-        <%= form.label :kind, "Tipo de paquete", class: "block text-sm font-semibold text-gray-800 mb-2" %>
-        <%= form.select :kind,
-            [["Servicios", "servicios"], ["Paquete", "paquete"], ["Cirugía", "cirugia"]],
-            { prompt: "Selecciona un tipo" },
-            class: "block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500" %>
-      </div>
+      <fieldset class="lg:col-span-2">
+        <legend class="block text-sm font-semibold text-gray-800 mb-2">Tipos de servicio</legend>
+        <p class="mb-3 text-sm text-gray-500">Selecciona uno, varios o todos los tipos donde debe aparecer este paquete.</p>
+
+        <%= hidden_field_tag "package[kinds][]", "" %>
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <% Package::KIND_OPTIONS.each do |value, label| %>
+            <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 hover:border-blue-300 hover:bg-blue-50">
+              <%= check_box_tag "package[kinds][]",
+                    value,
+                    @package.kinds.include?(value),
+                    id: "package_kinds_#{value}",
+                    class: "h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" %>
+              <span class="text-sm font-medium text-gray-700"><%= label %></span>
+            </label>
+          <% end %>
+        </div>
+      </fieldset>
     </div>
 
     <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4 sm:p-5">

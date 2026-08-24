@@ -6,6 +6,12 @@
     <%= @package.name %>
   </h1>
 
+  <div class="mb-8 flex flex-wrap justify-center gap-2">
+    <% @package.kind_labels.each do |label| %>
+      <span class="rounded-full bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-700"><%= label %></span>
+    <% end %>
+  </div>
+
   <!-- Package Image -->
   <% if @package.image.present? %>
     <div class="flex justify-center mb-10">

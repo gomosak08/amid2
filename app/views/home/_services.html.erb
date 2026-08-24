@@ -32,7 +32,7 @@
       Todo (<%= featured_total %>)
     </span>
 
-    <span class="hp-tab" data-hptab="servicios">
+    <span class="hp-tab" data-hptab="servicio">
       <i class="fa-solid fa-stethoscope"></i>
       Servicios (<%= featured_services.count %>)
     </span>
@@ -46,7 +46,7 @@
   <% if all_featured.any? %>
     <div class="hp-cards-grid" id="hp-cards-grid">
       <% all_featured.each do |package| %>
-        <div class="hp-search-item" data-kind="<%= package.kind %>">
+        <div class="hp-search-item" data-kinds="<%= package.kinds.join(" ") %>">
           <%= render "shared/featured_package_card", package: package %>
         </div>
       <% end %>

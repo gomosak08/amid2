@@ -1,7 +1,7 @@
 # app/controllers/packages_controller.rb
 class PackagesController < ApplicationController
   def index
-    @packages = Package.all
+    @packages = Package.with_kind("paquete").order(:name)
   end
 
   def show
